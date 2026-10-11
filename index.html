@@ -70,9 +70,16 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 /* ---------- cartes (image de la source, rien dessus) ---------- */
 /* Photo du joueur posée sur le fond de carte. Pour la déplacer ou la grossir, change ces 3 nombres :
    --fx = distance depuis la gauche, --fy = distance depuis le haut, --fw = largeur (en % de la carte). */
-.cardbox{display:block;flex:none;aspect-ratio:3/4;position:relative;--fx:30%;--fy:13%;--fw:62%}
+.cardbox{display:block;flex:none;aspect-ratio:3/4;position:relative;container-type:inline-size;--fx:30%;--fy:13%;--fw:62%}
 .cardbox .face{position:absolute;left:var(--fx);top:var(--fy);width:var(--fw);height:auto;object-fit:contain;pointer-events:none}
 .cardbox img.bg{display:block;width:100%;height:100%;object-fit:contain}
+.ov{position:absolute;inset:0;color:#1b1608;text-shadow:0 0 3px rgba(255,255,255,.55);pointer-events:none}
+.ov .r{position:absolute;left:13%;top:9%;font-weight:800;font-size:17cqw;line-height:1}
+.ov .p{position:absolute;left:13%;top:25%;font-weight:700;font-size:8cqw;line-height:1}
+.ov .n{position:absolute;left:5%;right:5%;top:60%;text-align:center;font-weight:800;font-size:9cqw;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov .s{position:absolute;left:8%;right:8%;top:71%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
+.ov .s b{display:block;font-size:9.5cqw;line-height:1.1}
+.ov .s i{display:block;font-style:normal;font-size:6cqw;font-weight:700;opacity:.8}
 .cardbox.sm{width:50px}
 .cardbox.md{width:min(150px,80%)}
 .cardbox.lg{width:132px}
@@ -363,6 +370,11 @@ function countdown(d) {
 /* =====================================================================
    Morceaux d'affichage
    ===================================================================== */
+// Texte posé sur la carte : note, poste, nom, stats (le fond et la photo ne changent pas).
+function ovHtml(c) {
+  const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><b>' + esc(c.stats[k]) + '</b><i>' + k + '</i></div>' : '').join('');
+  return '<span class="ov"><span class="r">' + esc(c.rating || '?') + '</span><span class="p">' + esc(c._pos[0] || '') + '</span><span class="n">' + esc(c.name) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + '</span>';
+}
 function cardImg(c, size) {
   const u = safeUrl(c.cardImage);
   if (!u) return '<span class="cardbox fb ' + size + '"><b>' + esc(c.rating || '?') + '</b></span>';
@@ -371,7 +383,7 @@ function cardImg(c, size) {
   const big = size === 'sm' ? u : u.replace('/cards/tiny/', '/cards/large/').split('?')[0];
   const alt = big !== u ? ' data-alt="' + esc(u) + '"' : '';
   return '<span class="cardbox ' + size + '"><img class="bg" src="' + esc(big) + '"' + alt + ' alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-r="' + esc(c.rating || '?') + '">' +
-    (f ? '<img class="face" src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1">' : '') + '</span>';
+    (f ? '<img class="face" src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1">' : '') + (size === 'sm' ? '' : ovHtml(c)) + '</span>';
 }
 // Si le fond ne charge pas : cadre gris avec la note. Si la photo ne charge pas : on l'enlève, le fond reste seul.
 document.addEventListener('error', (e) => {
@@ -451,9 +463,8 @@ function filtered() {
 
 function rowHtml(c) {
   const fav = FAV.has(c.id);
-  return '<div class="tile"><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'md') +
-    '<div class="nm">' + esc(c.name) + '<span class="rt">' + esc(c.rating) + '</span></div><div class="sub">' + subLine(c) + '</div>' +
-    statsGrid(c) + '<div class="pr"><span class="coin"></span>' + fmt(c.price) + '</div>' + chgHtml(c) + '</button>' +
+  return '<div class="tile"><button class="open" data-act="open" data-id="' + esc(c.id) + '" aria-label="' + esc(c.name) + '">' + cardImg(c, 'md') +
+    '<div class="pr"><span class="coin"></span>' + fmt(c.price) + '</div>' + chgHtml(c) + '</button>' +
     '<button class="star" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '" aria-label="' + (fav ? 'Retirer des favoris' : 'Ajouter aux favoris') + ' : ' + esc(c.name) + '">' + (fav ? '★' : '☆') + '</button></div>';
 }
 
