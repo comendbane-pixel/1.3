@@ -15,13 +15,14 @@ on:
           - list
           - snapshot
           - details
+          - fiche
       pages:
         description: 'Nombre de pages (mode list). Vide = 25. Mets 1 pour un test à 3 crédits.'
         required: false
         default: ''
         type: string
       details_count:
-        description: 'Mode details : combien de joueurs (les plus chers d abord). Vide = 3.'
+        description: 'Modes details et fiche : combien de joueurs (les plus chers d abord). Vide = 3.'
         required: false
         default: ''
         type: string

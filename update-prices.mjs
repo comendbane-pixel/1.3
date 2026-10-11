@@ -267,7 +267,7 @@ function mergeCard(map, fresh, now) {
     return;
   }
   // On garde les anciennes infos si la nouvelle réponse n'en a pas.
-  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage', 'playerImage', 'cardImageLarge', 'playerImageLarge', 'nationImage', 'clubImage', 'leagueImage', 'skillMoves', 'weakFoot', 'version']) {
+  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage', 'playerImage', 'cardImageLarge', 'playerImageLarge', 'nationImage', 'clubImage', 'leagueImage', 'skillMoves', 'weakFoot', 'version', 'cardName']) {
     if (fresh[k]) old[k] = fresh[k];
   }
   if (fresh.rating) old.rating = fresh.rating;
@@ -443,6 +443,32 @@ async function modeDetails(data) {
   console.log(`Détails enregistrés pour ${done} joueur(s). Regarde ton solde de crédits sur parse.bot pour connaître le prix d'une requête.`);
 }
 
+// ---------- fiche complète (nom de carte + logos) ----------
+// get_fc27_player_price : une requête par joueur, coût inconnu → petit nombre par défaut.
+async function modeFiche(data) {
+  if (!data.cards.length) throw new Error('data.json est vide : lance d\'abord le mode « list ».');
+  const count = Math.max(1, Math.min(Number(process.env.DETAILS_COUNT) || 3, 40));
+  const chosen = data.cards.filter((c) => !c.cardName).sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, count);
+  let done = 0;
+  for (const c of chosen) {
+    let payload;
+    try { payload = await api('get_fc27_player_price', { player_id: c.id }, 'get_fc27_player_price'); }
+    catch (e) { console.log(`${c.name} : ${e.message}`); continue; }
+    const root = Array.isArray(payload) ? payload[0] : (payload && (payload.data || payload.player) || payload);
+    if (!root || typeof root !== 'object') continue;
+    if (done === 0) console.log('Champs reçus (fiche) : ' + Object.keys(root).join(', '));
+    const n = pick(root, ['name', 'card_name']);
+    if (n) c.cardName = String(n);
+    const f = normPlayer({ ...root, id: c.id, player_id: c.id });
+    for (const k of ['nationImage', 'clubImage', 'leagueImage']) if (f && f[k]) c[k] = f[k];
+    done++;
+    console.log(`${c.name} → carte « ${c.cardName || '?'} » | pays ${c.nationImage ? 'oui' : 'non'} | ligue ${c.leagueImage ? 'oui' : 'non'} | club ${c.clubImage ? 'oui' : 'non'}`);
+    await saveData(data);
+  }
+  if (!done) throw new Error('Aucune fiche reçue (voir les messages ci-dessus).');
+  console.log(`Fiches enregistrées : ${done}. Regarde ton solde de crédits sur parse.bot pour connaître le prix d'une requête.`);
+}
+
 // ---------- départ ----------
 async function main() {
   if (!KEY) {
@@ -450,11 +476,12 @@ async function main() {
     process.exit(1);
   }
   let mode = (process.argv[2] || process.env.MODE || 'auto').trim().toLowerCase();
-  if (!['auto', 'list', 'snapshot', 'details'].includes(mode)) mode = 'auto';
+  if (!['auto', 'list', 'snapshot', 'details', 'fiche'].includes(mode)) mode = 'auto';
   const data = await loadData();
   if (mode === 'auto') mode = data.cards.length ? 'snapshot' : 'list';
   console.log(`Mode : ${mode}`);
   if (mode === 'list') await modeList(data);
+  else if (mode === 'fiche') await modeFiche(data);
   else if (mode === 'details') await modeDetails(data);
   else await modeSnapshot(data);
   console.log('Terminé.');

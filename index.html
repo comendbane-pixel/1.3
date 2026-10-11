@@ -408,7 +408,7 @@ function prep(c) {
   const parts = [...new Set(String(c.pos || '').toUpperCase().match(POS_RE) || [])];
   return {
     id: String(c.id), name: String(c.name || 'Inconnu'), rating: Number(c.rating) || 0, pos: parts.length ? parts.join(', ') : String(c.pos || '').replace(/\+/g, ''), _pos: parts, playerImage: c.playerImageLarge || c.playerImage || '',
-    club: String(c.club || ''), nation: String(c.nation || ''), league: String(c.league || ''), stats: st, cardImage: c.cardImageLarge || c.cardImage || '', version: String(c.version || ''), ps: (Array.isArray(c.ps) ? c.ps : []).map(function (x) { return { n: String((x && x.n) || ''), l: safeUrl((x && x.l) || ''), g: !!(x && x.g) }; }).filter(function (x) { return x.l || x.n; }), sm: Number(c.skillMoves) || 0, wf: Number(c.weakFoot) || 0, nationImage: c.nationImage || '', leagueImage: c.leagueImage || '', clubImage: c.clubImage || '',
+    club: String(c.club || ''), nation: String(c.nation || ''), league: String(c.league || ''), stats: st, cardImage: c.cardImageLarge || c.cardImage || '', version: String(c.version || ''), cn: String(c.cardName || '').split(' - ')[0].trim(), ps: (Array.isArray(c.ps) ? c.ps : []).map(function (x) { return { n: String((x && x.n) || ''), l: safeUrl((x && x.l) || ''), g: !!(x && x.g) }; }).filter(function (x) { return x.l || x.n; }), sm: Number(c.skillMoves) || 0, wf: Number(c.weakFoot) || 0, nationImage: c.nationImage || '', leagueImage: c.leagueImage || '', clubImage: c.clubImage || '',
     price, _series: series, _chg: chg, _min: min, _max: max, _avg: avg,
     _n: norm([c.name, c.club, c.nation, c.league, c.pos].join(' '))
   };
@@ -499,7 +499,7 @@ function ovHtml(c) {
   const it = (u, t) => safeUrl(u) ? im(u) : (t ? '<em>' + esc(String(t).replace(/[^\p{L}\p{N}]/gu, '').slice(0, 3).toUpperCase()) + '</em>' : '');
   const bd = it(c.nationImage || flagUrl(c.nation), c.nation) + it(c.leagueImage, c.league) + it(c.clubImage, c.club);
   return '<span class="ov"><span class="r">' + esc(c.rating || '?') + '</span><span class="p">' + esc(c._pos[0] || '') + '</span>' +
-    (c.sm && c.wf ? '<span class="sw">' + c.sm + '•' + c.wf + '</span>' : '') + '<span class="n">' + esc(c.name) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + (bd ? '<span class="bd">' + bd + '</span>' : '') + '</span>';
+    (c.sm && c.wf ? '<span class="sw">' + c.sm + '•' + c.wf + '</span>' : '') + '<span class="n">' + esc(c.cn || c.name) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + (bd ? '<span class="bd">' + bd + '</span>' : '') + '</span>';
 }
 function drawnCard(c, size) {
   const f = safeUrl(c.playerImage);
@@ -508,7 +508,7 @@ function drawnCard(c, size) {
   const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><b>' + esc(c.stats[k]) + '</b><i>' + k + '</i></div>' : '').join('');
   return '<span class="fc' + tier + ' ' + size + '"><span class="fc-r">' + esc(c.rating || '?') + '</span><span class="fc-p">' + esc(c._pos[0] || '') + '</span>' +
     '<span class="fc-ph">' + sil + (f ? '<img src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1">' : '') + '</span>' +
-    '<span class="fc-n">' + esc(c.name) + '</span>' + (st ? '<span class="fc-s">' + st + '</span>' : '') +
+    '<span class="fc-n">' + esc(c.cn || c.name) + '</span>' + (st ? '<span class="fc-s">' + st + '</span>' : '') +
     '<span class="fc-b"><span>' + esc(c.nation.slice(0, 3)) + '</span><span>' + esc(c.club.slice(0, 3)) + '</span></span></span>';
 }
 function cardImg(c, size) {
