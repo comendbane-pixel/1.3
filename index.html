@@ -167,11 +167,16 @@ nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;st
 @keyframes fade{from{opacity:0}}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
 [data-anim=reduced] .panel{animation-name:fade}
-.head{display:flex;gap:14px;align-items:flex-start}
-.head .info{flex:1;min-width:0}
-.head h2{margin:0 0 2px;font-size:20px}
-.close{margin-left:auto;border:1px solid var(--line);background:var(--surface);border-radius:50%;width:38px;height:38px;font-size:18px;flex:none}
-.big-price{font-size:26px;font-weight:800;margin:6px 0 0;font-variant-numeric:tabular-nums}
+.panel{position:relative}
+.head{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding-top:4px}
+.head .info{width:100%;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.head h2{margin:0;font-size:22px}
+.head .cardbox.lg,.head .fc.lg{width:min(190px,52vw)}
+.close{position:absolute;top:12px;right:12px;border:1px solid var(--line);background:var(--surface);border-radius:50%;width:38px;height:38px;font-size:18px;flex:none;z-index:2}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chips span{background:var(--surface2);border-radius:20px;padding:3px 10px;font-size:12.5px;color:var(--muted);font-weight:600}
+.big-price{font-size:28px;font-weight:800;color:var(--warn);display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.big-price .coin{width:20px;height:20px}
 .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
 .sgrid div{background:var(--surface2);border-radius:10px;padding:6px 8px;text-align:center}
 .sgrid b{display:block;font-size:17px}
@@ -759,10 +764,11 @@ function renderSheet() {
   const al = S.alerts.filter((a) => a.cid === c.id);
   const grid = STATK.filter((k) => c.stats[k] != null && c.stats[k] !== '').map((k) => '<div><b>' + esc(c.stats[k]) + '</b><span>' + k + '</span></div>').join('');
   $('#panel').innerHTML =
-    '<div class="head">' + cardImg(c, 'lg') + '<div class="info"><h2>' + esc(c.name) + '</h2><div class="muted">Note ' + esc(c.rating) + ' · ' + subLine(c) + '</div>' + (c.league ? '<div class="small muted">' + esc(c.league) + '</div>' : '') +
-    '<div class="big-price">' + fmt(c.price) + '</div>' + chgHtml(c) + '</div><button class="close" data-act="close" aria-label="Fermer">✕</button></div>' +
+    '<div class="head">' + cardImg(c, 'lg') + '<div class="info"><h2>' + esc(c.name) + '</h2>' +
+    '<div class="chips">' + [c.pos, c.club, c.nation, c.league].filter(Boolean).map((x) => '<span>' + esc(x) + '</span>').join('') + '</div>' +
+    '<div class="big-price"><span class="coin"></span>' + fmt(c.price) + '</div>' + chgHtml(c) + '</div><button class="close" data-act="close" aria-label="Fermer">✕</button></div>' +
     (grid ? '<div class="sgrid">' + grid + '</div>' : '') +
-    '<div class="row2" style="margin:12px 0"><button class="chip" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '">' + (fav ? '★ Dans les favoris' : '☆ Ajouter aux favoris') + '</button></div>' +
+    '<div class="row2" style="margin:12px 0;justify-content:center"><button class="chip" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '">' + (fav ? '★ Dans les favoris' : '☆ Ajouter aux favoris') + '</button></div>' +
     '<div class="box"><h3>Évolution du prix</h3>' + chartSvg(c) + '</div>' +
     '<div class="box"><h3>Alerte de prix</h3><div class="row2"><select class="field" id="alDir" style="width:auto"><option value="<=">Prix ≤</option><option value=">=">Prix ≥</option></select>' +
     '<input class="field" id="alPrice" type="number" inputmode="numeric" min="0" placeholder="Montant" style="flex:1;min-width:110px"><button class="btn primary" data-act="addalert" data-id="' + esc(c.id) + '">Créer</button></div>' +
