@@ -14,6 +14,19 @@ on:
           - auto
           - list
           - snapshot
+      pages:
+        description: 'Nombre de pages (mode list). Vide = 25. Mets 1 pour un test à 3 crédits.'
+        required: false
+        default: ''
+        type: string
+      restart:
+        description: 'Repartir de la page 1 (test, ne change pas le point de reprise)'
+        required: true
+        default: 'non'
+        type: choice
+        options:
+          - 'non'
+          - 'oui'
 
 permissions:
   contents: write
@@ -37,6 +50,8 @@ jobs:
         env:
           PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
           MODE: ${{ github.event.inputs.mode || 'auto' }}
+          MAX_PAGES: ${{ github.event.inputs.pages }}
+          RESTART: ${{ github.event.inputs.restart == 'oui' && '1' || '' }}
         run: node update-prices.mjs "$MODE"
 
       - name: Enregistrer data.json
