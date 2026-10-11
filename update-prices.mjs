@@ -152,6 +152,13 @@ function normPlayer(p) {
     history: [],
   };
   out.playerImage = out.playerImageLarge || findPlayerImage(p, out.cardImage);
+  // Logos construits à partir des identifiants, si la réponse en contient et qu'il n'y a pas déjà une image.
+  const idOf = (keys) => { const v = pick(p, keys); return v !== undefined && v !== null && /^\d+$/.test(String(v)) ? String(v) : ''; };
+  const cdn = 'https://cdn.futbin.com/content/fifa27/img/';
+  const nid = idOf(['nation_id', 'nationId']), cid = idOf(['club_id', 'clubId']), lid = idOf(['league_id', 'leagueId']);
+  if (!out.nationImage && nid) out.nationImage = `${cdn}nation/${nid}.png`;
+  if (!out.clubImage && cid) out.clubImage = `${cdn}clubs/${cid}.png`;
+  if (!out.leagueImage && lid) out.leagueImage = `${cdn}leaguelogo/${lid}.png`;
   return out;
 }
 
@@ -331,6 +338,7 @@ async function modeList(data) {
     }
     const arr = raw.map(normPlayer).filter(Boolean);
     if (page === start && arr[0]) console.log('Photo du joueur trouvée : ' + (arr[0].playerImage ? 'oui' : 'non'));
+    if (page === start && arr[0]) console.log('Logos trouvés : pays ' + (arr[0].nationImage ? 'oui' : 'non') + ' | ligue ' + (arr[0].leagueImage ? 'oui' : 'non') + ' | club ' + (arr[0].clubImage ? 'oui' : 'non'));
     if (page === start && arr[0]) console.log('Image de carte HD trouvée : ' + (arr[0].cardImageLarge ? 'oui' : 'non') + ' | photo HD : ' + (arr[0].playerImageLarge ? 'oui' : 'non'));
     if (!arr.length) { console.log('Page vide : fin du catalogue.'); finished = true; break; }
     for (const c of arr) mergeCard(map, c, now);
