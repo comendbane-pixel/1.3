@@ -20,6 +20,9 @@ const MAX_PAGES = Number(process.env.MAX_PAGES ?? 25);  // 25 pages x 3 crédits
 const MIN_RATING = Number(process.env.MIN_RATING ?? 80);
 const SNAPSHOT_SIZE = Number(process.env.SNAPSHOT_SIZE ?? 500); // 500 maximum
 const HISTORY_MAX = 14;
+const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 150000); // parse.bot peut être lent (1 minute par page)
+const RETRY_MS = Number(process.env.RETRY_MS ?? 30000);      // pause avant un 2e essai
+let authOK = false; // devient vrai dès qu'une requête a réussi
 
 // ---------- clé ----------
 // On enlève les espaces, retours à la ligne et guillemets collés par erreur.
@@ -129,11 +132,25 @@ async function api(endpoint, params = {}, label = endpoint) {
     lastCall = Date.now();
     let res;
     try {
-      res = await fetch(url, { headers: { 'X-API-Key': KEY, Accept: 'application/json' } });
+      res = await fetch(url, {
+        headers: { 'X-API-Key': KEY, Accept: 'application/json' },
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
     } catch (e) {
+      if (attempt === 1) {
+        console.log(`${label} : pas de réponse (${e.name}). Nouvel essai dans ${Math.round(RETRY_MS / 1000)} s.`);
+        await sleep(RETRY_MS);
+        continue;
+      }
       throw new Error(`${label} : impossible de joindre parse.bot (${e.message})`);
     }
     if (res.status === 401 || res.status === 403) {
+      // Si la clé a déjà marché pendant ce passage, le refus est sans doute passager : on réessaie une fois.
+      if (authOK && attempt === 1) {
+        console.log(`${label} : refus passager (HTTP ${res.status}) alors que la clé marchait. Nouvel essai dans ${Math.round(RETRY_MS / 1000)} s.`);
+        await sleep(RETRY_MS);
+        continue;
+      }
       // On écrit seulement la LONGUEUR de la clé, jamais la clé elle-même.
       throw new Error(
         `${label} : accès refusé (HTTP ${res.status}). ` +
@@ -150,6 +167,7 @@ async function api(endpoint, params = {}, label = endpoint) {
       const txt = (await res.text().catch(() => '')).slice(0, 200).replace(KEY || '\u0000', '***');
       throw new Error(`${label} : erreur HTTP ${res.status} ${txt}`);
     }
+    authOK = true;
     return res.json();
   }
   throw new Error(`${label} : échec après nouvel essai`);
@@ -237,23 +255,29 @@ async function fetchSbcs() {
 async function modeList(data) {
   const map = new Map(data.cards.map((c) => [c.id, c]));
   const now = Date.now();
+  // Reprise : si un passage précédent s'est arrêté, on repart de la page suivante (RESTART=1 pour tout reprendre).
+  let start = Number.isInteger(data.listNext) && data.listNext > 0 && process.env.RESTART !== '1' ? data.listNext : 1;
   let total = 0;
-  for (let page = 1; page <= MAX_PAGES; page++) {
-    console.log(`Catalogue : page ${page}/${MAX_PAGES}`);
+  let finished = false;
+  for (let page = start; page < start + MAX_PAGES; page++) {
+    console.log(`Catalogue : page ${page} (${page - start + 1}/${MAX_PAGES} de ce passage)`);
     const payload = await api('list_fc27_players', {
       platform: 'ps', min_rating: MIN_RATING, sort_by_price: 'desc', page,
     }, 'list_fc27_players');
     const arr = toArray(payload).map(normPlayer).filter(Boolean);
-    if (!arr.length) { console.log('Page vide : fin du catalogue.'); break; }
+    if (!arr.length) { console.log('Page vide : fin du catalogue.'); finished = true; break; }
     for (const c of arr) mergeCard(map, c, now);
     total += arr.length;
     data.cards = [...map.values()];
     data.updatedAt = new Date(now).toISOString();
     data.source = 'FUTBIN via parse.bot';
-    await saveData(data); // on sauvegarde à chaque page : rien n'est perdu si ça s'arrête
+    data.listNext = page + 1;
+    await saveData(data); // sauvegarde à chaque page : rien n'est perdu si ça s'arrête
   }
+  if (finished) { data.listNext = null; await saveData(data); }
   console.log(`Catalogue : ${total} cartes lues, ${data.cards.length} au total.`);
-  if (!total) throw new Error('Aucune carte reçue : vérifie la réponse de list_fc27_players.');
+  if (!finished && total) console.log('Catalogue pas fini : relance le mode « list » pour continuer à la page suivante.');
+  if (!total && !finished) throw new Error('Aucune carte reçue : vérifie la réponse de list_fc27_players.');
 }
 
 async function modeSnapshot(data) {
