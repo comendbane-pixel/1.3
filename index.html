@@ -80,12 +80,13 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .cardbox.gd .ov{--g:#f4d97e;text-shadow:none}
 .cardbox.cr .ov{--g:#ece7da;text-shadow:none}
 .cardbox.lt .ov{--g:#2e2308;text-shadow:none}
-.ov .r{position:absolute;left:11%;width:18%;text-align:center;top:17%;font-weight:800;font-size:15cqw;line-height:1}
-.ov .p{position:absolute;left:11%;width:18%;text-align:center;top:31%;font-weight:700;font-size:8.5cqw;line-height:1}
+.ov .r{position:absolute;left:11%;width:18%;text-align:center;top:20%;font-weight:800;font-size:15cqw;line-height:1}
+.ov .p{position:absolute;left:11%;width:18%;text-align:center;top:34%;font-weight:700;font-size:8.5cqw;line-height:1}
 .ov .n{position:absolute;left:5%;right:5%;top:60%;text-align:center;font-weight:800;font-size:9.5cqw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ov .s{position:absolute;left:10%;right:10%;top:68.5%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
 .ov .s i{display:block;font-style:normal;font-size:5.6cqw;font-weight:700;line-height:1.1}
 .ov .s b{display:block;font-size:7.6cqw;line-height:1.15}
+.ov .sw{position:absolute;right:10%;top:49%;width:17%;text-align:center;font-weight:800;font-size:7cqw;line-height:1.1;border:1px solid currentColor;border-radius:2cqw;padding:1cqw 0;opacity:.95}
 .ov .bd{position:absolute;left:0;right:0;top:79.5%;display:flex;justify-content:center;align-items:center;gap:4cqw}
 .ov .bd em{font-style:normal;font-weight:700;font-size:4.6cqw;letter-spacing:.03em;background:rgba(0,0,0,.18);border-radius:2cqw;padding:.6cqw 1.6cqw}
 .ov .bd img{height:6.5cqw;width:auto;max-width:10cqw;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
@@ -337,7 +338,7 @@ function prep(c) {
   const parts = [...new Set(String(c.pos || '').toUpperCase().match(POS_RE) || [])];
   return {
     id: String(c.id), name: String(c.name || 'Inconnu'), rating: Number(c.rating) || 0, pos: parts.length ? parts.join(', ') : String(c.pos || '').replace(/\+/g, ''), _pos: parts, playerImage: c.playerImageLarge || c.playerImage || '',
-    club: String(c.club || ''), nation: String(c.nation || ''), league: String(c.league || ''), stats: st, cardImage: c.cardImageLarge || c.cardImage || '', nationImage: c.nationImage || '', leagueImage: c.leagueImage || '', clubImage: c.clubImage || '',
+    club: String(c.club || ''), nation: String(c.nation || ''), league: String(c.league || ''), stats: st, cardImage: c.cardImageLarge || c.cardImage || '', sm: Number(c.skillMoves) || 0, wf: Number(c.weakFoot) || 0, nationImage: c.nationImage || '', leagueImage: c.leagueImage || '', clubImage: c.clubImage || '',
     price, _series: series, _chg: chg, _min: min, _max: max, _avg: avg,
     _n: norm([c.name, c.club, c.nation, c.league, c.pos].join(' '))
   };
@@ -428,7 +429,7 @@ function ovHtml(c) {
   const it = (u, t) => safeUrl(u) ? im(u) : (t ? '<em>' + esc(String(t).replace(/[^\p{L}\p{N}]/gu, '').slice(0, 3).toUpperCase()) + '</em>' : '');
   const bd = it(c.nationImage || flagUrl(c.nation), c.nation) + it(c.leagueImage, c.league) + it(c.clubImage, c.club);
   return '<span class="ov"><span class="r">' + esc(c.rating || '?') + '</span><span class="p">' + esc(c._pos[0] || '') + '</span>' +
-    '<span class="n">' + esc(c.name) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + (bd ? '<span class="bd">' + bd + '</span>' : '') + '</span>';
+    (c.sm && c.wf ? '<span class="sw">' + c.sm + '•' + c.wf + '</span>' : '') + '<span class="n">' + esc(c.name) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + (bd ? '<span class="bd">' + bd + '</span>' : '') + '</span>';
 }
 function drawnCard(c, size) {
   const f = safeUrl(c.playerImage);
