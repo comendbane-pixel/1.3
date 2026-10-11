@@ -84,15 +84,30 @@ function cleanPos(p) {
   return String(p).replace(/\+/g, '').trim();
 }
 
-// Photo du joueur : on cherche une adresse d'image dont le nom de champ parle d'un joueur / visage / photo.
-function findPlayerImage(p, cardImage) {
-  const direct = pick(p, ['playerImage', 'player_image', 'player_image_url', 'player_img', 'face', 'face_image', 'headshot', 'photo', 'photo_url', 'avatar']);
-  const ok = (v) => typeof v === 'string' && /^https?:\/\//i.test(v) && v !== cardImage && !/\/cards\//i.test(v);
-  if (ok(direct)) return direct;
-  for (const [k, v] of Object.entries(p)) {
-    if (/(player|face|head|photo|avatar|portrait)/i.test(k) && !/(card|club|nation|league|flag|badge|logo)/i.test(k) && ok(v)) return v;
+// Toutes les adresses d'image d'un joueur, même rangées dans des sous-objets : [chemin, adresse]
+const IMG_RE = /^https?:\/\/\S+/i;
+function imageFields(o, prefix = '', depth = 0, out = []) {
+  if (!o || typeof o !== 'object' || depth > 3) return out;
+  for (const [k, v] of Object.entries(o)) {
+    const path = prefix ? `${prefix}.${k}` : k;
+    if (typeof v === 'string') {
+      if (IMG_RE.test(v) && (/\.(png|jpe?g|webp|gif|svg)(\?|$)/i.test(v) || /\/(img|image|images)\//i.test(v) || /(image|img|photo|face|avatar|portrait|head)/i.test(k))) out.push([path, v]);
+    } else if (v && typeof v === 'object') {
+      imageFields(v, path, depth + 1, out);
+    }
   }
-  return '';
+  return out;
+}
+
+// Photo du joueur (le visage), pas le fond de carte ni les logos de club / pays.
+function findPlayerImage(p, cardImage) {
+  const bad = /(\/cards\/|\/clubs?\/|\/nations?\/|\/flags?\/|\/leagues?\/|\/badges?\/|logo)/i;
+  const badKey = /(card|club|nation|league|flag|badge|logo|country|team)/i;
+  const all = imageFields(p).filter(([, v]) => v !== cardImage && !bad.test(v));
+  const byKey = all.find(([k]) => /(player|face|head|photo|avatar|portrait)/i.test(k) && !badKey.test(k));
+  if (byKey) return byKey[1];
+  const byUrl = all.find(([, v]) => /\/players?\//i.test(v));
+  return byUrl ? byUrl[1] : '';
 }
 
 function normStats(p) {
@@ -306,6 +321,8 @@ async function modeList(data) {
     const raw = toArray(payload);
     if (page === start && raw[0] && typeof raw[0] === 'object') {
       console.log('Champs reçus pour un joueur : ' + Object.keys(raw[0]).join(', '));
+      const imgs = imageFields(raw[0]);
+      console.log('Champs contenant une adresse d\'image : ' + (imgs.length ? imgs.map(([k, v]) => `${k} = ${v.slice(0, 110)}`).join(' | ') : 'aucun'));
     }
     const arr = raw.map(normPlayer).filter(Boolean);
     if (page === start && arr[0]) console.log('Photo du joueur trouvée : ' + (arr[0].playerImage ? 'oui' : 'non'));
