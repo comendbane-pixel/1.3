@@ -92,18 +92,21 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .tk button{border:0;background:var(--surface2);border-radius:10px;padding:6px 10px;white-space:nowrap;font-size:13px}
 
 /* ---------- liste ---------- */
-.row{display:grid;grid-template-columns:1fr 40px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:8px}
-.open{display:flex;gap:10px;align-items:center;text-align:left;border:0;background:none;padding:9px 0 9px 9px;width:100%;min-width:0}
-.mid{flex:1;min-width:0}
-.nm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:520px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:760px){.grid{grid-template-columns:repeat(4,1fr)}}
+.tile{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;min-width:0}
+.open{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;border:0;background:none;padding:12px 6px 10px;width:100%;min-width:0}
+.cardbox.md{width:min(112px,62%)}
+.nm{font-weight:700;font-size:14px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nm .rt{font-weight:600;color:var(--muted);margin-left:4px}
-.sub{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.stats{font-size:11.5px;color:var(--muted);margin-top:1px}
-.end{text-align:right;flex:none}
-.pr{font-weight:800;font-variant-numeric:tabular-nums}
+.sub{font-size:11.5px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stats{font-size:10.5px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr{font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;gap:5px}
+.coin{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#e0a800 70%);flex:none}
 .chg{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
 .up{color:var(--up)}.dn{color:var(--down)}.fl{color:var(--muted)}
-.star{border:0;background:none;font-size:22px;line-height:1;height:100%;color:var(--muted)}
+.star{position:absolute;top:4px;right:4px;width:36px;height:36px;border:0;background:none;font-size:22px;line-height:1;color:var(--muted)}
 .star[aria-pressed=true]{color:#e0a800}
 .pager{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:12px 0}
 .badge{display:inline-block;border-radius:8px;padding:2px 8px;font-size:12px;font-weight:700;background:var(--surface2)}
@@ -433,9 +436,9 @@ function filtered() {
 
 function rowHtml(c) {
   const fav = FAV.has(c.id);
-  return '<div class="row"><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') +
-    '<span class="mid"><div class="nm">' + esc(c.name) + '<span class="rt">' + esc(c.rating) + '</span></div><div class="sub">' + subLine(c) + '</div><div class="stats">' + statsLine(c) + '</div></span>' +
-    '<span class="end"><div class="pr">' + fmt(c.price) + '</div>' + chgHtml(c) + '</span></button>' +
+  return '<div class="tile"><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'md') +
+    '<div class="nm">' + esc(c.name) + '<span class="rt">' + esc(c.rating) + '</span></div><div class="sub">' + subLine(c) + '</div>' +
+    '<div class="pr"><span class="coin"></span>' + fmt(c.price) + '</div>' + chgHtml(c) + '</button>' +
     '<button class="star" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '" aria-label="' + (fav ? 'Retirer des favoris' : 'Ajouter aux favoris') + ' : ' + esc(c.name) + '">' + (fav ? '★' : '☆') + '</button></div>';
 }
 
@@ -452,7 +455,7 @@ function renderMarket() {
   if (M.page > pages) M.page = pages; if (M.page < 1) M.page = 1;
   const slice = a.slice((M.page - 1) * PAGE, M.page * PAGE);
   $('#count').textContent = fmt(a.length) + ' carte' + (a.length > 1 ? 's' : '');
-  $('#list').innerHTML = slice.length ? slice.map(rowHtml).join('') : '<div class="empty muted">Aucune carte ne correspond à ces filtres.</div>';
+  $('#list').innerHTML = slice.length ? '<div class="grid">' + slice.map(rowHtml).join('') + '</div>' : '<div class="empty muted">Aucune carte ne correspond à ces filtres.</div>';
   $('#pager').innerHTML = pages > 1
     ? '<button class="btn" data-act="pg" data-d="-1"' + (M.page <= 1 ? ' disabled' : '') + '>← Précédent</button><span class="small muted">Page ' + M.page + ' / ' + pages + '</span><button class="btn" data-act="pg" data-d="1"' + (M.page >= pages ? ' disabled' : '') + '>Suivant →</button>'
     : '';
