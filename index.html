@@ -67,8 +67,11 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .row2{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
 /* ---------- cartes (image de la source, rien dessus) ---------- */
-.cardbox{display:block;flex:none;aspect-ratio:3/4}
-.cardbox img{display:block;width:100%;height:100%;object-fit:contain}
+/* Photo du joueur posée sur le fond de carte. Pour la déplacer ou la grossir, change ces 3 nombres :
+   --fx = distance depuis la gauche, --fy = distance depuis le haut, --fw = largeur (en % de la carte). */
+.cardbox{display:block;flex:none;aspect-ratio:3/4;position:relative;--fx:30%;--fy:13%;--fw:62%}
+.cardbox .face{position:absolute;left:var(--fx);top:var(--fy);width:var(--fw);height:auto;object-fit:contain;pointer-events:none}
+.cardbox img.bg{display:block;width:100%;height:100%;object-fit:contain}
 .cardbox.sm{width:50px}
 .cardbox.lg{width:132px}
 .cardbox.fb{background:#9aa0a6;display:flex;align-items:center;justify-content:center}
@@ -258,6 +261,7 @@ let lastCheck = 0, loadedOnce = false;
 const GROUPS = { GK: ['GK'], DEF: ['CB', 'LB', 'RB', 'LWB', 'RWB'], MIL: ['CDM', 'CM', 'CAM', 'LM', 'RM'], ATT: ['LW', 'RW', 'CF', 'ST', 'LF', 'RF', 'LS', 'RS'] };
 const GROUP_NAMES = { GK: 'Gardiens', DEF: 'Défenseurs', MIL: 'Milieux', ATT: 'Attaquants' };
 const STATK = ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'];
+const POS_RE = /LWB|RWB|GK|CB|LB|RB|CDM|CAM|CM|LM|RM|LW|RW|CF|ST|LF|RF|LS|RS/g;
 
 function prep(c) {
   const price = Number.isFinite(Number(c.price)) && c.price !== null && Number(c.price) > 0 ? Number(c.price) : null;
@@ -272,8 +276,9 @@ function prep(c) {
   }
   if (series.length >= 2) { const a = series[series.length - 2].p, b = series[series.length - 1].p; if (a > 0) chg = (b - a) / a; }
   const st = (c.stats && typeof c.stats === 'object') ? c.stats : {};
+  const parts = [...new Set(String(c.pos || '').toUpperCase().match(POS_RE) || [])];
   return {
-    id: String(c.id), name: String(c.name || 'Inconnu'), rating: Number(c.rating) || 0, pos: String(c.pos || '').replace(/\+/g, ''),
+    id: String(c.id), name: String(c.name || 'Inconnu'), rating: Number(c.rating) || 0, pos: parts.length ? parts.join(', ') : String(c.pos || '').replace(/\+/g, ''), _pos: parts, playerImage: c.playerImage || '',
     club: String(c.club || ''), nation: String(c.nation || ''), league: String(c.league || ''), stats: st, cardImage: c.cardImage || '',
     price, _series: series, _chg: chg, _min: min, _max: max, _avg: avg,
     _n: norm([c.name, c.club, c.nation, c.league, c.pos].join(' '))
@@ -287,7 +292,7 @@ function setData(d, u) {
     MAP = new Map(CARDS.map((c) => [c.id, c]));
     MOVERS = CARDS.filter((c) => c._chg != null && c.price != null && c._chg !== 0)
       .sort((a, b) => Math.abs(b._chg) - Math.abs(a._chg)).slice(0, 14);
-    POSLIST = [...new Set(CARDS.map((c) => c.pos).filter(Boolean))].sort();
+    POSLIST = [...new Set(CARDS.flatMap((c) => c._pos))].sort();
   }
   if (u && Array.isArray(u.sbcs)) UPCOMING = u.sbcs.filter((x) => x && typeof x === 'object' && x.name);
 }
@@ -351,12 +356,16 @@ function countdown(d) {
 function cardImg(c, size) {
   const u = safeUrl(c.cardImage);
   if (!u) return '<span class="cardbox fb ' + size + '"><b>' + esc(c.rating || '?') + '</b></span>';
-  return '<span class="cardbox ' + size + '"><img src="' + esc(u) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-r="' + esc(c.rating || '?') + '"></span>';
+  const f = safeUrl(c.playerImage);
+  return '<span class="cardbox ' + size + '"><img class="bg" src="' + esc(u) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-r="' + esc(c.rating || '?') + '">' +
+    (f ? '<img class="face" src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1">' : '') + '</span>';
 }
-// Si l'image ne charge pas : cadre gris avec la note, rien d'autre.
+// Si le fond ne charge pas : cadre gris avec la note. Si la photo ne charge pas : on l'enlève, le fond reste seul.
 document.addEventListener('error', (e) => {
   const t = e.target;
-  if (t && t.tagName === 'IMG' && t.dataset && t.dataset.r !== undefined && t.parentNode) {
+  if (!t || t.tagName !== 'IMG' || !t.dataset || !t.parentNode) return;
+  if (t.dataset.face) { t.remove(); return; }
+  if (t.dataset.r !== undefined) {
     const box = t.parentNode; box.classList.add('fb'); box.innerHTML = '<b>' + esc(t.dataset.r) + '</b>';
   }
 }, true);
@@ -396,7 +405,7 @@ function buildPosFilter() {
   sel.innerHTML = h; sel.value = M.pos;
   if (sel.value !== M.pos) { M.pos = ''; sel.value = ''; }
 }
-function posMatch(c, f) { return f.startsWith('g:') ? GROUPS[f.slice(2)].includes(c.pos) : c.pos === f; }
+function posMatch(c, f) { return f.startsWith('g:') ? c._pos.some((q) => GROUPS[f.slice(2)].includes(q)) : c._pos.includes(f); }
 
 function filtered() {
   const q = norm(M.q).trim();

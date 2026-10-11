@@ -16,7 +16,7 @@ const DATA_FILE = path.join(DIR, 'data.json');
 const BASE = (process.env.API_BASE ||
   'https://api.parse.bot/scraper/f56a52f1-08bd-4926-8246-945dc47bce4e').replace(/\/+$/, '');
 const PAUSE_MS = Number(process.env.PAUSE_MS ?? 13000); // 5 requêtes/minute max
-const MAX_PAGES = Number(process.env.MAX_PAGES ?? 25);  // 25 pages x 3 crédits = 75 crédits
+const MAX_PAGES = Number(process.env.MAX_PAGES) || 25;  // 25 pages x 3 crédits = 75 crédits
 const MIN_RATING = Number(process.env.MIN_RATING ?? 80);
 const SNAPSHOT_SIZE = Number(process.env.SNAPSHOT_SIZE ?? 500); // 500 maximum
 const HISTORY_MAX = 14;
@@ -76,9 +76,23 @@ function toArray(payload) {
   return [];
 }
 
+const POS_RE = /LWB|RWB|GK|CB|LB|RB|CDM|CAM|CM|LM|RM|LW|RW|CF|ST|LF|RF|LS|RS/g;
 function cleanPos(p) {
   if (p === undefined || p === null) return '';
+  const parts = String(p).toUpperCase().match(POS_RE);
+  if (parts && parts.length) return [...new Set(parts)].join(', ');
   return String(p).replace(/\+/g, '').trim();
+}
+
+// Photo du joueur : on cherche une adresse d'image dont le nom de champ parle d'un joueur / visage / photo.
+function findPlayerImage(p, cardImage) {
+  const direct = pick(p, ['playerImage', 'player_image', 'player_image_url', 'player_img', 'face', 'face_image', 'headshot', 'photo', 'photo_url', 'avatar']);
+  const ok = (v) => typeof v === 'string' && /^https?:\/\//i.test(v) && v !== cardImage && !/\/cards\//i.test(v);
+  if (ok(direct)) return direct;
+  for (const [k, v] of Object.entries(p)) {
+    if (/(player|face|head|photo|avatar|portrait)/i.test(k) && !/(card|club|nation|league|flag|badge|logo)/i.test(k) && ok(v)) return v;
+  }
+  return '';
 }
 
 function normStats(p) {
@@ -103,7 +117,7 @@ function normPlayer(p) {
   const idRaw = pick(p, ['id', 'player_id', 'playerId', 'futbin_id', 'resource_id']);
   if (idRaw === undefined) return null;
   const rating = Number(pick(p, ['rating', 'overall', 'ovr']));
-  return {
+  const out = {
     id: String(idRaw),
     name: String(pick(p, ['name', 'player_name', 'full_name', 'common_name', 'commonName']) ?? 'Inconnu'),
     rating: Number.isFinite(rating) ? rating : 0,
@@ -113,9 +127,12 @@ function normPlayer(p) {
     league: String(pick(p, ['league', 'league_name']) ?? ''),
     stats: normStats(p),
     cardImage: String(pick(p, ['cardImage', 'card_image', 'card_image_url', 'card_url', 'image_url', 'image']) ?? ''),
+    playerImage: '',
     price: toPrice(pick(p, ['price', 'ps_price', 'current_price', 'lowest_price', 'prices'])),
     history: [],
   };
+  out.playerImage = findPlayerImage(p, out.cardImage);
+  return out;
 }
 
 // ---------- appels API ----------
@@ -220,7 +237,7 @@ function mergeCard(map, fresh, now) {
     return;
   }
   // On garde les anciennes infos si la nouvelle réponse n'en a pas.
-  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage']) {
+  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage', 'playerImage']) {
     if (fresh[k]) old[k] = fresh[k];
   }
   if (fresh.rating) old.rating = fresh.rating;
@@ -268,7 +285,8 @@ async function modeList(data) {
   const map = new Map(data.cards.map((c) => [c.id, c]));
   const now = Date.now();
   // Reprise : si un passage précédent s'est arrêté, on repart de la page suivante (RESTART=1 pour tout reprendre).
-  let start = Number.isInteger(data.listNext) && data.listNext > 0 && process.env.RESTART !== '1' ? data.listNext : 1;
+  const restart = process.env.RESTART === '1'; // test : repart de la page 1 sans toucher au point de reprise
+  let start = Number.isInteger(data.listNext) && data.listNext > 0 && !restart ? data.listNext : 1;
   let total = 0;
   let finished = false;
   for (let page = start; page < start + MAX_PAGES; page++) {
@@ -285,17 +303,22 @@ async function modeList(data) {
       console.log(`Arrêt propre : ${total} cartes enregistrées dans ce passage. Relance le mode « list » pour reprendre à la page ${page}.`);
       return;
     }
-    const arr = toArray(payload).map(normPlayer).filter(Boolean);
+    const raw = toArray(payload);
+    if (page === start && raw[0] && typeof raw[0] === 'object') {
+      console.log('Champs reçus pour un joueur : ' + Object.keys(raw[0]).join(', '));
+    }
+    const arr = raw.map(normPlayer).filter(Boolean);
+    if (page === start && arr[0]) console.log('Photo du joueur trouvée : ' + (arr[0].playerImage ? 'oui' : 'non'));
     if (!arr.length) { console.log('Page vide : fin du catalogue.'); finished = true; break; }
     for (const c of arr) mergeCard(map, c, now);
     total += arr.length;
     data.cards = [...map.values()];
     data.updatedAt = new Date(now).toISOString();
     data.source = 'FUTBIN via parse.bot';
-    data.listNext = page + 1;
+    if (!restart) data.listNext = page + 1;
     await saveData(data); // sauvegarde à chaque page : rien n'est perdu si ça s'arrête
   }
-  if (finished) { data.listNext = null; await saveData(data); }
+  if (finished && !restart) { data.listNext = null; await saveData(data); }
   console.log(`Catalogue : ${total} cartes lues, ${data.cards.length} au total.`);
   if (!finished && total) console.log('Catalogue pas fini : relance le mode « list » pour continuer à la page suivante.');
   if (!total && !finished) throw new Error('Aucune carte reçue : vérifie la réponse de list_fc27_players.');
