@@ -72,21 +72,22 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 /* ---------- cartes (image de la source, rien dessus) ---------- */
 /* Photo du joueur posée sur le fond de carte. Pour la déplacer ou la grossir, change ces 3 nombres :
    --fx = distance depuis la gauche, --fy = distance depuis le haut, --fw = largeur (en % de la carte). */
-.cardbox{display:block;flex:none;aspect-ratio:3/4;position:relative;container-type:inline-size;--fx:14%;--fy:8%;--fw:72%}
-.cardbox .face{position:absolute;left:var(--fx);top:var(--fy);width:var(--fw);height:auto;object-fit:contain;pointer-events:none}
+.cardbox{display:block;flex:none;aspect-ratio:3/4;position:relative;container-type:inline-size;--fx:14%;--fy:9%;--fw:72%}
+.cardbox .face{position:absolute;left:50%;transform:translateX(-50%);top:var(--fy);width:var(--fw);height:52%;object-fit:contain;object-position:50% 100%;pointer-events:none}
 .cardbox img.bg{display:block;width:100%;height:100%;object-fit:contain}
 .ov{font-family:'Barlow Condensed','Arial Narrow','Roboto Condensed',sans-serif;--g:#fff;position:absolute;inset:0;color:var(--g);text-shadow:0 0 2px rgba(0,0,0,.9),0 1px 3px rgba(0,0,0,.8);pointer-events:none}
 /* Couleur du texte selon la carte : violet/foncé coloré = doré, noir = crème, clair (or, icône) = brun foncé */
 .cardbox.gd .ov{--g:#f4d97e;text-shadow:none}
 .cardbox.cr .ov{--g:#ece7da;text-shadow:none}
 .cardbox.lt .ov{--g:#2e2308;text-shadow:none}
-.ov .r{position:absolute;left:13%;top:11%;font-weight:800;font-size:15cqw;line-height:1}
-.ov .p{position:absolute;left:13%;top:25%;font-weight:700;font-size:8.5cqw;line-height:1}
+.ov .r{position:absolute;left:17%;top:17%;font-weight:800;font-size:15cqw;line-height:1}
+.ov .p{position:absolute;left:17%;top:31%;font-weight:700;font-size:8.5cqw;line-height:1}
 .ov .n{position:absolute;left:5%;right:5%;top:65%;text-align:center;font-weight:800;font-size:8.5cqw;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ov .s{position:absolute;left:10%;right:10%;top:74%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
 .ov .s i{display:block;font-style:normal;font-size:5.6cqw;font-weight:700;line-height:1.1}
 .ov .s b{display:block;font-size:7.6cqw;line-height:1.15}
 .ov .bd{position:absolute;left:0;right:0;top:87%;display:flex;justify-content:center;align-items:center;gap:6cqw}
+.ov .bd em{font-style:normal;font-weight:700;font-size:6cqw;letter-spacing:.03em;background:rgba(0,0,0,.18);border-radius:3cqw;padding:1cqw 2.2cqw}
 .ov .bd img{height:9cqw;width:auto;max-width:16cqw;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
 .cardbox.sm{width:50px}
 .cardbox.md{width:min(150px,80%)}
@@ -410,7 +411,8 @@ function countdown(d) {
 function ovHtml(c) {
   const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><i>' + k + '</i><b>' + esc(c.stats[k]) + '</b></div>' : '').join('');
   const im = (u) => safeUrl(u) ? '<img data-face="1" loading="lazy" referrerpolicy="no-referrer" alt="" src="' + esc(safeUrl(u)) + '">' : '';
-  const bd = im(c.nationImage) + im(c.leagueImage) + im(c.clubImage);
+  const it = (u, t) => safeUrl(u) ? im(u) : (t ? '<em>' + esc(String(t).replace(/[^\p{L}\p{N}]/gu, '').slice(0, 3).toUpperCase()) + '</em>' : '');
+  const bd = it(c.nationImage, c.nation) + it(c.leagueImage, c.league) + it(c.clubImage, c.club);
   return '<span class="ov"><span class="r">' + esc(c.rating || '?') + '</span><span class="p">' + esc(c._pos[0] || '') + '</span>' +
     '<span class="n">' + esc(c.name) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + (bd ? '<span class="bd">' + bd + '</span>' : '') + '</span>';
 }
