@@ -1,0 +1,76 @@
+name: Mise à jour des prix
+
+on:
+  schedule:
+    - cron: '17 6 */2 * *'   # un jour sur deux, vers 6h17 (heure UTC)
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Mode (auto = le robot choisit)'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - list
+          - snapshot
+          - details
+      pages:
+        description: 'Nombre de pages (mode list). Vide = 25. Mets 1 pour un test à 3 crédits.'
+        required: false
+        default: ''
+        type: string
+      details_count:
+        description: 'Mode details : combien de joueurs (les plus chers d abord). Vide = 3.'
+        required: false
+        default: ''
+        type: string
+      restart:
+        description: 'Repartir de la page 1 (test, ne change pas le point de reprise)'
+        required: true
+        default: 'non'
+        type: choice
+        options:
+          - 'non'
+          - 'oui'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-prices
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Récupérer les prix
+        env:
+          PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
+          MODE: ${{ github.event.inputs.mode || 'auto' }}
+          MAX_PAGES: ${{ github.event.inputs.pages }}
+          DETAILS_COUNT: ${{ github.event.inputs.details_count }}
+          RESTART: ${{ github.event.inputs.restart == 'oui' && '1' || '' }}
+        run: node update-prices.mjs "$MODE"
+
+      - name: Enregistrer data.json
+        if: ${{ always() }}
+        run: |
+          git config user.name "price-bot"
+          git config user.email "price-bot@users.noreply.github.com"
+          git add data.json
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau à enregistrer."
+          else
+            git commit -m "Mise à jour des prix"
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            git push
+          fi

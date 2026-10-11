@@ -147,6 +147,7 @@ function normPlayer(p) {
     playerImageLarge: String(pick(p, ['image_large', 'imageLarge', 'player_image_large']) ?? ''),
     nationImage: String(pick(p, ['nation_image', 'nationImage', 'nation_image_url', 'flag_image']) ?? ''),
     leagueImage: String(pick(p, ['league_image', 'leagueImage', 'league_image_url', 'league_badge']) ?? ''),
+    version: String(pick(p, ['version', 'card_type', 'rarity']) ?? ''),
     skillMoves: Number(pick(p, ['skill_moves', 'skillMoves', 'skills'])) || 0,
     weakFoot: Number(pick(p, ['weak_foot', 'weakFoot', 'wf'])) || 0,
     clubImage: String(pick(p, ['club_image', 'clubImage', 'club_image_url', 'badge_image']) ?? ''),
@@ -266,7 +267,7 @@ function mergeCard(map, fresh, now) {
     return;
   }
   // On garde les anciennes infos si la nouvelle réponse n'en a pas.
-  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage', 'playerImage', 'cardImageLarge', 'playerImageLarge', 'nationImage', 'clubImage', 'leagueImage', 'skillMoves', 'weakFoot']) {
+  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage', 'playerImage', 'cardImageLarge', 'playerImageLarge', 'nationImage', 'clubImage', 'leagueImage', 'skillMoves', 'weakFoot', 'version']) {
     if (fresh[k]) old[k] = fresh[k];
   }
   if (fresh.rating) old.rating = fresh.rating;
@@ -395,6 +396,53 @@ async function modeSnapshot(data) {
   }
 }
 
+
+// ---------- styles de jeu (PlayStyles) ----------
+// Une requête par joueur : coût en crédits inconnu, donc on en demande peu (DETAILS_COUNT) et on affiche ce que ça coûte.
+async function modeDetails(data) {
+  if (!data.cards.length) throw new Error('data.json est vide : lance d\'abord le mode « list ».');
+  const count = Math.max(1, Math.min(Number(process.env.DETAILS_COUNT) || 3, 40));
+  const wanted = String(process.env.DETAILS_IDS || '').split(',').map((x) => x.trim()).filter(Boolean);
+  const byId = new Map(data.cards.map((c) => [c.id, c]));
+  let chosen;
+  if (wanted.length) chosen = wanted.map((i) => byId.get(i)).filter(Boolean);
+  else chosen = data.cards.filter((c) => !c.ps).sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, count);
+  const names = (process.env.DETAILS_ENDPOINT ? [process.env.DETAILS_ENDPOINT] : ['get_fc27_player_details', 'get_player_details']);
+  let endpoint = null, done = 0;
+  for (const c of chosen) {
+    let payload = null;
+    for (const ep of (endpoint ? [endpoint] : names)) {
+      try { payload = await api(ep, { player_id: c.id }, ep); endpoint = ep; break; }
+      catch (e) { console.log(`${ep} : ${e.message}`); }
+    }
+    if (!payload) continue;
+    const root = Array.isArray(payload) ? payload[0] : (payload.data || payload.player || payload);
+    if (done === 0) {
+      console.log('Champs reçus (détails) : ' + Object.keys(root || {}).join(', '));
+      for (const [k, v] of Object.entries(root || {})) {
+        if (Array.isArray(v) && v[0] && typeof v[0] === 'object') console.log(`  ${k}[0] : ` + Object.keys(v[0]).join(', '));
+      }
+    }
+    const list = (root && (root.playstyles || root.play_styles || root.playStyles)) || [];
+    const ps = [];
+    for (const x of Array.isArray(list) ? list : []) {
+      if (!x || typeof x !== 'object') continue;
+      const logo = pick(x, ['logo', 'image', 'icon', 'image_url']);
+      const name = pick(x, ['name', 'title', 'label']);
+      if (!logo && !name) continue;
+      const l = logo ? String(logo) : '';
+      const gold = x.plus === true || x.is_plus === true || x.type === 'plus' || /\/plus\//i.test(l) || /\+\s*$/.test(String(name || ''));
+      ps.push({ n: name ? String(name) : '', l, g: gold });
+    }
+    c.ps = ps;
+    done++;
+    console.log(`${c.name} : ${ps.length} style(s) de jeu (${ps.filter((p) => p.g).length} doré(s)).`);
+    await saveData(data);
+  }
+  if (!done) throw new Error('Aucun détail reçu : le nom du point d\'accès est peut-être différent (voir les messages ci-dessus).');
+  console.log(`Détails enregistrés pour ${done} joueur(s). Regarde ton solde de crédits sur parse.bot pour connaître le prix d'une requête.`);
+}
+
 // ---------- départ ----------
 async function main() {
   if (!KEY) {
@@ -402,11 +450,12 @@ async function main() {
     process.exit(1);
   }
   let mode = (process.argv[2] || process.env.MODE || 'auto').trim().toLowerCase();
-  if (!['auto', 'list', 'snapshot'].includes(mode)) mode = 'auto';
+  if (!['auto', 'list', 'snapshot', 'details'].includes(mode)) mode = 'auto';
   const data = await loadData();
   if (mode === 'auto') mode = data.cards.length ? 'snapshot' : 'list';
   console.log(`Mode : ${mode}`);
   if (mode === 'list') await modeList(data);
+  else if (mode === 'details') await modeDetails(data);
   else await modeSnapshot(data);
   console.log('Terminé.');
 }

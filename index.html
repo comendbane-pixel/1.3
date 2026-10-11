@@ -9,6 +9,7 @@
 <title>FC27 Companion</title>
 <style>
 :root{
+  --ch:#ff4d00;
   --bg:#f4f6f8;--surface:#ffffff;--surface2:#eaeef2;--text:#141a22;--muted:#5b6673;--line:#d9dfe6;
   --accent:#2563eb;--accent-text:#ffffff;--up:#0f8a4b;--down:#c62828;--warn:#9a6700;
   --ease:cubic-bezier(.4,0,.2,1);--tpage:.28s;--tind:.38s;--tsheet:.28s;
@@ -175,13 +176,64 @@ nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;st
 .dot.on{display:block}
 
 /* ---------- fiche détaillée ---------- */
-.sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45);animation:fade var(--tsheet) var(--ease)}
+.sheet{position:fixed;inset:0;z-index:50;background:var(--bg);animation:fade var(--tsheet) var(--ease)}
 .sheet[hidden]{display:none}
-.panel{background:var(--bg);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:14px 14px calc(env(safe-area-inset-bottom) + 20px);animation:up var(--tsheet) var(--ease)}
+.panel{position:absolute;inset:0;overflow:auto;background:var(--bg);animation:up var(--tsheet) var(--ease)}
+.pgtop{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 8px) 14px 8px}
+.pgtop .in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.back{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.crumb{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.crumb b{color:var(--text)}
+.pgbody{max-width:1180px;margin:0 auto;padding:14px 14px calc(env(safe-area-inset-bottom) + 40px)}
+.pgbody h1{font-size:clamp(22px,4.6vw,34px);margin:4px 0 4px;line-height:1.15;text-wrap:balance}
+.pgbody .lead{color:var(--muted);font-size:13.5px;margin:0 0 14px;max-width:80ch}
+.pg{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
+@media(min-width:860px){.pg{grid-template-columns:330px 1fr}}
+.pgl,.pgr{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card2{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.card2>h3{margin:0;padding:11px 14px;font-size:14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.card2 .pad{padding:14px}
+.hero{display:flex;flex-direction:column;align-items:center;gap:12px;padding:18px 14px}
+.hero .hrow{display:flex;align-items:center;justify-content:center;gap:10px;width:100%}
+.pstyles{display:flex;flex-direction:column;gap:8px}
+.psi{width:38px;height:38px;border-radius:50%;background:var(--surface2);border:1.5px solid var(--border,#2a2f3b);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--muted,#8b93a5);overflow:hidden}
+.psi img{width:30px;height:30px;object-fit:contain}
+.psi.gold{border-color:#f0b429;box-shadow:0 0 8px rgba(240,180,41,.55);background:#2a2210}
+.pslist{display:flex;flex-direction:column;gap:6px;padding:4px 0}
+.pslist .r{display:flex;align-items:center;gap:8px;font-size:13px}
+.pslist .r.gold b{color:#f0b429}
+.hero .cardbox.lg,.hero .fc.lg{width:min(230px,62vw)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;border-top:1px solid var(--line);font-size:13.5px}
+.kv:first-of-type{border-top:0}
+.kv span{color:var(--muted)}
+.kv b{text-align:right;min-width:0;overflow-wrap:anywhere}
+.mini3{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.mini3>div{padding:10px 6px;text-align:center;border-left:1px solid var(--line)}
+.mini3>div:first-child{border-left:0}
+.mini3 b{display:block;font-size:17px}
+.mini3 span{font-size:11px;color:var(--muted)}
+.bigp{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bigp b{font-size:clamp(28px,6vw,38px);font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;line-height:1}
+.bigp .coin{width:26px;height:26px}
+.momo{position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,#5b3cff,#ff4d3d);margin:26px 0 8px}
+.momo i{position:absolute;top:-9px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:12px solid var(--text);transform:translateX(-50%)}
+.momo-l{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.momo-l b{display:block;color:var(--text);font-size:13px}
+.attr{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px}
+.at{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface2)}
+.at .t{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.at .v{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+.at .v b{font-size:26px;font-variant-numeric:tabular-nums}
+.at .bar{height:6px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+.at .bar i{display:block;height:100%;border-radius:4px}
+.at svg{width:54px;height:34px}
+.gu{color:var(--up)}.gw{color:var(--warn)}.gd{color:var(--down)}
+.bg-u{background:var(--up)}.bg-w{background:var(--warn)}.bg-d{background:var(--down)}
+.pgr .box{margin:0}
+.close{position:static;margin-left:auto}
 @keyframes fade{from{opacity:0}}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
 [data-anim=reduced] .panel{animation-name:fade}
-.panel{position:relative}
 .head{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding-top:4px}
 .head .info{width:100%;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px}
 .head h2{margin:0;font-size:22px}
@@ -195,7 +247,24 @@ nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;st
 .sgrid div{background:var(--surface2);border-radius:10px;padding:6px 8px;text-align:center}
 .sgrid b{display:block;font-size:17px}
 .sgrid span{font-size:11px;color:var(--muted)}
+.cv{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:crosshair}
 .chart{width:100%;height:auto;display:block}
+.cl{font-size:9.5px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.chead{display:flex;flex-wrap:wrap;gap:10px 14px;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.chead h3{margin:0 0 6px}
+.ch-left{min-width:0;flex:1 1 220px}
+.ch-price{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ch-price b{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.ch-date{font-size:12.5px;color:var(--muted);margin-top:3px}
+.pill{border-radius:8px;padding:2px 8px;font-size:12.5px;font-weight:700;background:var(--surface2);font-variant-numeric:tabular-nums}
+.pill.up{background:color-mix(in srgb,var(--up) 18%,transparent);color:var(--up)}
+.pill.dn{background:color-mix(in srgb,var(--down) 18%,transparent);color:var(--down)}
+.pill.fl{color:var(--muted)}
+.tabs2{display:flex;gap:2px;background:var(--surface2);border-radius:20px;padding:3px;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.tabs2::-webkit-scrollbar{display:none}
+.tabs2 button{border:0;background:none;border-radius:16px;padding:5px 11px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.tabs2 button[aria-selected=true]{background:var(--ch);color:#fff}
+.simtag{display:inline-block;vertical-align:middle;margin-left:6px;border:1px dashed var(--warn);color:var(--warn);border-radius:8px;padding:1px 7px;font-size:11px;font-weight:700}
 .tri{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center;margin-top:6px}
 .tri div{background:var(--surface2);border-radius:10px;padding:6px}
 .tri b{display:block;font-variant-numeric:tabular-nums}
@@ -290,12 +359,13 @@ const store = {
   del(k) { try { if (storageOK) localStorage.removeItem(k); } catch (e) { storageOK = false; } delete mem[k]; }
 };
 const prefersReduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
-const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'source', favs: [], alerts: [], pf: [] });
+const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'source', sim: true, favs: [], alerts: [], pf: [] });
 
 function sanitize(o) {
   const d = defaults();
   if (!o || typeof o !== 'object') return d;
   if (['auto', 'light', 'dark'].includes(o.theme)) d.theme = o.theme;
+  if (typeof o.sim === 'boolean') d.sim = o.sim;
   if (['full', 'reduced', 'none'].includes(o.anim)) d.anim = o.anim;
   if (['drawn', 'source'].includes(o.card)) d.card = o.card;
   if (Array.isArray(o.favs)) d.favs = [...new Set(o.favs.map(String))];
@@ -338,7 +408,7 @@ function prep(c) {
   const parts = [...new Set(String(c.pos || '').toUpperCase().match(POS_RE) || [])];
   return {
     id: String(c.id), name: String(c.name || 'Inconnu'), rating: Number(c.rating) || 0, pos: parts.length ? parts.join(', ') : String(c.pos || '').replace(/\+/g, ''), _pos: parts, playerImage: c.playerImageLarge || c.playerImage || '',
-    club: String(c.club || ''), nation: String(c.nation || ''), league: String(c.league || ''), stats: st, cardImage: c.cardImageLarge || c.cardImage || '', sm: Number(c.skillMoves) || 0, wf: Number(c.weakFoot) || 0, nationImage: c.nationImage || '', leagueImage: c.leagueImage || '', clubImage: c.clubImage || '',
+    club: String(c.club || ''), nation: String(c.nation || ''), league: String(c.league || ''), stats: st, cardImage: c.cardImageLarge || c.cardImage || '', version: String(c.version || ''), ps: (Array.isArray(c.ps) ? c.ps : []).map(function (x) { return { n: String((x && x.n) || ''), l: safeUrl((x && x.l) || ''), g: !!(x && x.g) }; }).filter(function (x) { return x.l || x.n; }), sm: Number(c.skillMoves) || 0, wf: Number(c.weakFoot) || 0, nationImage: c.nationImage || '', leagueImage: c.leagueImage || '', clubImage: c.clubImage || '',
     price, _series: series, _chg: chg, _min: min, _max: max, _avg: avg,
     _n: norm([c.name, c.club, c.nation, c.league, c.pos].join(' '))
   };
@@ -791,47 +861,203 @@ function renderPortfolio() {
    Fiche détaillée
    ===================================================================== */
 let CURID = null;
-function chartSvg(c) {
-  const s = c._series;
-  if (s.length < 2) return '<p class="muted small">Pas encore assez d\'historique pour une courbe : le robot ajoute un point à chaque passage.</p>';
-  const W = 320, H = 130, P = 10, rng = (c._max - c._min) || 1;
-  const x = (i) => P + i * (W - 2 * P) / (s.length - 1);
-  const y = (v) => (c._max === c._min ? H / 2 : H - P - (v - c._min) / rng * (H - 2 * P));
-  const pts = s.map((q, i) => x(i).toFixed(1) + ',' + y(q.p).toFixed(1)).join(' ');
-  const last = s[s.length - 1];
-  const line = (v, col) => '<line x1="' + P + '" x2="' + (W - P) + '" y1="' + y(v).toFixed(1) + '" y2="' + y(v).toFixed(1) + '" stroke="' + col + '" stroke-width="1" stroke-dasharray="4 4" opacity=".7"/>';
-  const d0 = s[0].t ? new Date(s[0].t) : null, d1 = last.t ? new Date(last.t) : null;
-  return '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Courbe de prix">' + line(c._max, 'var(--down)') + line(c._avg, 'var(--muted)') + line(c._min, 'var(--up)') +
-    '<polyline points="' + pts + '" fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>' +
-    '<circle cx="' + x(s.length - 1).toFixed(1) + '" cy="' + y(last.p).toFixed(1) + '" r="3.8" fill="var(--accent)"/></svg>' +
-    '<div class="row2 small muted" style="justify-content:space-between"><span>' + (d0 ? fmtDate(d0) : '') + '</span><span>' + s.length + ' relevés</span><span>' + (d1 ? fmtDate(d1) : '') + '</span></div>' +
-    '<div class="tri"><div><span class="small muted">Plus bas</span><b class="up">' + fmt(c._min) + '</b></div><div><span class="small muted">Moyenne</span><b>' + fmt(c._avg) + '</b></div><div><span class="small muted">Plus haut</span><b class="dn">' + fmt(c._max) + '</b></div></div>';
-}
+/* =====================================================================
+   Courbe de prix (style FUT.GG) : périodes, survol / doigt, mode simulation
+   ===================================================================== */
+const CH = { W: 360, H: 220, L: 34, R: 10, T: 12, B: 24 };
+const PERIODS = [['all', 'Tout'], ['month', 'Mois'], ['week', 'Semaine'], ['d3', '3 jours'], ['today', 'Aujourd\'hui']];
+const SPAN = { all: 90, month: 30, week: 7, d3: 3, today: 1 }; // en jours
+const NPTS = { all: 45, month: 30, week: 28, d3: 36, today: 24 };
+let CHP = 'week';
+const MONTHS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+const nowMs = () => Date.parse(DATA.updatedAt) || Date.now();
 
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function hashStr(x) { let h = 2166136261; for (let i = 0; i < x.length; i++) { h ^= x.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+// Historique SIMULÉ (démonstration) : suite de hausses et baisses par paliers de 250, qui finit au prix actuel.
+function simSeries(c, per) {
+  if (c.price == null) return [];
+  const n = NPTS[per], end = nowMs(), span = SPAN[per] * 86400000, r = rng(hashStr(c.id + per));
+  const unit = Math.max(250, Math.round(c.price * 0.015 / 250) * 250);
+  const out = new Array(n); out[n - 1] = { t: end, p: c.price };
+  for (let i = n - 2; i >= 0; i--) {
+    const step = Math.round((r() * 4 - 2)) * unit * (r() < 0.25 ? 2 : 1) || unit * (r() < 0.5 ? -1 : 1);
+    out[i] = { t: end - (n - 1 - i) * span / (n - 1), p: Math.max(250, out[i + 1].p + step) };
+  }
+  return out;
+}
+function realSeries(c, per) {
+  const lim = nowMs() - SPAN[per] * 86400000;
+  const a = c._series.filter((q) => per === 'all' || !q.t || q.t >= lim);
+  return a.length >= 2 ? a : (per === 'all' ? c._series : []);
+}
+function seriesFor(c, per) { return S.sim ? simSeries(c, per) : realSeries(c, per); }
+
+const kfmt = (v) => { const a = Math.abs(v); return a >= 1e6 ? (v / 1e6).toFixed(a >= 1e7 ? 1 : 2).replace('.', ',').replace(/,?0+$/, '') + ' M' : a >= 1e3 ? (v / 1e3).toFixed(a >= 1e4 ? 0 : 1).replace('.', ',').replace(/,0$/, '') + ' K' : String(Math.round(v)); };
+function fmtLong(t, per) { const d = new Date(t); return d.getDate() + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear() + ', ' + p2(d.getHours()) + ':' + p2(d.getMinutes()); }
+function fmtAxis(t, per) { const d = new Date(t); return per === 'today' ? p2(d.getHours()) + ' h' : d.getDate() + ' ' + MONTHS[d.getMonth()]; }
+
+function chartGeo(sr) {
+  let mn = Infinity, mx = -Infinity; for (const q of sr) { if (q.p < mn) mn = q.p; if (q.p > mx) mx = q.p; }
+  const pad = Math.max((mx - mn) * 0.12, 250); const lo = Math.max(0, mn - pad), hi = mx + pad;
+  const t0 = sr[0].t, t1 = sr[sr.length - 1].t, tsp = (t1 - t0) || 1;
+  const x = (i) => CH.L + (sr[i].t - t0) / tsp * (CH.W - CH.L - CH.R);
+  const y = (v) => CH.H - CH.B - (v - lo) / ((hi - lo) || 1) * (CH.H - CH.B - CH.T);
+  return { x, y, lo, hi, mn, mx };
+}
+function smoothPath(pts) {
+  const n = pts.length; if (n < 3) return pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
+  const dx = [], m = [], t = [];
+  for (let i = 0; i < n - 1; i++) { dx[i] = (pts[i + 1][0] - pts[i][0]) || 0.001; m[i] = (pts[i + 1][1] - pts[i][1]) / dx[i]; }
+  t[0] = m[0]; t[n - 1] = m[n - 2];
+  for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (m[i] === 0) { t[i] = 0; t[i + 1] = 0; continue; }
+    const a = t[i] / m[i], b = t[i + 1] / m[i], h = a * a + b * b;
+    if (h > 9) { const k = 3 / Math.sqrt(h); t[i] = k * a * m[i]; t[i + 1] = k * b * m[i]; }
+  }
+  let d = 'M' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(1);
+  for (let i = 0; i < n - 1; i++) {
+    const h = dx[i] / 3;
+    d += ' C' + (pts[i][0] + h).toFixed(1) + ' ' + (pts[i][1] + t[i] * h).toFixed(1) + ' ' + (pts[i + 1][0] - h).toFixed(1) + ' ' + (pts[i + 1][1] - t[i + 1] * h).toFixed(1) + ' ' + pts[i + 1][0].toFixed(1) + ' ' + pts[i + 1][1].toFixed(1);
+  }
+  return d;
+}
+function pillHtml(diff, base) {
+  if (!diff) return '<span class="pill fl">Prix actuel</span>';
+  const up = diff > 0, pc = base ? diff / base : null;
+  return '<span class="pill ' + (up ? 'up' : 'dn') + '">' + (up ? '▲ +' : '▼ −') + fmt(Math.abs(diff)) + (pc != null ? ' · ' + pct(pc) : '') + '</span>';
+}
+function chartHead(c, sr, i) {
+  const cur = c.price, q = i == null ? sr[sr.length - 1] : sr[i];
+  const diff = i == null ? (sr[sr.length - 1].p - sr[0].p) : q.p - cur;
+  const base = i == null ? sr[0].p : cur;
+  const line = i == null ? 'Sur la période · ' + fmtLong(sr[0].t) + ' → ' + fmtLong(sr[sr.length - 1].t) : fmtLong(q.t) + ' · vs actuel ' + fmt(cur);
+  return '<div class="ch-price"><span class="coin"></span><b>' + fmt(q.p) + '</b>' + pillHtml(diff, base) + '</div><div class="ch-date">' + line + '</div>';
+}
+function chartBoxHtml(c) {
+  const sr = seriesFor(c, CHP);
+  const tabs = '<div class="tabs2" role="tablist">' + PERIODS.map(([k, l]) => '<button role="tab" aria-selected="' + (k === CHP) + '" data-act="cperiod" data-p="' + k + '">' + l + '</button>').join('') + '</div>';
+  const sim = S.sim ? '<span class="simtag">Simulation (démo)</span>' : '';
+  if (sr.length < 2) return '<div class="chead"><div class="ch-left"><h3>Évolution du prix ' + sim + '</h3></div>' + tabs + '</div><p class="muted small">Pas encore assez de relevés sur cette période : le robot en ajoute un à chaque passage.</p>';
+  const { x, y, lo, hi, mn, mx } = chartGeo(sr);
+  const pts = sr.map((q, i) => [x(i), y(q.p)]);
+  const line = smoothPath(pts), base = CH.H - CH.B;
+  const area = line + ' L' + pts[pts.length - 1][0].toFixed(1) + ' ' + base + ' L' + pts[0][0].toFixed(1) + ' ' + base + ' Z';
+  const gid = 'cg' + String(c.id).replace(/[^a-z0-9]/gi, '');
+  let grid = '';
+  for (let k = 0; k <= 4; k++) { const v = lo + (hi - lo) * k / 4, yy = y(v); grid += '<line x1="' + CH.L + '" x2="' + (CH.W - CH.R) + '" y1="' + yy.toFixed(1) + '" y2="' + yy.toFixed(1) + '" stroke="var(--line)"/><text x="' + (CH.L - 5) + '" y="' + (yy + 3).toFixed(1) + '" text-anchor="end" class="cl">' + kfmt(v) + '</text>'; }
+  const nx = 5;
+  for (let k = 0; k < nx; k++) {
+    const i = Math.round(k * (sr.length - 1) / (nx - 1)), xx = x(i);
+    grid += '<line x1="' + xx.toFixed(1) + '" x2="' + xx.toFixed(1) + '" y1="' + CH.T + '" y2="' + base + '" stroke="var(--line)"/><text x="' + xx.toFixed(1) + '" y="' + (CH.H - 7) + '" text-anchor="' + (k === 0 ? 'start' : k === nx - 1 ? 'end' : 'middle') + '" class="cl">' + fmtAxis(sr[i].t, CHP) + '</text>';
+  }
+  const dots = sr.length <= 40 ? pts.map((q) => '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="2.4" fill="var(--ch)"/>').join('') : '';
+  const sum = sr.reduce((a, q) => a + q.p, 0) / sr.length;
+  return '<div class="chead"><div class="ch-left"><h3>Évolution du prix ' + sim + '</h3><div class="chhead" id="chHead">' + chartHead(c, sr, null) + '</div></div>' + tabs + '</div>' +
+    '<div class="cv" data-cv="1"><svg class="chart" viewBox="0 0 ' + CH.W + ' ' + CH.H + '" role="img" aria-label="Courbe de prix">' +
+    '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--ch)" stop-opacity=".55"/><stop offset="1" stop-color="var(--ch)" stop-opacity="0"/></linearGradient></defs>' +
+    grid + '<path d="' + area + '" fill="url(#' + gid + ')"/>' +
+    '<path d="' + line + '" fill="none" stroke="var(--ch)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>' + dots +
+    '<line class="cx" x1="0" x2="0" y1="' + CH.T + '" y2="' + base + '" stroke="var(--muted)" stroke-width="1" style="display:none"/>' +
+    '<circle class="cd" r="5.5" fill="var(--ch)" stroke="var(--bg)" stroke-width="2" style="display:none"/></svg></div>' +
+    '<div class="tri"><div><span class="small muted">Plus bas</span><b class="up">' + fmt(mn) + '</b></div><div><span class="small muted">Moyenne</span><b>' + fmt(sum) + '</b></div><div><span class="small muted">Plus haut</span><b class="dn">' + fmt(mx) + '</b></div></div>' +
+    (S.sim ? '<p class="small muted" style="margin:8px 0 0">Cette courbe est une simulation pour montrer le rendu : elle n\'utilise pas les vrais relevés. Tu peux la couper dans Réglages.</p>' : '');
+}
+// Survol (souris) ou doigt (téléphone) : on affiche le prix à cet instant dans l'en-tête.
+function chartPoint(e) {
+  const box = e.target.closest && e.target.closest('.cv'); if (!box) return;
+  const c = MAP.get(CURID); if (!c) return;
+  const sr = seriesFor(c, CHP); if (sr.length < 2) return;
+  const svg = box.querySelector('svg'), r = svg.getBoundingClientRect(); if (!r.width) return;
+  const { x, y } = chartGeo(sr);
+  const ux = (e.clientX - r.left) / r.width * CH.W;
+  let bi = 0, bd = Infinity;
+  for (let i = 0; i < sr.length; i++) { const d = Math.abs(x(i) - ux); if (d < bd) { bd = d; bi = i; } }
+  const cx = svg.querySelector('.cx'), cd = svg.querySelector('.cd');
+  cx.setAttribute('x1', x(bi)); cx.setAttribute('x2', x(bi)); cx.style.display = '';
+  cd.setAttribute('cx', x(bi)); cd.setAttribute('cy', y(sr[bi].p)); cd.style.display = '';
+  const h = $('#chHead'); if (h) h.innerHTML = chartHead(c, sr, bi);
+}
+function chartReset(box) {
+  const c = MAP.get(CURID); if (!c) return;
+  const sr = seriesFor(c, CHP); if (sr.length < 2) return;
+  const cx = box.querySelector('.cx'), cd = box.querySelector('.cd');
+  if (cx) cx.style.display = 'none'; if (cd) cd.style.display = 'none';
+  const h = $('#chHead'); if (h) h.innerHTML = chartHead(c, sr, null);
+}
+document.addEventListener('pointermove', chartPoint);
+document.addEventListener('pointerdown', chartPoint);
+document.addEventListener('pointerleave', (e) => {
+  if (e.pointerType === 'touch' || !e.target.closest) return;
+  const box = e.target.closest('.cv'); if (box) chartReset(box);
+}, true);
+function chartChrome() { return ''; }
+
+function gauge(v) {
+  const n = Math.max(0, Math.min(99, Number(v) || 0)), cls = n >= 75 ? 'gu' : n >= 50 ? 'gw' : 'gd';
+  const r = 24, cx = 27, cy = 30, L = Math.PI * r, off = L * (1 - n / 99);
+  return '<svg viewBox="0 0 54 34" class="' + cls + '" aria-hidden="true"><path d="M3 30 A24 24 0 0 1 51 30" fill="none" stroke="var(--line)" stroke-width="5" stroke-linecap="round"/><path d="M3 30 A24 24 0 0 1 51 30" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-dasharray="' + L.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"/></svg>';
+}
+const ATTR = [['PAC', 'Rythme'], ['SHO', 'Tir'], ['PAS', 'Passes'], ['DRI', 'Dribbles'], ['DEF', 'Défense'], ['PHY', 'Physique']];
+function momentumHtml(c) {
+  if (c._series.length < 2 || c.price == null) return '<p class="muted small" style="margin:0">Pas encore assez de relevés pour mesurer la tendance : le robot en ajoute un à chaque passage.</p>';
+  const mn = c._min, mx = c._max, pos = mx === mn ? 50 : Math.max(0, Math.min(100, (c.price - mn) / (mx - mn) * 100));
+  const ch = c._chg;
+  return '<div class="row2" style="justify-content:space-between"><b>Tendance du prix</b>' + (ch != null ? '<span class="pill ' + (ch >= 0 ? 'up' : 'dn') + '">' + (ch >= 0 ? '▲ ' : '▼ ') + pct(ch) + '</span>' : '') + '</div>' +
+    '<div class="momo"><i style="left:' + pos.toFixed(1) + '%"></i></div>' +
+    '<div class="momo-l"><span>Plus bas<b>' + fmt(mn) + '</b></span><span style="text-align:center">Moyenne<b>' + fmt(c._avg) + '</b></span><span style="text-align:right">Plus haut<b>' + fmt(mx) + '</b></span></div>';
+}
+function psIcon(x) {
+  return '<span class="psi' + (x.g ? ' gold' : '') + '" title="' + esc(x.n) + '">' + (x.l ? '<img src="' + esc(x.l) + '" alt="' + esc(x.n) + '" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">' : esc((x.n || '?').slice(0, 2))) + '</span>';
+}
+function psIcons(c) {
+  return c.ps && c.ps.length ? '<div class="pstyles">' + c.ps.map(psIcon).join('') + '</div>' : '';
+}
+function stars(n) { return n ? '<span style="color:#f0b429">★</span> ' + n : '—'; }
 function renderSheet() {
   const c = MAP.get(CURID); if (!c) { closeSheet(); return; }
   const fav = FAV.has(c.id);
   const al = S.alerts.filter((a) => a.cid === c.id);
-  const grid = STATK.filter((k) => c.stats[k] != null && c.stats[k] !== '').map((k) => '<div><b>' + esc(c.stats[k]) + '</b><span>' + k + '</span></div>').join('');
+  const ver = c.version ? c.version + ' ' : '';
+  const title = c.name + ' – ' + ver + c.rating + ' OVR';
+  const lead = c.name + ' ' + ver + c.rating + ' OVR' + (c._pos[0] ? ' ' + c._pos[0] : '') + (c.club ? ' (' + c.club + ')' : '') + ' sur EA FC 27. Prix, statistiques et évolution du marché.';
+  const upd = DATA.updatedAt ? new Date(DATA.updatedAt) : null;
+  const attrs = ATTR.filter(([k]) => c.stats[k] != null && c.stats[k] !== '').map(([k, l]) => {
+    const v = c.stats[k], cls = v >= 75 ? 'bg-u' : v >= 50 ? 'bg-w' : 'bg-d';
+    return '<div class="at"><div class="t">' + l + ' · ' + k + '</div><div class="v"><b class="' + (v >= 75 ? 'gu' : v >= 50 ? 'gw' : 'gd') + '">' + esc(v) + '</b>' + gauge(v) + '</div><div class="bar"><i class="' + cls + '" style="width:' + Math.min(100, v) + '%"></i></div></div>';
+  }).join('');
+  const kv = (k, v) => v ? '<div class="kv"><span>' + k + '</span><b>' + v + '</b></div>' : '';
   $('#panel').innerHTML =
-    '<div class="head">' + cardImg(c, 'lg') + '<div class="info"><h2>' + esc(c.name) + '</h2>' +
-    '<div class="chips">' + [c.pos, c.club, c.nation, c.league].filter(Boolean).map((x) => '<span>' + esc(x) + '</span>').join('') + '</div>' +
-    '<div class="big-price"><span class="coin"></span>' + fmt(c.price) + '</div>' + chgHtml(c) + '</div><button class="close" data-act="close" aria-label="Fermer">✕</button></div>' +
-    (grid ? '<div class="sgrid">' + grid + '</div>' : '') +
-    '<div class="row2" style="margin:12px 0;justify-content:center"><button class="chip" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '">' + (fav ? '★ Dans les favoris' : '☆ Ajouter aux favoris') + '</button></div>' +
-    '<div class="box"><h3>Évolution du prix</h3>' + chartSvg(c) + '</div>' +
-    '<div class="box"><h3>Alerte de prix</h3><div class="row2"><select class="field" id="alDir" style="width:auto"><option value="<=">Prix ≤</option><option value=">=">Prix ≥</option></select>' +
-    '<input class="field" id="alPrice" type="number" inputmode="numeric" min="0" placeholder="Montant" style="flex:1;min-width:110px"><button class="btn primary" data-act="addalert" data-id="' + esc(c.id) + '">Créer</button></div>' +
-    al.map((a) => '<div class="line"><span class="small">' + (a.dir === '<=' ? 'Prix ≤ ' : 'Prix ≥ ') + fmt(a.price) + (a.trig ? ' · <b>déclenchée</b>' : '') + '</span><button class="btn" data-act="delalert" data-id="' + esc(a.id) + '">Retirer</button></div>').join('') + '</div>' +
-    '<div class="box"><h3>Portefeuille</h3><div class="row2"><input class="field" id="pfBuy" type="number" inputmode="numeric" min="0" placeholder="Prix d\'achat" value="' + (c.price != null ? c.price : '') + '" style="flex:1;min-width:110px">' +
-    '<input class="field" id="pfQty" type="number" inputmode="numeric" min="1" value="1" style="width:80px" aria-label="Quantité"><button class="btn primary" data-act="addpos" data-id="' + esc(c.id) + '">Ajouter</button></div>' +
-    '<div class="small muted" style="margin-top:6px">Gain net = prix de vente × 0,95 (taxe EA 5 %) − prix d\'achat.</div></div>';
+    '<div class="pgtop"><div class="in"><button class="back" data-act="close" aria-label="Retour au marché">← Retour</button><div class="crumb"><b>Marché</b> › ' + esc(c.name) + '</div></div></div>' +
+    '<div class="pgbody"><h1>' + esc(title) + '</h1><p class="lead">' + esc(lead) + '</p>' +
+    '<div class="pg"><div class="pgl">' +
+      '<div class="card2"><div class="hero"><div class="hrow">' + cardImg(c, 'lg') + psIcons(c) + '</div>' +
+        '<button class="chip" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '">' + (fav ? '★ Dans les favoris' : '☆ Ajouter aux favoris') + '</button></div>' +
+        '<div class="mini3"><div><b>' + fmt(c.price) + '</b><span>Prix</span></div><div><b>' + (c.sm && c.wf ? c.sm + '•' + c.wf : '—') + '</b><span>Gestes · Pied faible</span></div><div><b>' + esc(c.rating) + '</b><span>Note</span></div></div></div>' +
+      (c.ps && c.ps.length ? '<div class="card2"><h3>Styles de jeu</h3><div class="pslist">' + c.ps.map(function (x) { return '<div class="r' + (x.g ? ' gold' : '') + '">' + psIcon(x) + '<b>' + esc(x.n || 'Style de jeu') + '</b>' + (x.g ? '<span class="small muted">doré</span>' : '') + '</div>'; }).join('') + '</div></div>' : '') +
+      '<div class="card2"><h3>Informations du joueur</h3>' +
+        kv('Nom', esc(c.name)) + kv('Club', esc(c.club)) + kv('Ligue', esc(c.league)) + kv('Nation', esc(c.nation)) + kv('Version', esc(c.version)) +
+        kv('Poste', esc(c.pos)) + (c.sm ? kv('Gestes techniques', stars(c.sm)) : '') + (c.wf ? kv('Pied faible', stars(c.wf)) : '') + kv('ID', esc(c.id)) + '</div>' +
+    '</div><div class="pgr">' +
+      '<div class="card2"><div class="pad"><div class="row2" style="justify-content:space-between;align-items:flex-start"><div><div class="small muted">Prix actuel (PlayStation)</div><div class="bigp"><span class="coin"></span><b>' + fmt(c.price) + '</b>' + chgHtml(c) + '</div></div></div>' +
+        '<div class="small muted" style="margin-top:8px">' + (upd && !isNaN(upd) ? 'Relevé du ' + fmtDT(upd) + ' · ' : '') + 'prix non temps réel</div></div></div>' +
+      '<div class="card2"><div class="pad">' + momentumHtml(c) + '</div></div>' +
+      (attrs ? '<div class="card2"><h3>Attributs</h3><div class="attr">' + attrs + '</div></div>' : '') +
+      '<div class="box" id="chartBox">' + chartBoxHtml(c) + '</div>' +
+      '<div class="box"><h3>Alerte de prix</h3><div class="row2"><select class="field" id="alDir" style="width:auto"><option value="<=">Prix ≤</option><option value=">=">Prix ≥</option></select>' +
+      '<input class="field" id="alPrice" type="number" inputmode="numeric" min="0" placeholder="Montant" style="flex:1;min-width:110px"><button class="btn primary" data-act="addalert" data-id="' + esc(c.id) + '">Créer</button></div>' +
+      al.map((a) => '<div class="line"><span class="small">' + (a.dir === '<=' ? 'Prix ≤ ' : 'Prix ≥ ') + fmt(a.price) + (a.trig ? ' · <b>déclenchée</b>' : '') + '</span><button class="btn" data-act="delalert" data-id="' + esc(a.id) + '">Retirer</button></div>').join('') + '</div>' +
+      '<div class="box"><h3>Portefeuille</h3><div class="row2"><input class="field" id="pfBuy" type="number" inputmode="numeric" min="0" placeholder="Prix d\'achat" value="' + (c.price != null ? c.price : '') + '" style="flex:1;min-width:110px">' +
+      '<input class="field" id="pfQty" type="number" inputmode="numeric" min="1" value="1" style="width:80px" aria-label="Quantité"><button class="btn primary" data-act="addpos" data-id="' + esc(c.id) + '">Ajouter</button></div>' +
+      '<div class="small muted" style="margin-top:6px">Gain net = prix de vente × 0,95 (taxe EA 5 %) − prix d\'achat.</div></div>' +
+    '</div></div></div>';
 }
 let lastFocus = null;
 function openSheet(id) {
   CURID = String(id); lastFocus = document.activeElement;
   renderSheet(); $('#sheet').hidden = false; document.body.classList.add('lock');
-  const b = $('#panel .close'); if (b) b.focus();
+  const b = $('#panel .back'); if (b) b.focus(); $('#panel').scrollTop = 0;
 }
 function closeSheet() {
   $('#sheet').hidden = true; document.body.classList.remove('lock'); CURID = null;
@@ -846,7 +1072,8 @@ function renderSettings() {
   $('#p4').innerHTML = '<h2>Apparence</h2><div class="box">' +
     '<label class="l" for="setTheme">Thème</label><select class="field" id="setTheme"><option value="auto">Comme mon téléphone</option><option value="light">Clair</option><option value="dark">Sombre</option></select>' +
     '<label class="l" for="setAnim">Animations</label><select class="field" id="setAnim"><option value="full">Complètes</option><option value="reduced">Réduites</option><option value="none">Aucune</option></select>' +
-    '<label class="l" for="setCard">Style des cartes</label><select class="field" id="setCard"><option value="source">Fond de la source (celui d\'avant)</option><option value="drawn">Carte dessinée par l\'appli (nette)</option></select></div>' +
+    '<label class="l" for="setCard">Style des cartes</label><select class="field" id="setCard"><option value="source">Fond de la source (celui d\'avant)</option><option value="drawn">Carte dessinée par l\'appli (nette)</option></select>' +
+    '<label class="l" for="setSim">Courbe de prix simulée (démonstration)</label><select class="field" id="setSim"><option value="1">Oui, historique simulé</option><option value="0">Non, vrais relevés du robot</option></select></div>' +
     '<h2>Mes données</h2><div class="box">' +
     (storageOK ? '' : '<div class="note" style="margin-top:0">Ton navigateur bloque la sauvegarde : tes favoris, alertes et portefeuille seront perdus à la fermeture. Pense à faire une sauvegarde.</div>') +
     '<p class="small muted" style="margin-top:0">Favoris, alertes et portefeuille restent sur cet appareil. Fais une sauvegarde avant de changer de téléphone ou de vider ton navigateur.</p>' +
@@ -856,7 +1083,7 @@ function renderSettings() {
     '<h2>Remise à zéro</h2><div class="box"><p class="small muted" style="margin-top:0">Efface tes favoris, alertes, portefeuille et réglages sur cet appareil. Les prix ne sont pas touchés.</p><button class="btn danger" data-act="reset">Tout remettre à zéro</button></div>' +
     '<h2>À propos</h2><div class="box small muted">Dernière mise à jour des prix : <b>' + (d && !isNaN(d) ? fmtDT(d) : 'aucune') + '</b><br>Cartes : <b>' + fmt(CARDS.length) + '</b> · Source : ' + esc(DATA.source || '—') +
     '<br><br>Les prix ne sont pas en temps réel (jusqu\'à environ 2 jours de retard). Les gains et conseils sont des estimations. Application non officielle, sans lien avec EA.</div>';
-  $('#setCard').value = S.card; $('#setTheme').value = S.theme; $('#setAnim').value = S.anim;
+  $('#setCard').value = S.card; $('#setSim').value = S.sim ? '1' : '0'; $('#setTheme').value = S.theme; $('#setAnim').value = S.anim;
 }
 function download(name, text) {
   const a = document.createElement('a');
@@ -911,6 +1138,7 @@ document.addEventListener('click', (e) => {
   switch (act) {
     case 'open': openSheet(id); break;
     case 'close': closeSheet(); break;
+    case 'cperiod': { CHP = el.dataset.p; const c = MAP.get(CURID); if (c) $('#chartBox').innerHTML = chartBoxHtml(c); break; }
     case 'fav': {
       if (FAV.has(id)) FAV.delete(id); else FAV.add(id);
       S.favs = [...FAV]; save();
@@ -952,6 +1180,7 @@ document.addEventListener('change', (e) => {
   const t = e.target;
   if (t.id === 'setTheme') { S.theme = t.value; save(); applyLook(); }
   else if (t.id === 'setAnim') { S.anim = t.value; save(); applyLook(); }
+  else if (t.id === 'setSim') { S.sim = t.value === '1'; save(); if (!$('#sheet').hidden) renderSheet(); }
   else if (t.id === 'setCard') { S.card = t.value; save(); renderMarket(); renderActive(); }
   else if (t.id === 'importFile' && t.files && t.files[0]) {
     const r = new FileReader(); r.onload = () => restore(String(r.result)); r.onerror = () => toast('Lecture du fichier impossible'); r.readAsText(t.files[0]); t.value = '';
