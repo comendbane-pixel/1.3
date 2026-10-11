@@ -323,8 +323,8 @@ function prep(c) {
   const st = (c.stats && typeof c.stats === 'object') ? c.stats : {};
   const parts = [...new Set(String(c.pos || '').toUpperCase().match(POS_RE) || [])];
   return {
-    id: String(c.id), name: String(c.name || 'Inconnu'), rating: Number(c.rating) || 0, pos: parts.length ? parts.join(', ') : String(c.pos || '').replace(/\+/g, ''), _pos: parts, playerImage: c.playerImage || '',
-    club: String(c.club || ''), nation: String(c.nation || ''), league: String(c.league || ''), stats: st, cardImage: c.cardImage || '',
+    id: String(c.id), name: String(c.name || 'Inconnu'), rating: Number(c.rating) || 0, pos: parts.length ? parts.join(', ') : String(c.pos || '').replace(/\+/g, ''), _pos: parts, playerImage: c.playerImageLarge || c.playerImage || '',
+    club: String(c.club || ''), nation: String(c.nation || ''), league: String(c.league || ''), stats: st, cardImage: c.cardImageLarge || c.cardImage || '',
     price, _series: series, _chg: chg, _min: min, _max: max, _avg: avg,
     _n: norm([c.name, c.club, c.nation, c.league, c.pos].join(' '))
   };

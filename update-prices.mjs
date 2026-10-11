@@ -143,10 +143,12 @@ function normPlayer(p) {
     stats: normStats(p),
     cardImage: String(pick(p, ['cardImage', 'card_image', 'card_image_url', 'card_url', 'image_url', 'image']) ?? ''),
     playerImage: '',
+    cardImageLarge: String(pick(p, ['card_image_large_url', 'cardImageLarge', 'card_image_large']) ?? ''),
+    playerImageLarge: String(pick(p, ['image_large', 'imageLarge', 'player_image_large']) ?? ''),
     price: toPrice(pick(p, ['price', 'ps_price', 'current_price', 'lowest_price', 'prices'])),
     history: [],
   };
-  out.playerImage = findPlayerImage(p, out.cardImage);
+  out.playerImage = out.playerImageLarge || findPlayerImage(p, out.cardImage);
   return out;
 }
 
@@ -252,7 +254,7 @@ function mergeCard(map, fresh, now) {
     return;
   }
   // On garde les anciennes infos si la nouvelle réponse n'en a pas.
-  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage', 'playerImage']) {
+  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage', 'playerImage', 'cardImageLarge', 'playerImageLarge']) {
     if (fresh[k]) old[k] = fresh[k];
   }
   if (fresh.rating) old.rating = fresh.rating;
@@ -326,6 +328,7 @@ async function modeList(data) {
     }
     const arr = raw.map(normPlayer).filter(Boolean);
     if (page === start && arr[0]) console.log('Photo du joueur trouvée : ' + (arr[0].playerImage ? 'oui' : 'non'));
+    if (page === start && arr[0]) console.log('Image de carte HD trouvée : ' + (arr[0].cardImageLarge ? 'oui' : 'non') + ' | photo HD : ' + (arr[0].playerImageLarge ? 'oui' : 'non'));
     if (!arr.length) { console.log('Page vide : fin du catalogue.'); finished = true; break; }
     for (const c of arr) mergeCard(map, c, now);
     total += arr.length;
