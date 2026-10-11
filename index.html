@@ -73,16 +73,16 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .cardbox{display:block;flex:none;aspect-ratio:3/4;position:relative;container-type:inline-size;--fx:30%;--fy:13%;--fw:62%}
 .cardbox .face{position:absolute;left:var(--fx);top:var(--fy);width:var(--fw);height:auto;object-fit:contain;pointer-events:none}
 .cardbox img.bg{display:block;width:100%;height:100%;object-fit:contain}
-.ov{position:absolute;inset:0;color:#fff;text-shadow:0 0 2px #000,0 0 3px #000,0 1px 4px rgba(0,0,0,.8);pointer-events:none}
-.ov .r{position:absolute;left:14%;top:10%;font-weight:800;font-size:16cqw;line-height:1}
-.ov .p{position:absolute;left:14%;top:26%;font-weight:700;font-size:8cqw;line-height:1}
-.ov .n{position:absolute;left:5%;right:5%;top:61%;text-align:center;font-weight:800;font-size:8.5cqw;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ov .s{position:absolute;left:14%;right:14%;top:72%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
-.ov .s b{display:block;font-size:8cqw;line-height:1.1}
-.ov .s i{display:block;font-style:normal;font-size:5cqw;font-weight:700;opacity:.8}
-.ov img{position:absolute;left:11%;width:15cqw;height:auto;max-height:15cqw;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
-.ov img.nat{top:35%}
-.ov img.clb{top:46%}
+.ov{--g:#f2d37a;position:absolute;inset:0;color:#fff;text-shadow:0 0 2px rgba(0,0,0,.9),0 1px 3px rgba(0,0,0,.8);pointer-events:none}
+.cardbox.lt .ov{--g:#1b1608;color:#1b1608;text-shadow:0 1px 0 rgba(255,255,255,.35)}
+.ov .r{position:absolute;left:14%;top:10%;font-weight:800;font-size:16cqw;line-height:1;color:var(--g)}
+.ov .p{position:absolute;left:14%;top:26%;font-weight:700;font-size:8cqw;line-height:1;color:var(--g)}
+.ov .n{position:absolute;left:5%;right:5%;top:59%;text-align:center;font-weight:800;font-size:9cqw;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--g)}
+.ov .s{position:absolute;left:8%;right:8%;top:68%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
+.ov .s i{display:block;font-style:normal;font-size:5.4cqw;font-weight:800;color:var(--g);line-height:1.1}
+.ov .s b{display:block;font-size:8.5cqw;line-height:1.15}
+.ov .bd{position:absolute;left:0;right:0;top:82%;display:flex;justify-content:center;align-items:center;gap:6cqw}
+.ov .bd img{height:11cqw;width:auto;max-width:16cqw;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
 .cardbox.sm{width:50px}
 .cardbox.md{width:min(150px,80%)}
 .cardbox.lg{width:132px}
@@ -403,8 +403,11 @@ function countdown(d) {
    ===================================================================== */
 // Texte posé sur la carte : note, poste, nom, stats (le fond et la photo ne changent pas).
 function ovHtml(c) {
-  const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><b>' + esc(c.stats[k]) + '</b><i>' + k + '</i></div>' : '').join('');
-  return '<span class="ov"><span class="r">' + esc(c.rating || '?') + '</span><span class="p">' + esc(c._pos[0] || '') + '</span>' + (safeUrl(c.nationImage) ? '<img class="nat" data-face="1" loading="lazy" referrerpolicy="no-referrer" alt="" src="' + esc(safeUrl(c.nationImage)) + '">' : '') + (safeUrl(c.clubImage) ? '<img class="clb" data-face="1" loading="lazy" referrerpolicy="no-referrer" alt="" src="' + esc(safeUrl(c.clubImage)) + '">' : '') + '<span class="n">' + esc(c.name) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + '</span>';
+  const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><i>' + k + '</i><b>' + esc(c.stats[k]) + '</b></div>' : '').join('');
+  const im = (u) => safeUrl(u) ? '<img data-face="1" loading="lazy" referrerpolicy="no-referrer" alt="" src="' + esc(safeUrl(u)) + '">' : '';
+  const bd = im(c.nationImage) + im(c.clubImage);
+  return '<span class="ov"><span class="r">' + esc(c.rating || '?') + '</span><span class="p">' + esc(c._pos[0] || '') + '</span>' +
+    '<span class="n">' + esc(c.name) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + (bd ? '<span class="bd">' + bd + '</span>' : '') + '</span>';
 }
 function drawnCard(c, size) {
   const f = safeUrl(c.playerImage);
@@ -461,9 +464,20 @@ function upscale(img) {
   d.data.set(o); ctx.putImageData(d, 0, 0);
   return src.toDataURL('image/png');
 }
+// Fond clair (ex. cartes blanches) : le texte passe en noir. On mesure la luminosité du bas de la carte.
+function lightBottom(img) {
+  const c = document.createElement('canvas'); c.width = 8; c.height = 8;
+  const x = c.getContext('2d');
+  x.drawImage(img, 0, img.naturalHeight * 0.55, img.naturalWidth, img.naturalHeight * 0.4, 0, 0, 8, 8);
+  const d = x.getImageData(0, 0, 8, 8).data; let sum = 0, n = 0;
+  for (let i = 0; i < d.length; i += 4) { if (d[i + 3] > 100) { sum += d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11; n++; } }
+  return n ? sum / n > 165 : false;
+}
 document.addEventListener('load', (e) => {
   const t = e.target;
-  if (!t || t.tagName !== 'IMG' || !t.classList.contains('bg') || t.dataset.up) return;
+  if (!t || t.tagName !== 'IMG' || !t.classList.contains('bg')) return;
+  if (!t.dataset.lum) { t.dataset.lum = '1'; try { if (lightBottom(t) && t.parentNode) t.parentNode.classList.add('lt'); } catch (err) { } }
+  if (t.dataset.up) return;
   const key = t.currentSrc || t.src;
   if (UP.has(key)) { const v = UP.get(key); if (v) { t.dataset.up = '1'; t.src = v; } return; }
   let v = null;
