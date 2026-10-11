@@ -80,8 +80,8 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .cardbox.gd .ov{--g:#f4d97e;text-shadow:none}
 .cardbox.cr .ov{--g:#ece7da;text-shadow:none}
 .cardbox.lt .ov{--g:#2e2308;text-shadow:none}
-.ov .r{position:absolute;left:17%;top:17%;font-weight:800;font-size:15cqw;line-height:1}
-.ov .p{position:absolute;left:17%;top:31%;font-weight:700;font-size:8.5cqw;line-height:1}
+.ov .r{position:absolute;left:11%;width:18%;text-align:center;top:17%;font-weight:800;font-size:15cqw;line-height:1}
+.ov .p{position:absolute;left:11%;width:18%;text-align:center;top:31%;font-weight:700;font-size:8.5cqw;line-height:1}
 .ov .n{position:absolute;left:5%;right:5%;top:60%;text-align:center;font-weight:800;font-size:9.5cqw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ov .s{position:absolute;left:10%;right:10%;top:68.5%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
 .ov .s i{display:block;font-style:normal;font-size:5.6cqw;font-weight:700;line-height:1.1}
@@ -148,7 +148,8 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .sg i{display:block;font-style:normal;font-size:9.5px;color:var(--muted);font-weight:600}
 .stats{font-size:10.5px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pr{font-weight:800;font-size:16px;color:var(--warn);font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;gap:5px}
-.coin{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#e0a800 70%);flex:none}
+.coin{width:15px;height:15px;border-radius:50%;flex:none;position:relative;background:radial-gradient(circle at 32% 28%,#fff3c2,#f0b429 55%,#b57e00);box-shadow:0 0 0 1px #8a5d00,inset 0 0 0 2px rgba(255,255,255,.35)}
+.coin::after{content:"";position:absolute;inset:4px;border-radius:50%;border:1.5px solid rgba(120,80,0,.55)}
 .chg{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
 .up{color:var(--up)}.dn{color:var(--down)}.fl{color:var(--muted)}
 .star{position:absolute;top:4px;right:4px;width:36px;height:36px;border:0;background:none;font-size:22px;line-height:1;color:var(--muted)}
