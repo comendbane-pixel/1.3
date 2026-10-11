@@ -74,7 +74,7 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .cardbox .face{position:absolute;left:var(--fx);top:var(--fy);width:var(--fw);height:auto;object-fit:contain;pointer-events:none}
 .cardbox img.bg{display:block;width:100%;height:100%;object-fit:contain}
 .cardbox.sm{width:50px}
-.cardbox.md{width:min(112px,62%)}
+.cardbox.md{width:min(150px,80%)}
 .cardbox.lg{width:132px}
 .cardbox.fb{background:#9aa0a6;display:flex;align-items:center;justify-content:center}
 .cardbox.fb b{font-size:20px;color:#fff}
@@ -104,6 +104,10 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .nm{font-weight:700;font-size:14px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nm .rt{font-weight:600;color:var(--muted);margin-left:4px}
 .sub{font-size:11.5px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sg{display:grid;grid-template-columns:repeat(6,1fr);width:100%;gap:2px;margin-top:2px}
+.sg div{text-align:center;line-height:1.15}
+.sg b{display:block;font-size:13px;font-weight:800}
+.sg i{display:block;font-style:normal;font-size:9.5px;color:var(--muted);font-weight:600}
 .stats{font-size:10.5px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pr{font-weight:800;font-size:16px;color:var(--warn);font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;gap:5px}
 .coin{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#e0a800 70%);flex:none}
@@ -390,6 +394,10 @@ function statsLine(c) {
   const a = STATK.filter((k) => c.stats[k] != null && c.stats[k] !== '').map((k) => k + ' ' + esc(c.stats[k]));
   return a.join(' · ');
 }
+function statsGrid(c) {
+  const a = STATK.filter((k) => c.stats[k] != null && c.stats[k] !== '');
+  return a.length ? '<div class="sg">' + a.map((k) => '<div><b>' + esc(c.stats[k]) + '</b><i>' + k + '</i></div>').join('') + '</div>' : '';
+}
 function subLine(c) { return [c.pos, c.club, c.nation].filter(Boolean).map(esc).join(' · '); }
 
 /* =====================================================================
@@ -445,7 +453,7 @@ function rowHtml(c) {
   const fav = FAV.has(c.id);
   return '<div class="tile"><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'md') +
     '<div class="nm">' + esc(c.name) + '<span class="rt">' + esc(c.rating) + '</span></div><div class="sub">' + subLine(c) + '</div>' +
-    '<div class="pr"><span class="coin"></span>' + fmt(c.price) + '</div>' + chgHtml(c) + '</button>' +
+    statsGrid(c) + '<div class="pr"><span class="coin"></span>' + fmt(c.price) + '</div>' + chgHtml(c) + '</button>' +
     '<button class="star" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '" aria-label="' + (fav ? 'Retirer des favoris' : 'Ajouter aux favoris') + ' : ' + esc(c.name) + '">' + (fav ? '★' : '☆') + '</button></div>';
 }
 
