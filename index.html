@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0c11" id="metaTheme">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap">
 <title>FC27 Companion</title>
 <style>
 :root{
@@ -70,19 +72,22 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 /* ---------- cartes (image de la source, rien dessus) ---------- */
 /* Photo du joueur posée sur le fond de carte. Pour la déplacer ou la grossir, change ces 3 nombres :
    --fx = distance depuis la gauche, --fy = distance depuis le haut, --fw = largeur (en % de la carte). */
-.cardbox{display:block;flex:none;aspect-ratio:3/4;position:relative;container-type:inline-size;--fx:30%;--fy:13%;--fw:62%}
+.cardbox{display:block;flex:none;aspect-ratio:3/4;position:relative;container-type:inline-size;--fx:17%;--fy:7%;--fw:70%}
 .cardbox .face{position:absolute;left:var(--fx);top:var(--fy);width:var(--fw);height:auto;object-fit:contain;pointer-events:none}
 .cardbox img.bg{display:block;width:100%;height:100%;object-fit:contain}
-.ov{--g:#f2d37a;position:absolute;inset:0;color:#fff;text-shadow:0 0 2px rgba(0,0,0,.9),0 1px 3px rgba(0,0,0,.8);pointer-events:none}
-.cardbox.lt .ov{--g:#1b1608;color:#1b1608;text-shadow:0 1px 0 rgba(255,255,255,.35)}
-.ov .r{position:absolute;left:14%;top:10%;font-weight:800;font-size:16cqw;line-height:1;color:var(--g)}
-.ov .p{position:absolute;left:14%;top:26%;font-weight:700;font-size:8cqw;line-height:1;color:var(--g)}
-.ov .n{position:absolute;left:5%;right:5%;top:59%;text-align:center;font-weight:800;font-size:9cqw;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--g)}
-.ov .s{position:absolute;left:8%;right:8%;top:68%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
-.ov .s i{display:block;font-style:normal;font-size:5.4cqw;font-weight:800;color:var(--g);line-height:1.1}
-.ov .s b{display:block;font-size:8.5cqw;line-height:1.15}
-.ov .bd{position:absolute;left:0;right:0;top:82%;display:flex;justify-content:center;align-items:center;gap:6cqw}
-.ov .bd img{height:11cqw;width:auto;max-width:16cqw;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.ov{font-family:'Barlow Condensed','Arial Narrow','Roboto Condensed',sans-serif;--g:#fff;position:absolute;inset:0;color:var(--g);text-shadow:0 0 2px rgba(0,0,0,.9),0 1px 3px rgba(0,0,0,.8);pointer-events:none}
+/* Couleur du texte selon la carte : violet/foncé coloré = doré, noir = crème, clair (or, icône) = brun foncé */
+.cardbox.gd .ov{--g:#f4d97e;text-shadow:none}
+.cardbox.cr .ov{--g:#ece7da;text-shadow:none}
+.cardbox.lt .ov{--g:#2e2308;text-shadow:none}
+.ov .r{position:absolute;left:13%;top:11%;font-weight:800;font-size:15cqw;line-height:1}
+.ov .p{position:absolute;left:13%;top:25%;font-weight:700;font-size:8.5cqw;line-height:1}
+.ov .n{position:absolute;left:5%;right:5%;top:65%;text-align:center;font-weight:800;font-size:8.5cqw;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov .s{position:absolute;left:10%;right:10%;top:74%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
+.ov .s i{display:block;font-style:normal;font-size:5.6cqw;font-weight:700;line-height:1.1}
+.ov .s b{display:block;font-size:7.6cqw;line-height:1.15}
+.ov .bd{position:absolute;left:0;right:0;top:87%;display:flex;justify-content:center;align-items:center;gap:6cqw}
+.ov .bd img{height:9cqw;width:auto;max-width:16cqw;object-fit:contain;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
 .cardbox.sm{width:50px}
 .cardbox.md{width:min(150px,80%)}
 .cardbox.lg{width:132px}
@@ -327,7 +332,7 @@ function prep(c) {
   const parts = [...new Set(String(c.pos || '').toUpperCase().match(POS_RE) || [])];
   return {
     id: String(c.id), name: String(c.name || 'Inconnu'), rating: Number(c.rating) || 0, pos: parts.length ? parts.join(', ') : String(c.pos || '').replace(/\+/g, ''), _pos: parts, playerImage: c.playerImageLarge || c.playerImage || '',
-    club: String(c.club || ''), nation: String(c.nation || ''), league: String(c.league || ''), stats: st, cardImage: c.cardImageLarge || c.cardImage || '', nationImage: c.nationImage || '', clubImage: c.clubImage || '',
+    club: String(c.club || ''), nation: String(c.nation || ''), league: String(c.league || ''), stats: st, cardImage: c.cardImageLarge || c.cardImage || '', nationImage: c.nationImage || '', leagueImage: c.leagueImage || '', clubImage: c.clubImage || '',
     price, _series: series, _chg: chg, _min: min, _max: max, _avg: avg,
     _n: norm([c.name, c.club, c.nation, c.league, c.pos].join(' '))
   };
@@ -405,7 +410,7 @@ function countdown(d) {
 function ovHtml(c) {
   const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><i>' + k + '</i><b>' + esc(c.stats[k]) + '</b></div>' : '').join('');
   const im = (u) => safeUrl(u) ? '<img data-face="1" loading="lazy" referrerpolicy="no-referrer" alt="" src="' + esc(safeUrl(u)) + '">' : '';
-  const bd = im(c.nationImage) + im(c.clubImage);
+  const bd = im(c.nationImage) + im(c.leagueImage) + im(c.clubImage);
   return '<span class="ov"><span class="r">' + esc(c.rating || '?') + '</span><span class="p">' + esc(c._pos[0] || '') + '</span>' +
     '<span class="n">' + esc(c.name) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + (bd ? '<span class="bd">' + bd + '</span>' : '') + '</span>';
 }
@@ -465,18 +470,29 @@ function upscale(img) {
   return src.toDataURL('image/png');
 }
 // Fond clair (ex. cartes blanches) : le texte passe en noir. On mesure la luminosité du bas de la carte.
-function lightBottom(img) {
+function tone(img) {
   const c = document.createElement('canvas'); c.width = 8; c.height = 8;
   const x = c.getContext('2d');
   x.drawImage(img, 0, img.naturalHeight * 0.55, img.naturalWidth, img.naturalHeight * 0.4, 0, 0, 8, 8);
-  const d = x.getImageData(0, 0, 8, 8).data; let sum = 0, n = 0;
-  for (let i = 0; i < d.length; i += 4) { if (d[i + 3] > 100) { sum += d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11; n++; } }
-  return n ? sum / n > 165 : false;
+  const d = x.getImageData(0, 0, 8, 8).data; let R = 0, G = 0, B = 0, n = 0;
+  for (let i = 0; i < d.length; i += 4) { if (d[i + 3] > 100) { R += d[i]; G += d[i + 1]; B += d[i + 2]; n++; } }
+  if (!n) return '';
+  R /= n; G /= n; B /= n;
+  const lum = R * 0.3 + G * 0.59 + B * 0.11, sat = Math.max(R, G, B) - Math.min(R, G, B);
+  return lum >= 120 ? 'lt' : sat > 40 ? 'gd' : 'cr';
 }
 document.addEventListener('load', (e) => {
   const t = e.target;
   if (!t || t.tagName !== 'IMG' || !t.classList.contains('bg')) return;
-  if (!t.dataset.lum) { t.dataset.lum = '1'; try { if (lightBottom(t) && t.parentNode) t.parentNode.classList.add('lt'); } catch (err) { } }
+  if (!t.dataset.lum && t.naturalWidth) {
+    t.dataset.lum = '1';
+    const box = t.parentNode;
+    if (box) {
+      box.style.aspectRatio = t.naturalWidth + ' / ' + t.naturalHeight; // le cadre prend la forme exacte de la carte
+      let k = ''; try { k = tone(t); } catch (err) { k = /icon|hero/i.test(t.currentSrc || t.src) ? 'lt' : ''; }
+      if (k) box.classList.add(k);
+    }
+  }
   if (t.dataset.up) return;
   const key = t.currentSrc || t.src;
   if (UP.has(key)) { const v = UP.get(key); if (v) { t.dataset.up = '1'; t.src = v; } return; }

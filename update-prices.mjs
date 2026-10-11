@@ -146,6 +146,7 @@ function normPlayer(p) {
     cardImageLarge: String(pick(p, ['card_image_large_url', 'cardImageLarge', 'card_image_large']) ?? ''),
     playerImageLarge: String(pick(p, ['image_large', 'imageLarge', 'player_image_large']) ?? ''),
     nationImage: String(pick(p, ['nation_image', 'nationImage', 'nation_image_url', 'flag_image']) ?? ''),
+    leagueImage: String(pick(p, ['league_image', 'leagueImage', 'league_image_url', 'league_badge']) ?? ''),
     clubImage: String(pick(p, ['club_image', 'clubImage', 'club_image_url', 'badge_image']) ?? ''),
     price: toPrice(pick(p, ['price', 'ps_price', 'current_price', 'lowest_price', 'prices'])),
     history: [],
@@ -256,7 +257,7 @@ function mergeCard(map, fresh, now) {
     return;
   }
   // On garde les anciennes infos si la nouvelle réponse n'en a pas.
-  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage', 'playerImage', 'cardImageLarge', 'playerImageLarge', 'nationImage', 'clubImage']) {
+  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage', 'playerImage', 'cardImageLarge', 'playerImageLarge', 'nationImage', 'clubImage', 'leagueImage']) {
     if (fresh[k]) old[k] = fresh[k];
   }
   if (fresh.rating) old.rating = fresh.rating;
