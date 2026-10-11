@@ -271,7 +271,7 @@ const store = {
   del(k) { try { if (storageOK) localStorage.removeItem(k); } catch (e) { storageOK = false; } delete mem[k]; }
 };
 const prefersReduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
-const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'drawn', favs: [], alerts: [], pf: [] });
+const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'source', favs: [], alerts: [], pf: [] });
 
 function sanitize(o) {
   const d = defaults();
@@ -409,7 +409,7 @@ function drawnCard(c, size) {
     '<span class="fc-b"><span>' + esc(c.nation.slice(0, 3)) + '</span><span>' + esc(c.club.slice(0, 3)) + '</span></span></span>';
 }
 function cardImg(c, size) {
-  if (S.card !== 'source') return drawnCard(c, size);
+  if (S.card === 'drawn') return drawnCard(c, size);
   const u = safeUrl(c.cardImage);
   if (!u) return '<span class="cardbox fb ' + size + '"><b>' + esc(c.rating || '?') + '</b></span>';
   const f = safeUrl(c.playerImage);
@@ -420,16 +420,57 @@ function cardImg(c, size) {
     const cand = [q.replace('/cards/tiny/', '/cards/large/'), q.replace('/cards/tiny/', '/cards/big/'), q, u].filter((x, i, a2) => a2.indexOf(x) === i);
     first = cand[0]; alts = cand.slice(1).join(' ');
   }
-  const alt = alts ? ' data-alts="' + esc(alts) + '"' : '';
-  return '<span class="cardbox ' + size + '"><img class="bg" src="' + esc(first) + '"' + alt + ' alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-r="' + esc(c.rating || '?') + '">' +
+  const alt = (alts ? ' data-alts="' + esc(alts) + '"' : '') + ' data-all="' + esc(first + (alts ? ' ' + alts : '')) + '"';
+  return '<span class="cardbox ' + size + '"><img class="bg" src="' + esc(first) + '"' + alt + ' alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" crossorigin="anonymous" data-r="' + esc(c.rating || '?') + '">' +
     (f ? '<img class="face" src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1">' : '') + (size === 'sm' ? '' : ovHtml(c)) + '</span>';
 }
+// Netteté : le fond de la source est minuscule (64 px). On l'agrandit en plusieurs étapes avec lissage,
+// puis on accentue légèrement les bords. Résultat gardé en mémoire (le même fond sert à beaucoup de cartes).
+const UP = new Map();
+function upscale(img) {
+  const w0 = img.naturalWidth, h0 = img.naturalHeight;
+  if (!w0 || !h0 || w0 >= 300) return null;
+  let src = img, w = w0, h = h0;
+  const tw = Math.min(Math.round(w0 * 5), 360);
+  while (w < tw) {
+    const nw = Math.min(w * 2, tw), nh = Math.round(h * nw / w);
+    const c = document.createElement('canvas'); c.width = nw; c.height = nh;
+    const x = c.getContext('2d'); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high';
+    x.drawImage(src, 0, 0, nw, nh); src = c; w = nw; h = nh;
+  }
+  const ctx = src.getContext('2d');
+  const d = ctx.getImageData(0, 0, w, h), a = d.data, o = new Uint8ClampedArray(a);
+  const k = 0.45;
+  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+    const i = (y * w + x) * 4;
+    if (a[i + 3] < 8) continue;
+    for (let ch = 0; ch < 3; ch++) {
+      const j = i + ch;
+      const v = a[j] * (1 + 4 * k) - k * (a[j - 4] + a[j + 4] + a[j - w * 4] + a[j + w * 4]);
+      o[j] = v;
+    }
+  }
+  d.data.set(o); ctx.putImageData(d, 0, 0);
+  return src.toDataURL('image/png');
+}
+document.addEventListener('load', (e) => {
+  const t = e.target;
+  if (!t || t.tagName !== 'IMG' || !t.classList.contains('bg') || t.dataset.up) return;
+  const key = t.currentSrc || t.src;
+  if (UP.has(key)) { const v = UP.get(key); if (v) { t.dataset.up = '1'; t.src = v; } return; }
+  let v = null;
+  try { v = upscale(t); } catch (err) { v = null; }
+  UP.set(key, v);
+  if (v) { t.dataset.up = '1'; t.src = v; }
+}, true);
 // Si le fond ne charge pas : cadre gris avec la note. Si la photo ne charge pas : on l'enlève, le fond reste seul.
 document.addEventListener('error', (e) => {
   const t = e.target;
   if (!t || t.tagName !== 'IMG' || !t.dataset || !t.parentNode) return;
   if (t.dataset.face) { t.remove(); return; }
   if (t.dataset.alts) { const l = t.dataset.alts.split(' '); const o = l.shift(); if (l.length) t.dataset.alts = l.join(' '); else delete t.dataset.alts; t.src = o; return; }
+  // Toutes les adresses ont échoué avec l'accès avancé (netteté) : on recommence une fois sans, comme avant.
+  if (t.hasAttribute('crossorigin') && t.dataset.all) { t.removeAttribute('crossorigin'); const l = t.dataset.all.split(' '); t.dataset.all = ''; const o = l.shift(); t.dataset.alts = l.join(' '); if (!l.length) delete t.dataset.alts; t.src = o; return; }
   if (t.dataset.r !== undefined) {
     const box = t.parentNode; box.classList.add('fb'); box.innerHTML = '<b>' + esc(t.dataset.r) + '</b>';
   }
@@ -749,7 +790,7 @@ function renderSettings() {
   $('#p4').innerHTML = '<h2>Apparence</h2><div class="box">' +
     '<label class="l" for="setTheme">Thème</label><select class="field" id="setTheme"><option value="auto">Comme mon téléphone</option><option value="light">Clair</option><option value="dark">Sombre</option></select>' +
     '<label class="l" for="setAnim">Animations</label><select class="field" id="setAnim"><option value="full">Complètes</option><option value="reduced">Réduites</option><option value="none">Aucune</option></select>' +
-    '<label class="l" for="setCard">Style des cartes</label><select class="field" id="setCard"><option value="drawn">Carte nette (dessinée par l\'appli)</option><option value="source">Fond de la source (flou si petit)</option></select></div>' +
+    '<label class="l" for="setCard">Style des cartes</label><select class="field" id="setCard"><option value="source">Fond de la source (celui d\'avant)</option><option value="drawn">Carte dessinée par l\'appli (nette)</option></select></div>' +
     '<h2>Mes données</h2><div class="box">' +
     (storageOK ? '' : '<div class="note" style="margin-top:0">Ton navigateur bloque la sauvegarde : tes favoris, alertes et portefeuille seront perdus à la fermeture. Pense à faire une sauvegarde.</div>') +
     '<p class="small muted" style="margin-top:0">Favoris, alertes et portefeuille restent sur cet appareil. Fais une sauvegarde avant de changer de téléphone ou de vider ton navigateur.</p>' +
