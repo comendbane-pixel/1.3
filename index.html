@@ -360,7 +360,10 @@ function cardImg(c, size) {
   const u = safeUrl(c.cardImage);
   if (!u) return '<span class="cardbox fb ' + size + '"><b>' + esc(c.rating || '?') + '</b></span>';
   const f = safeUrl(c.playerImage);
-  return '<span class="cardbox ' + size + '"><img class="bg" src="' + esc(u) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-r="' + esc(c.rating || '?') + '">' +
+  // Grande carte : on essaie d'abord la version large du même fond (plus nette). Si elle n'existe pas, on garde l'originale.
+  const big = size === 'sm' ? u : u.replace('/cards/tiny/', '/cards/large/').split('?')[0];
+  const alt = big !== u ? ' data-alt="' + esc(u) + '"' : '';
+  return '<span class="cardbox ' + size + '"><img class="bg" src="' + esc(big) + '"' + alt + ' alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-r="' + esc(c.rating || '?') + '">' +
     (f ? '<img class="face" src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1">' : '') + '</span>';
 }
 // Si le fond ne charge pas : cadre gris avec la note. Si la photo ne charge pas : on l'enlève, le fond reste seul.
@@ -368,6 +371,7 @@ document.addEventListener('error', (e) => {
   const t = e.target;
   if (!t || t.tagName !== 'IMG' || !t.dataset || !t.parentNode) return;
   if (t.dataset.face) { t.remove(); return; }
+  if (t.dataset.alt) { const o = t.dataset.alt; delete t.dataset.alt; t.src = o; return; }
   if (t.dataset.r !== undefined) {
     const box = t.parentNode; box.classList.add('fb'); box.innerHTML = '<b>' + esc(t.dataset.r) + '</b>';
   }
