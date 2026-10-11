@@ -149,6 +149,9 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .stats{font-size:10.5px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pr{font-weight:800;font-size:16px;color:var(--warn);font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;gap:5px}
 .coin{width:15px;height:15px;border-radius:50%;flex:none;position:relative;background:radial-gradient(circle at 32% 28%,#fff3c2,#f0b429 55%,#b57e00);box-shadow:0 0 0 1px #8a5d00,inset 0 0 0 2px rgba(255,255,255,.35)}
+.customcoin .coin{background:url(coin.png) center/contain no-repeat;box-shadow:none;border-radius:0;width:20px;height:20px}
+.customcoin .coin::after{display:none}
+.customcoin .big-price .coin{width:26px;height:26px}
 .coin::after{content:"";position:absolute;inset:4px;border-radius:50%;border:1.5px solid rgba(120,80,0,.55)}
 .chg{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
 .up{color:var(--up)}.dn{color:var(--down)}.fl{color:var(--muted)}
@@ -974,6 +977,8 @@ try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () =
    ===================================================================== */
 applyLook();
 $('#p0').classList.add('active');
+// Pièce perso : si tu ajoutes un fichier coin.png à côté de index.html, il remplace la pièce dessinée.
+try { const ci = new Image(); ci.onload = () => document.documentElement.classList.add('customcoin'); ci.src = 'coin.png'; } catch (e) { }
 renderHeader(); renderMarket(); updateDot();
 loadAll();
 })();
