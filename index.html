@@ -66,26 +66,18 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
 .row2{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 
-/* ---------- cartes (dessinées par l'appli, design à nous : nette à toutes les tailles) ---------- */
-.fc{--c1:#f6dd8a;--c2:#d6a935;--c3:#8a6414;--ink:#3a2a05;container-type:inline-size;position:relative;display:block;flex:none;aspect-ratio:5/7;border-radius:12% / 8.5%;overflow:hidden;
-  background:radial-gradient(120% 80% at 30% 0%,var(--c1),var(--c2) 55%,var(--c3));color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.25),inset 0 0 0 1.5px rgba(255,255,255,.35)}
-.fc::before{content:"";position:absolute;inset:3.5%;border-radius:10% / 7%;border:1px solid rgba(255,255,255,.35);pointer-events:none}
-.fc.silver{--c1:#f1f3f6;--c2:#b4bcc7;--c3:#6b7482;--ink:#20262e}
-.fc.bronze{--c1:#f0c9a0;--c2:#b97a45;--c3:#6d3f1b;--ink:#2e1805}
-.fc.sm{width:54px}.fc.md{width:min(150px,82%)}.fc.lg{width:150px}
-.fc-r{position:absolute;left:11%;top:8%;font-weight:800;font-size:21cqw;line-height:1}
-.fc-p{position:absolute;left:11%;top:30%;font-weight:700;font-size:8.5cqw;line-height:1}
-.fc-ph{position:absolute;right:7%;top:7%;width:64%;height:50%;display:flex;align-items:flex-end;justify-content:center}
-.fc-ph img{max-width:100%;max-height:100%;object-fit:contain;object-position:bottom}
-.fc-ph svg{width:70%;height:90%;opacity:.28;fill:currentColor}
-.fc-n{position:absolute;left:6%;right:6%;top:59%;text-align:center;font-weight:800;font-size:9.5cqw;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:2.5cqw;border-bottom:1px solid rgba(0,0,0,.2)}
-.fc-s{position:absolute;left:8%;right:8%;top:70%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
-.fc-s b{display:block;font-size:9.5cqw;line-height:1.1}
-.fc-s i{display:block;font-style:normal;font-size:6.3cqw;font-weight:600;opacity:.75}
-.fc-b{position:absolute;left:8%;right:8%;bottom:6%;display:flex;justify-content:space-between;gap:4%;font-size:6.3cqw;font-weight:700;opacity:.8;text-transform:uppercase}
-.fc-b span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.fc.sm .fc-n,.fc.sm .fc-s,.fc.sm .fc-b,.fc.sm .fc-p{display:none}
-.fc.sm .fc-r{font-size:30cqw}
+/* ---------- cartes (image de la source, rien dessus) ---------- */
+/* Photo du joueur posée sur le fond de carte. Pour la déplacer ou la grossir, change ces 3 nombres :
+   --fx = distance depuis la gauche, --fy = distance depuis le haut, --fw = largeur (en % de la carte). */
+.cardbox{display:block;flex:none;aspect-ratio:3/4;position:relative;--fx:30%;--fy:13%;--fw:62%}
+.cardbox .face{position:absolute;left:var(--fx);top:var(--fy);width:var(--fw);height:auto;object-fit:contain;pointer-events:none}
+.cardbox img.bg{display:block;width:100%;height:100%;object-fit:contain}
+.cardbox.sm{width:50px}
+.cardbox.md{width:min(112px,62%)}
+.cardbox.lg{width:132px}
+.cardbox.fb{background:#9aa0a6;display:flex;align-items:center;justify-content:center}
+.cardbox.fb b{font-size:20px;color:#fff}
+.cardbox.lg.fb b{font-size:36px}
 
 /* ---------- bandeau ---------- */
 .tk{overflow-x:auto;overflow-y:hidden;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin:0 0 10px;scrollbar-width:none}
@@ -365,21 +357,20 @@ function countdown(d) {
    Morceaux d'affichage
    ===================================================================== */
 function cardImg(c, size) {
+  const u = safeUrl(c.cardImage);
+  if (!u) return '<span class="cardbox fb ' + size + '"><b>' + esc(c.rating || '?') + '</b></span>';
   const f = safeUrl(c.playerImage);
-  const tier = c.rating >= 75 ? '' : c.rating >= 65 ? ' silver' : ' bronze';
-  const sil = '<svg viewBox="0 0 40 48" aria-hidden="true"><circle cx="20" cy="14" r="9"/><path d="M3 48c0-12 7-20 17-20s17 8 17 20z"/></svg>';
-  const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><b>' + esc(c.stats[k]) + '</b><i>' + k + '</i></div>' : '').join('');
-  return '<span class="fc' + tier + ' ' + size + '"><span class="fc-r">' + esc(c.rating || '?') + '</span>' +
-    '<span class="fc-p">' + esc((c._pos[0] || '')) + '</span>' +
-    '<span class="fc-ph">' + sil + (f ? '<img src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1" style="position:absolute;bottom:0">' : '') + '</span>' +
-    '<span class="fc-n">' + esc(c.name) + '</span>' +
-    (st ? '<span class="fc-s">' + st + '</span>' : '') +
-    '<span class="fc-b"><span>' + esc(c.nation.slice(0, 12)) + '</span><span>' + esc(c.club.slice(0, 14)) + '</span></span></span>';
+  return '<span class="cardbox ' + size + '"><img class="bg" src="' + esc(u) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-r="' + esc(c.rating || '?') + '">' +
+    (f ? '<img class="face" src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1">' : '') + '</span>';
 }
-// Si la photo du joueur ne charge pas : on l'enlève, la silhouette reste.
+// Si le fond ne charge pas : cadre gris avec la note. Si la photo ne charge pas : on l'enlève, le fond reste seul.
 document.addEventListener('error', (e) => {
   const t = e.target;
-  if (t && t.tagName === 'IMG' && t.dataset && t.dataset.face) t.remove();
+  if (!t || t.tagName !== 'IMG' || !t.dataset || !t.parentNode) return;
+  if (t.dataset.face) { t.remove(); return; }
+  if (t.dataset.r !== undefined) {
+    const box = t.parentNode; box.classList.add('fb'); box.innerHTML = '<b>' + esc(t.dataset.r) + '</b>';
+  }
 }, true);
 
 function chgHtml(c) {
@@ -445,7 +436,8 @@ function filtered() {
 
 function rowHtml(c) {
   const fav = FAV.has(c.id);
-  return '<div class="tile"><button class="open" data-act="open" data-id="' + esc(c.id) + '" aria-label="' + esc(c.name) + '">' + cardImg(c, 'md') +
+  return '<div class="tile"><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'md') +
+    '<div class="nm">' + esc(c.name) + '<span class="rt">' + esc(c.rating) + '</span></div><div class="sub">' + subLine(c) + '</div>' +
     '<div class="pr"><span class="coin"></span>' + fmt(c.price) + '</div>' + chgHtml(c) + '</button>' +
     '<button class="star" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '" aria-label="' + (fav ? 'Retirer des favoris' : 'Ajouter aux favoris') + ' : ' + esc(c.name) + '">' + (fav ? '★' : '☆') + '</button></div>';
 }
