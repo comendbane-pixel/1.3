@@ -145,15 +145,20 @@ async function api(endpoint, params = {}, label = endpoint) {
       throw new Error(`${label} : impossible de joindre parse.bot (${e.message})`);
     }
     if (res.status === 401 || res.status === 403) {
-      // Si la clé a déjà marché pendant ce passage, le refus est sans doute passager : on réessaie une fois.
-      if (authOK && attempt === 1) {
-        console.log(`${label} : refus passager (HTTP ${res.status}) alors que la clé marchait. Nouvel essai dans ${Math.round(RETRY_MS / 1000)} s.`);
+      // parse.bot explique souvent la raison dans sa réponse : on l'affiche (sans jamais afficher la clé).
+      let body = (await res.text().catch(() => '')).slice(0, 300).replace(/\s+/g, ' ');
+      if (KEY) body = body.split(KEY).join('***');
+      const secs = Math.round((Date.now() - lastCall) / 1000);
+      if (attempt === 1) {
+        console.log(`${label} : refus (HTTP ${res.status}) après ${secs} s. Réponse de parse.bot : ${body || '(vide)'}`);
+        console.log(`Nouvel essai dans ${Math.round(RETRY_MS / 1000)} s.`);
         await sleep(RETRY_MS);
         continue;
       }
       // On écrit seulement la LONGUEUR de la clé, jamais la clé elle-même.
       throw new Error(
-        `${label} : accès refusé (HTTP ${res.status}). ` +
+        `${label} : accès refusé (HTTP ${res.status}) après ${secs} s. ` +
+        `Réponse de parse.bot : ${body || '(vide)'}. ` +
         `La clé reçue par le robot fait ${KEY.length} caractères. ` +
         `Teste-la d'abord avec « Send request » sur parse.bot, puis vérifie le secret PARSE_API_KEY.`
       );
