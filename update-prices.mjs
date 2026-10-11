@@ -21,7 +21,8 @@ const MIN_RATING = Number(process.env.MIN_RATING ?? 80);
 const SNAPSHOT_SIZE = Number(process.env.SNAPSHOT_SIZE ?? 500); // 500 maximum
 const HISTORY_MAX = 14;
 const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 150000); // parse.bot peut être lent (1 minute par page)
-const RETRY_MS = Number(process.env.RETRY_MS ?? 30000);      // pause avant un 2e essai
+const RETRY_MS = Number(process.env.RETRY_MS ?? 30000);      // pause avant un nouvel essai
+const MAX_TRIES = Number(process.env.MAX_TRIES ?? 4);        // essais par requête
 let authOK = false; // devient vrai dès qu'une requête a réussi
 
 // ---------- clé ----------
@@ -128,7 +129,8 @@ async function api(endpoint, params = {}, label = endpoint) {
     if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
   }
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
+    const last = attempt >= MAX_TRIES;
     lastCall = Date.now();
     let res;
     try {
@@ -137,8 +139,8 @@ async function api(endpoint, params = {}, label = endpoint) {
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
     } catch (e) {
-      if (attempt === 1) {
-        console.log(`${label} : pas de réponse (${e.name}). Nouvel essai dans ${Math.round(RETRY_MS / 1000)} s.`);
+      if (!last) {
+        console.log(`${label} : pas de réponse (${e.name}). Nouvel essai dans ${Math.round(RETRY_MS / 1000)} s (essai ${attempt}/${MAX_TRIES}).`);
         await sleep(RETRY_MS);
         continue;
       }
@@ -149,9 +151,12 @@ async function api(endpoint, params = {}, label = endpoint) {
       let body = (await res.text().catch(() => '')).slice(0, 300).replace(/\s+/g, ' ');
       if (KEY) body = body.split(KEY).join('***');
       const secs = Math.round((Date.now() - lastCall) / 1000);
-      if (attempt === 1) {
-        console.log(`${label} : refus (HTTP ${res.status}) après ${secs} s. Réponse de parse.bot : ${body || '(vide)'}`);
-        console.log(`Nouvel essai dans ${Math.round(RETRY_MS / 1000)} s.`);
+      // Une vraie clé refusée est rejetée en quelques secondes. Un « refus » après ~2 minutes, ou alors que la
+      // clé a déjà marché, est en fait un délai dépassé chez parse.bot : on réessaie.
+      const timeoutLike = authOK || secs >= 60;
+      if (timeoutLike && !last) {
+        console.log(`${label} : refus (HTTP ${res.status}) après ${secs} s, probablement un délai dépassé chez parse.bot. Réponse : ${body || '(vide)'}`);
+        console.log(`Nouvel essai dans ${Math.round(RETRY_MS / 1000)} s (essai ${attempt}/${MAX_TRIES}).`);
         await sleep(RETRY_MS);
         continue;
       }
@@ -160,10 +165,12 @@ async function api(endpoint, params = {}, label = endpoint) {
         `${label} : accès refusé (HTTP ${res.status}) après ${secs} s. ` +
         `Réponse de parse.bot : ${body || '(vide)'}. ` +
         `La clé reçue par le robot fait ${KEY.length} caractères. ` +
-        `Teste-la d'abord avec « Send request » sur parse.bot, puis vérifie le secret PARSE_API_KEY.`
+        (secs < 60 && !authOK
+          ? `Refus immédiat : la clé est sans doute fausse. Teste-la avec « Send request » sur parse.bot, puis vérifie le secret PARSE_API_KEY.`
+          : `Refus lent : parse.bot n'arrive pas à répondre à temps. Réessaie plus tard, la clé semble bonne.`)
       );
     }
-    if (res.status === 429 && attempt === 1) {
+    if (res.status === 429 && !last) {
       console.log(`${label} : trop de requêtes, pause de 60 s puis nouvel essai.`);
       await sleep(60000);
       continue;
@@ -175,7 +182,7 @@ async function api(endpoint, params = {}, label = endpoint) {
     authOK = true;
     return res.json();
   }
-  throw new Error(`${label} : échec après nouvel essai`);
+  throw new Error(`${label} : échec après ${MAX_TRIES} essais`);
 }
 
 // ---------- data.json ----------
@@ -266,9 +273,18 @@ async function modeList(data) {
   let finished = false;
   for (let page = start; page < start + MAX_PAGES; page++) {
     console.log(`Catalogue : page ${page} (${page - start + 1}/${MAX_PAGES} de ce passage)`);
-    const payload = await api('list_fc27_players', {
-      platform: 'ps', min_rating: MIN_RATING, sort_by_price: 'desc', page,
-    }, 'list_fc27_players');
+    let payload;
+    try {
+      payload = await api('list_fc27_players', {
+        platform: 'ps', min_rating: MIN_RATING, sort_by_price: 'desc', page,
+      }, 'list_fc27_players');
+    } catch (e) {
+      if (!total) throw e;
+      // Des pages sont déjà enregistrées : on s'arrête proprement, rien n'est perdu.
+      console.log(`ATTENTION : ${e.message}`);
+      console.log(`Arrêt propre : ${total} cartes enregistrées dans ce passage. Relance le mode « list » pour reprendre à la page ${page}.`);
+      return;
+    }
     const arr = toArray(payload).map(normPlayer).filter(Boolean);
     if (!arr.length) { console.log('Page vide : fin du catalogue.'); finished = true; break; }
     for (const c of arr) mergeCard(map, c, now);
