@@ -73,19 +73,41 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .cardbox{display:block;flex:none;aspect-ratio:3/4;position:relative;container-type:inline-size;--fx:30%;--fy:13%;--fw:62%}
 .cardbox .face{position:absolute;left:var(--fx);top:var(--fy);width:var(--fw);height:auto;object-fit:contain;pointer-events:none}
 .cardbox img.bg{display:block;width:100%;height:100%;object-fit:contain}
-.ov{position:absolute;inset:0;color:#111;text-shadow:0 1px 0 rgba(255,255,255,.35);pointer-events:none}
-.ov .r{position:absolute;left:13%;top:9%;font-weight:800;font-size:17cqw;line-height:1}
-.ov .p{position:absolute;left:13%;top:25%;font-weight:700;font-size:8cqw;line-height:1}
-.ov .n{position:absolute;left:5%;right:5%;top:60%;text-align:center;font-weight:800;font-size:9cqw;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ov .s{position:absolute;left:8%;right:8%;top:71%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
-.ov .s b{display:block;font-size:9.5cqw;line-height:1.1}
-.ov .s i{display:block;font-style:normal;font-size:6cqw;font-weight:700;opacity:.8}
+.ov{position:absolute;inset:0;color:#fff;text-shadow:0 0 2px #000,0 0 3px #000,0 1px 4px rgba(0,0,0,.8);pointer-events:none}
+.ov .r{position:absolute;left:14%;top:10%;font-weight:800;font-size:16cqw;line-height:1}
+.ov .p{position:absolute;left:14%;top:26%;font-weight:700;font-size:8cqw;line-height:1}
+.ov .n{position:absolute;left:5%;right:5%;top:61%;text-align:center;font-weight:800;font-size:8.5cqw;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov .s{position:absolute;left:14%;right:14%;top:72%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
+.ov .s b{display:block;font-size:8cqw;line-height:1.1}
+.ov .s i{display:block;font-style:normal;font-size:5cqw;font-weight:700;opacity:.8}
 .cardbox.sm{width:50px}
 .cardbox.md{width:min(150px,80%)}
 .cardbox.lg{width:132px}
 .cardbox.fb{background:#9aa0a6;display:flex;align-items:center;justify-content:center}
 .cardbox.fb b{font-size:20px;color:#fff}
 .cardbox.lg.fb b{font-size:36px}
+
+/* ---------- carte dessinée par l'appli (design à nous, nette à toute taille) ---------- */
+.fc{--c1:#f4e3a1;--c2:#cfa23a;--c3:#7d5a14;--ink:#2a1f06;container-type:inline-size;position:relative;display:block;flex:none;aspect-ratio:5/7;border-radius:12% / 8.5%;overflow:hidden;
+  background:radial-gradient(120% 80% at 30% 0%,var(--c1),var(--c2) 55%,var(--c3));color:var(--ink);box-shadow:0 3px 8px rgba(0,0,0,.4),inset 0 0 0 1.5px rgba(255,255,255,.35)}
+.fc::before{content:"";position:absolute;inset:3.5%;border-radius:10% / 7%;border:1px solid rgba(255,255,255,.4);pointer-events:none}
+.fc::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.22) 50%,transparent 60%);pointer-events:none}
+.fc.silver{--c1:#f3f5f8;--c2:#b6bec9;--c3:#6a7381;--ink:#1c222a}
+.fc.bronze{--c1:#f1cba3;--c2:#b97a45;--c3:#6a3c18;--ink:#2c1704}
+.fc.sm{width:54px}.fc.md{width:min(150px,80%)}.fc.lg{width:150px}
+.fc-r{position:absolute;left:10%;top:8%;font-weight:800;font-size:21cqw;line-height:1}
+.fc-p{position:absolute;left:10%;top:30%;font-weight:700;font-size:8.5cqw;line-height:1}
+.fc-ph{position:absolute;right:4%;top:5%;width:72%;height:56%;display:flex;align-items:flex-end;justify-content:center}
+.fc-ph img{position:absolute;bottom:0;max-width:100%;max-height:100%;object-fit:contain;object-position:bottom}
+.fc-ph svg{width:80%;height:100%;opacity:.25;fill:currentColor}
+.fc-n{position:absolute;left:6%;right:6%;top:62%;text-align:center;font-weight:800;font-size:9cqw;letter-spacing:.02em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-bottom:2.5cqw;border-bottom:1px solid rgba(0,0,0,.22)}
+.fc-s{position:absolute;left:10%;right:10%;top:73%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
+.fc-s b{display:block;font-size:9cqw;line-height:1.1}
+.fc-s i{display:block;font-style:normal;font-size:6cqw;font-weight:700;opacity:.75}
+.fc-b{position:absolute;left:8%;top:40%;width:19%;display:flex;flex-direction:column;gap:6%;font-size:5.6cqw;font-weight:800;text-transform:uppercase;text-align:center}
+.fc-b span{white-space:nowrap;overflow:hidden;background:rgba(0,0,0,.14);border-radius:3cqw;padding:1.5cqw 0}
+.fc.sm .fc-n,.fc.sm .fc-s,.fc.sm .fc-b,.fc.sm .fc-p{display:none}
+.fc.sm .fc-r{font-size:30cqw}
 
 /* ---------- bandeau ---------- */
 .tk{overflow-x:auto;overflow-y:hidden;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin:0 0 10px;scrollbar-width:none}
@@ -249,13 +271,14 @@ const store = {
   del(k) { try { if (storageOK) localStorage.removeItem(k); } catch (e) { storageOK = false; } delete mem[k]; }
 };
 const prefersReduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
-const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', favs: [], alerts: [], pf: [] });
+const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'drawn', favs: [], alerts: [], pf: [] });
 
 function sanitize(o) {
   const d = defaults();
   if (!o || typeof o !== 'object') return d;
   if (['auto', 'light', 'dark'].includes(o.theme)) d.theme = o.theme;
   if (['full', 'reduced', 'none'].includes(o.anim)) d.anim = o.anim;
+  if (['drawn', 'source'].includes(o.card)) d.card = o.card;
   if (Array.isArray(o.favs)) d.favs = [...new Set(o.favs.map(String))];
   if (Array.isArray(o.alerts)) d.alerts = o.alerts.filter((a) => a && a.cid != null && (a.dir === '<=' || a.dir === '>=') && isFinite(a.price))
     .map((a) => ({ id: String(a.id || uid()), cid: String(a.cid), dir: a.dir, price: Number(a.price), trig: !!a.trig, seen: !!a.seen, name: String(a.name || '') }));
@@ -375,7 +398,18 @@ function ovHtml(c) {
   const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><b>' + esc(c.stats[k]) + '</b><i>' + k + '</i></div>' : '').join('');
   return '<span class="ov"><span class="r">' + esc(c.rating || '?') + '</span><span class="p">' + esc(c._pos[0] || '') + '</span><span class="n">' + esc(c.name) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + '</span>';
 }
+function drawnCard(c, size) {
+  const f = safeUrl(c.playerImage);
+  const tier = c.rating >= 75 ? '' : c.rating >= 65 ? ' silver' : ' bronze';
+  const sil = '<svg viewBox="0 0 40 48" aria-hidden="true"><circle cx="20" cy="14" r="9"/><path d="M3 48c0-12 7-20 17-20s17 8 17 20z"/></svg>';
+  const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><b>' + esc(c.stats[k]) + '</b><i>' + k + '</i></div>' : '').join('');
+  return '<span class="fc' + tier + ' ' + size + '"><span class="fc-r">' + esc(c.rating || '?') + '</span><span class="fc-p">' + esc(c._pos[0] || '') + '</span>' +
+    '<span class="fc-ph">' + sil + (f ? '<img src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1">' : '') + '</span>' +
+    '<span class="fc-n">' + esc(c.name) + '</span>' + (st ? '<span class="fc-s">' + st + '</span>' : '') +
+    '<span class="fc-b"><span>' + esc(c.nation.slice(0, 3)) + '</span><span>' + esc(c.club.slice(0, 3)) + '</span></span></span>';
+}
 function cardImg(c, size) {
+  if (S.card !== 'source') return drawnCard(c, size);
   const u = safeUrl(c.cardImage);
   if (!u) return '<span class="cardbox fb ' + size + '"><b>' + esc(c.rating || '?') + '</b></span>';
   const f = safeUrl(c.playerImage);
@@ -714,7 +748,8 @@ function renderSettings() {
   const d = DATA.updatedAt ? new Date(DATA.updatedAt) : null;
   $('#p4').innerHTML = '<h2>Apparence</h2><div class="box">' +
     '<label class="l" for="setTheme">Thème</label><select class="field" id="setTheme"><option value="auto">Comme mon téléphone</option><option value="light">Clair</option><option value="dark">Sombre</option></select>' +
-    '<label class="l" for="setAnim">Animations</label><select class="field" id="setAnim"><option value="full">Complètes</option><option value="reduced">Réduites</option><option value="none">Aucune</option></select></div>' +
+    '<label class="l" for="setAnim">Animations</label><select class="field" id="setAnim"><option value="full">Complètes</option><option value="reduced">Réduites</option><option value="none">Aucune</option></select>' +
+    '<label class="l" for="setCard">Style des cartes</label><select class="field" id="setCard"><option value="drawn">Carte nette (dessinée par l\'appli)</option><option value="source">Fond de la source (flou si petit)</option></select></div>' +
     '<h2>Mes données</h2><div class="box">' +
     (storageOK ? '' : '<div class="note" style="margin-top:0">Ton navigateur bloque la sauvegarde : tes favoris, alertes et portefeuille seront perdus à la fermeture. Pense à faire une sauvegarde.</div>') +
     '<p class="small muted" style="margin-top:0">Favoris, alertes et portefeuille restent sur cet appareil. Fais une sauvegarde avant de changer de téléphone ou de vider ton navigateur.</p>' +
@@ -724,7 +759,7 @@ function renderSettings() {
     '<h2>Remise à zéro</h2><div class="box"><p class="small muted" style="margin-top:0">Efface tes favoris, alertes, portefeuille et réglages sur cet appareil. Les prix ne sont pas touchés.</p><button class="btn danger" data-act="reset">Tout remettre à zéro</button></div>' +
     '<h2>À propos</h2><div class="box small muted">Dernière mise à jour des prix : <b>' + (d && !isNaN(d) ? fmtDT(d) : 'aucune') + '</b><br>Cartes : <b>' + fmt(CARDS.length) + '</b> · Source : ' + esc(DATA.source || '—') +
     '<br><br>Les prix ne sont pas en temps réel (jusqu\'à environ 2 jours de retard). Les gains et conseils sont des estimations. Application non officielle, sans lien avec EA.</div>';
-  $('#setTheme').value = S.theme; $('#setAnim').value = S.anim;
+  $('#setCard').value = S.card; $('#setTheme').value = S.theme; $('#setAnim').value = S.anim;
 }
 function download(name, text) {
   const a = document.createElement('a');
@@ -820,6 +855,7 @@ document.addEventListener('change', (e) => {
   const t = e.target;
   if (t.id === 'setTheme') { S.theme = t.value; save(); applyLook(); }
   else if (t.id === 'setAnim') { S.anim = t.value; save(); applyLook(); }
+  else if (t.id === 'setCard') { S.card = t.value; save(); renderMarket(); renderActive(); }
   else if (t.id === 'importFile' && t.files && t.files[0]) {
     const r = new FileReader(); r.onload = () => restore(String(r.result)); r.onerror = () => toast('Lecture du fichier impossible'); r.readAsText(t.files[0]); t.value = '';
   }
