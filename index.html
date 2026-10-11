@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="fr" data-theme="light" data-anim="full">
+<html lang="fr" data-theme="dark" data-anim="full">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f4f6f8" id="metaTheme">
+<meta name="theme-color" content="#0a0c11" id="metaTheme">
 <title>FC27 Companion</title>
 <style>
 :root{
@@ -13,8 +13,8 @@
   --nav-h:62px;
 }
 [data-theme=dark]{
-  --bg:#0e1218;--surface:#171d26;--surface2:#212a36;--text:#eef2f6;--muted:#9aa6b4;--line:#2c3644;
-  --accent:#6ea0ff;--accent-text:#0b1220;--up:#4cd48a;--down:#ff7b72;--warn:#e3b341;
+  --bg:#0a0c11;--surface:#13161d;--surface2:#1d212b;--text:#f1f3f7;--muted:#8d96a6;--line:#242a35;
+  --accent:#3ddc84;--accent-text:#04140b;--up:#3ddc84;--down:#ff5d5d;--warn:#f0b429;
 }
 [data-anim=reduced]{--tpage:.12s;--tind:.12s;--tsheet:.12s}
 [data-anim=none]{--tpage:0s;--tind:0s;--tsheet:0s}
@@ -26,12 +26,13 @@ body{background:var(--bg);color:var(--text);font:15px/1.4 system-ui,-apple-syste
 body.lock{overflow:hidden}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
-.wrap{max-width:640px;margin:0 auto}
+.wrap{max-width:980px;margin:0 auto}
 
 /* ---------- haut de page ---------- */
 .top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 8px) 14px 8px}
 .top .wrap{display:flex;flex-direction:column;gap:2px}
-.brand{font-weight:800;font-size:18px;letter-spacing:.2px}
+.brand{font-weight:900;font-size:20px;letter-spacing:.5px;text-transform:uppercase}
+.brand::before{content:"";display:inline-block;width:10px;height:18px;border-radius:3px;background:var(--accent);margin-right:8px;vertical-align:-2px;transform:skewX(-12deg)}
 .upd{font-size:12.5px;color:var(--muted)}
 .upd b{color:var(--text);font-weight:600}
 
@@ -96,13 +97,15 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 @media(min-width:520px){.grid{grid-template-columns:repeat(3,1fr)}}
 @media(min-width:760px){.grid{grid-template-columns:repeat(4,1fr)}}
-.tile{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:16px;min-width:0}
+@media(min-width:960px){.grid{grid-template-columns:repeat(5,1fr)}}
+.tile{position:relative;background:linear-gradient(180deg,var(--surface2),var(--surface) 60%);border:1px solid var(--line);border-radius:14px;min-width:0;transition:transform .15s var(--ease),border-color .15s}
+.tile:hover{transform:translateY(-2px);border-color:var(--accent)}
 .open{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;border:0;background:none;padding:12px 6px 10px;width:100%;min-width:0}
 .nm{font-weight:700;font-size:14px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nm .rt{font-weight:600;color:var(--muted);margin-left:4px}
 .sub{font-size:11.5px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stats{font-size:10.5px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pr{font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;gap:5px}
+.pr{font-weight:800;font-size:16px;color:var(--warn);font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;gap:5px}
 .coin{width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9a0,#e0a800 70%);flex:none}
 .chg{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
 .up{color:var(--up)}.dn{color:var(--down)}.fl{color:var(--muted)}
@@ -235,7 +238,7 @@ const store = {
   del(k) { try { if (storageOK) localStorage.removeItem(k); } catch (e) { storageOK = false; } delete mem[k]; }
 };
 const prefersReduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
-const defaults = () => ({ v: 1, theme: 'auto', anim: prefersReduced ? 'reduced' : 'full', favs: [], alerts: [], pf: [] });
+const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', favs: [], alerts: [], pf: [] });
 
 function sanitize(o) {
   const d = defaults();
@@ -720,7 +723,7 @@ function applyLook() {
   if (t === 'auto') { try { t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; } catch (e) { t = 'light'; } }
   document.documentElement.dataset.theme = t;
   document.documentElement.dataset.anim = S.anim;
-  $('#metaTheme').setAttribute('content', t === 'dark' ? '#0e1218' : '#f4f6f8');
+  $('#metaTheme').setAttribute('content', t === 'dark' ? '#0a0c11' : '#f4f6f8');
 }
 let toastT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3500); }
