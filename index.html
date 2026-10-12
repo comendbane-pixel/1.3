@@ -463,8 +463,8 @@ button.dm.sel{outline:0!important;filter:drop-shadow(0 0 6px #ff4d00)}
   background:linear-gradient(115deg,rgba(255,0,150,.0) 15%,rgba(255,60,200,.55) 30%,rgba(60,200,255,.55) 45%,rgba(120,255,160,.5) 58%,rgba(255,230,90,.5) 70%,rgba(255,0,150,0) 85%);
   background-size:300% 300%;mix-blend-mode:color-dodge;opacity:.55;animation:holo 6s linear infinite}
 .cardbox.holo .face,.cardbox.holo .ov{z-index:2}
-.cardbox.fbasic .face{width:68%;height:42%;top:21%}
-.cardbox.fspec .face{width:98%;height:61%;top:2%}
+.cardbox.fbasic .face{left:55%;width:74%;height:46%;top:17%}
+.cardbox.fspec .face{width:98%;height:57%;top:12%}
 @keyframes holo{0%{background-position:0% 50%}100%{background-position:100% 50%}}
 [data-anim=reduced] .holo-fx,[data-anim=none] .holo-fx{animation:none;background-position:50% 50%}
 </style>
@@ -725,13 +725,23 @@ function flagUrl(name) {
   const c = ISO[k];
   return c ? 'https://flagcdn.com/w80/' + c + '.png' : '';
 }
+// Sur la carte : seulement le nom de famille (Kylian Mbappé -> Mbappé, Virgil van Dijk -> van Dijk)
+function cardLabel(c) {
+  if (c.cn) return c.cn;
+  const w = String(c.name || '').trim().split(/\s+/);
+  if (w.length < 2) return w.join(' ');
+  const part = /^(de|da|do|dos|das|di|del|della|van|von|der|den|ten|ter|le|la|el|al|bin|mac|mc|dal|du|des|y)$/i;
+  let i = w.length - 1;
+  while (i > 0 && part.test(w[i - 1])) i--;
+  return w.slice(i).join(' ');
+}
 function ovHtml(c) {
   const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><i>' + k + '</i><b>' + esc(c.stats[k]) + '</b></div>' : '').join('');
   const im = (u) => safeUrl(u) ? '<img data-face="1" loading="lazy" referrerpolicy="no-referrer" alt="" src="' + esc(safeUrl(u)) + '">' : '';
   const it = (u, t) => safeUrl(u) ? im(u) : (t ? '<em>' + esc(String(t).replace(/[^\p{L}\p{N}]/gu, '').slice(0, 3).toUpperCase()) + '</em>' : '');
   const bd = it(c.nationImage || flagUrl(c.nation), c.nation) + it(c.leagueImage, c.league) + it(c.clubImage, c.club);
   return '<span class="ov"><span class="r">' + esc(c.rating || '?') + '</span><span class="p">' + esc(c._pos[0] || '') + '</span>' +
-    (c.sm && c.wf ? '<span class="sw">' + c.sm + '•' + c.wf + '</span>' : '') + '<span class="n">' + esc(c.cn || c.name) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + (bd ? '<span class="bd">' + bd + '</span>' : '') + '</span>';
+    (c.sm && c.wf ? '<span class="sw">' + c.sm + '•' + c.wf + '</span>' : '') + '<span class="n">' + esc(cardLabel(c)) + '</span>' + (st ? '<span class="s">' + st + '</span>' : '') + (bd ? '<span class="bd">' + bd + '</span>' : '') + '</span>';
 }
 function drawnCard(c, size) {
   const f = safeUrl(c.playerImage);
@@ -740,7 +750,7 @@ function drawnCard(c, size) {
   const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><b>' + esc(c.stats[k]) + '</b><i>' + k + '</i></div>' : '').join('');
   return '<span class="fc' + tier + ' ' + size + '"><span class="fc-r">' + esc(c.rating || '?') + '</span><span class="fc-p">' + esc(c._pos[0] || '') + '</span>' +
     '<span class="fc-ph">' + sil + (f ? '<img src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1">' : '') + '</span>' +
-    '<span class="fc-n">' + esc(c.cn || c.name) + '</span>' + (st ? '<span class="fc-s">' + st + '</span>' : '') +
+    '<span class="fc-n">' + esc(cardLabel(c)) + '</span>' + (st ? '<span class="fc-s">' + st + '</span>' : '') +
     '<span class="fc-b"><span>' + esc(c.nation.slice(0, 3)) + '</span><span>' + esc(c.club.slice(0, 3)) + '</span></span></span>';
 }
 function cardImg(c, size) {
