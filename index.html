@@ -861,7 +861,13 @@ function tone(img) {
   if (!n) return '';
   R /= n; G /= n; B /= n;
   const lum = R * 0.3 + G * 0.59 + B * 0.11, sat = Math.max(R, G, B) - Math.min(R, G, B);
-  return lum >= 120 ? 'lt' : sat > 40 ? 'gd' : 'cr';
+  if (lum >= 120) return 'lt';
+  if (sat <= 40) return 'cr';
+  // couleur dominante : jaune/orange/marron -> texte doré ; violet, bleu, rose, vert... -> texte blanc
+  const mx = Math.max(R, G, B), mn = Math.min(R, G, B), dd = mx - mn;
+  let h = mx === R ? ((G - B) / dd) % 6 : mx === G ? (B - R) / dd + 2 : (R - G) / dd + 4;
+  h = (h * 60 + 360) % 360;
+  return (h >= 20 && h <= 70) ? 'gd' : 'wh';
 }
 function fitNames(root) {
   (root || document).querySelectorAll('.ov .n,.fc-n').forEach((el) => {
@@ -886,7 +892,7 @@ document.addEventListener('load', (e) => {
     const box = t.parentNode;
     if (box) {
       box.style.aspectRatio = t.naturalWidth + ' / ' + t.naturalHeight; // le cadre prend la forme exacte de la carte
-      let k = urlTone(t.currentSrc || t.src); if (!k) { try { k = tone(t); } catch (err) { k = 'gd'; } }
+      let k = urlTone(t.currentSrc || t.src); if (!k) { try { k = tone(t); } catch (err) { k = 'wh'; } }
       if (k) box.classList.add(k);
     }
   }
