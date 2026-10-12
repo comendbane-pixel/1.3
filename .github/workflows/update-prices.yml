@@ -56,6 +56,7 @@ jobs:
       - name: Récupérer les prix
         env:
           PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
+          PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
           MODE: ${{ github.event.inputs.mode || 'auto' }}
           MAX_PAGES: ${{ github.event.inputs.pages }}
           DETAILS_COUNT: ${{ github.event.inputs.details_count }}
@@ -67,7 +68,7 @@ jobs:
         run: |
           git config user.name "price-bot"
           git config user.email "price-bot@users.noreply.github.com"
-          git add data.json watch.json
+          for f in data.json watch.json keys-state.json; do [ -f "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then
             echo "Rien de nouveau à enregistrer."
           else
