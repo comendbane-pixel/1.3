@@ -540,6 +540,10 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .invtrade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .invtrade>div{background:var(--surface2);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .invtrade b{font-size:15px;font-variant-numeric:tabular-nums}
+.invrw{display:flex;align-items:center;gap:10px;padding:8px 10px;min-width:0}
+.invrw.alt{opacity:.75}
+.invrw .open{width:44px;flex:none;padding:0}
+.invrw .cardbox.sm{width:42px}
 .invqty{font-size:13.5px;border:1px solid var(--accent);border-radius:10px;padding:8px 10px}
 .invrisk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:6px 0}
 .invrisk button{border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:9px 6px;font-weight:700;color:var(--text)}
@@ -742,7 +746,7 @@ function sanitize(o) {
   if (typeof o.sim === 'boolean') d.sim = o.sim;
   if (['full', 'reduced', 'none'].includes(o.anim)) d.anim = o.anim;
   if (['drawn', 'source'].includes(o.card)) d.card = o.card;
-  if (o.inv && typeof o.inv === 'object') { const t = Math.round(Number(o.inv.t)); if (t === 0 || (t >= 75 && t <= 95)) d.inv.t = t; if (['petit', 'moyen', 'gros'].includes(o.inv.sz)) d.inv.sz = o.inv.sz; if (['rapide', 'long'].includes(o.inv.mode)) d.inv.mode = o.inv.mode; const b = Number(o.inv.bud); if (isFinite(b) && b >= 0) d.inv.bud = Math.floor(b); const tt = Number(o.inv.tot); if (isFinite(tt) && tt >= 0) d.inv.tot = Math.floor(tt); if (['prudent', 'moyen', 'audacieux'].includes(o.inv.risk)) d.inv.risk = o.inv.risk; const nn = Math.round(Number(o.inv.n)); if (nn >= 0 && nn <= 10) d.inv.n = nn; }
+  if (o.inv && typeof o.inv === 'object') { const t = Math.round(Number(o.inv.t)); if (t === 0 || (t >= 75 && t <= 95)) d.inv.t = t; if (['petit', 'moyen', 'gros'].includes(o.inv.sz)) d.inv.sz = o.inv.sz; if (['rapide', 'long'].includes(o.inv.mode)) d.inv.mode = o.inv.mode; const b = Number(o.inv.bud); if (isFinite(b) && b >= 0) d.inv.bud = Math.floor(b); const tt = Number(o.inv.tot); if (isFinite(tt) && tt >= 0) d.inv.tot = Math.floor(tt); if (['prudent', 'moyen', 'audacieux'].includes(o.inv.risk)) d.inv.risk = o.inv.risk; const nn = Math.round(Number(o.inv.n)); if (nn >= 0 && nn <= 50) d.inv.n = nn; }
   if (o.sq && typeof o.sq === 'object') {
     if (FORMS[o.sq.f]) d.sq.f = o.sq.f;
     if (Array.isArray(o.sq.s)) { const seen = new Set(); d.sq.s = Array.from({ length: 18 }, (_, i) => { const v = o.sq.s[i]; if (v == null || seen.has(String(v))) return null; seen.add(String(v)); return String(v); }); }
@@ -1322,7 +1326,7 @@ function invRapide(cfg) {
   const out = []; INV_SKIP = 0; INV_PLAN = null; INV_NOBUD = null;
   const R = RISK[cfg.risk]; if (!R || !(cfg.tot > 0) || !(cfg.n > 0)) return out;               // pas de profil : pas de conseil
   for (const c of CARDS) {
-    if (c.price == null || c.price < 500 || c._series.length < 4) continue;
+    if (c.price == null || c.price < 200 || c._series.length < 4) continue;   // les petites cartes comptent aussi
     if (cfg.bud > 0 && c.price > cfg.bud) continue;
     const m = invMetrics(c), mo = invMomentum(c, R);
     if (!mo) continue;                                                           // elle ne monte pas (ou trop vite pour ce profil)
@@ -1334,6 +1338,7 @@ function invRapide(cfg) {
     why.push('L\'IA estime à ' + mo.prob + ' % la chance qu\'elle continue assez pour gagner après la taxe de 5 %.');
     if (m.range != null && m.range >= 0.9) warn.push('Elle est tout en haut de sa fourchette récente (' + fmt(c._min) + ' – ' + fmt(c._max) + ') : risque de redescendre.');
     if (m.cv > 0.15) warn.push('Son prix est très irrégulier : risqué.');
+    if (c.price < 2000) warn.push('Carte bon marché : le prix bouge par petits paliers, le gain en valeur reste petit.');
     warn.push('Tu achètes en pleine hausse : si le prix se retourne, revends sans attendre.');
     out.push({ c, m, prob: mo.prob, sc: mo.prob, why, warn, buy: c.price, sell, net, netPct, conf: confOf(m.n), is: itemScore(c) });
   }
@@ -1341,10 +1346,10 @@ function invRapide(cfg) {
   out.sort((a, b) => R.sort(b) * w[b.conf] - R.sort(a) * w[a.conf]);
   // Répartition du budget : la personne veut acheter N cartes, donc chaque carte a droit à budget ÷ N.
   // On garde les 10 meilleures cartes qui rentrent dans cette part ; les N premières forment le plan, les autres sont des idées de rechange.
-  const N = Math.max(1, Math.min(10, cfg.n || 1)), cap = cfg.tot / N;
+  const N = Math.max(1, Math.min(50, cfg.n || 1)), cap = cfg.tot / N, LIM = Math.min(55, Math.max(10, N + 5));
   let tooBig = 0; const picked = [];
   for (const x of out) {
-    if (picked.length >= 10) break;
+    if (picked.length >= LIM) break;
     const q = Math.min(10, Math.floor(cap / x.buy));
     if (q < 1) { tooBig++; continue; }
     x.qty = q; x.cost = q * x.buy; x.gain = q * x.net; x.alt = picked.length >= N; picked.push(x);
@@ -1400,6 +1405,13 @@ function invSpark(c) {
   const d = pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
   const up = sr[sr.length - 1].p >= sr[0].p;
   return '<svg class="isp" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Courbe de prix réelle"><path d="' + d + '" fill="none" stroke="' + (up ? 'var(--up)' : 'var(--down)') + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="' + pts[pts.length - 1][0].toFixed(1) + '" cy="' + pts[pts.length - 1][1].toFixed(1) + '" r="2.6" fill="var(--up)"/></svg>';
+}
+function invRow(x, i) {      // ligne compacte, pour les longues listes (plus de 10 cartes)
+  const c = x.c, money = (v) => fmt(v) + '<span class="coin"></span>';
+  return '<div class="box invrw' + (x.alt ? ' alt' : '') + '"><span class="invn">' + (i + 1) + '</span><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') + '</button>' +
+    '<div class="invm"><div class="nm"><b>' + esc(c.name) + '</b> <span class="rt">' + esc(c.rating) + '</span></div>' +
+    '<div class="small">' + (x.alt ? '<span class="muted">Idée de rechange · </span>' : 'Achète <b>' + x.qty + '</b> × ') + '<b>' + money(x.buy) + '</b> → revends vers <b>' + money(x.sell) + '</b></div>' +
+    '<div class="small">' + (x.alt ? '' : 'Gain net <b class="up">+' + fmt(x.gain) + '</b> · ') + 'chance <b>' + x.prob + ' %</b></div></div></div>';
 }
 function invCard(x, i, mode) {
   const c = x.c, money = (v) => fmt(v) + '<span class="coin"></span>';
@@ -1497,7 +1509,7 @@ function renderInvest(force) {
     const per = cfg.tot > 0 && cfg.n > 0 ? Math.floor(cfg.tot / cfg.n) : 0;
     h += '<div class="box invf"><b>1. Dis-moi qui tu es comme investisseur</b>' +
       '<label style="margin-top:8px">Combien veux-tu investir en tout ? (en crédits)<input id="invTot" inputmode="numeric" placeholder="ex : 100000" value="' + (cfg.tot ? cfg.tot : '') + '"></label>' +
-      '<label style="margin-top:10px">Combien de cartes veux-tu acheter ?<select id="invN"><option value="0"' + (cfg.n ? '' : ' selected') + '>Choisis…</option>' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((k) => '<option value="' + k + '"' + (cfg.n === k ? ' selected' : '') + '>' + k + ' carte' + (k > 1 ? 's' : '') + '</option>').join('') + '</select></label>' +
+      '<label style="margin-top:10px">Combien de cartes veux-tu acheter ?<select id="invN"><option value="0"' + (cfg.n ? '' : ' selected') + '>Choisis…</option>' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30, 40, 50].map((k) => '<option value="' + k + '"' + (cfg.n === k ? ' selected' : '') + '>' + k + ' carte' + (k > 1 ? 's' : '') + '</option>').join('') + '</select></label>' +
       (per ? '<div class="small muted" style="margin-top:4px">Ça fait environ <b>' + fmt(per) + '</b> crédits par carte : l\'IA cherchera des cartes à ce prix (ou moins, pour en acheter plusieurs).</div>' : '') +
       '<div class="small muted" style="margin-top:10px;font-weight:600">Quel risque acceptes-tu ?</div><div class="invrisk">' +
       ['prudent', 'moyen', 'audacieux'].map((k) => '<button data-act="invrisk" data-r="' + k + '" aria-pressed="' + (cfg.risk === k) + '">' + RISK[k].name + '</button>').join('') + '</div>' +
@@ -1544,7 +1556,7 @@ function renderInvest(force) {
     h += '<h2>' + (cfg.mode === 'rapide' ? 'Tes ' + cfg.n + ' carte' + (cfg.n > 1 ? 's' : '') + ' à acheter (profil ' + RISK[cfg.risk].name.toLowerCase() + ')' : 'À acheter avant le SBC') + '</h2>';
     if (cfg.mode === 'rapide' && INV_PLAN) h += '<div class="box"><b>Ton plan</b><div class="small" style="margin-top:6px">Tu mets <b>' + fmt(INV_PLAN.spent) + '</b> sur <b>' + INV_PLAN.n + '</b> carte' + (INV_PLAN.n > 1 ? 's' : '') + ' (sur ' + fmt(INV_PLAN.tot) + ' prévus, soit ' + fmt(Math.floor(INV_PLAN.tot / INV_PLAN.N)) + ' maximum par carte). Gain net estimé si tout se passe comme prévu : <b class="up">+' + fmt(INV_PLAN.gain) + '</b> (taxe de 5 % retirée). Chance de gagner moyenne : <b>' + INV_PLAN.prob + ' %</b>.' +
       (INV_PLAN.n < INV_PLAN.N ? ' L\'IA n\'a trouvé que ' + INV_PLAN.n + ' carte' + (INV_PLAN.n > 1 ? 's' : '') + ' sûre' + (INV_PLAN.n > 1 ? 's' : '') + ' pour ce prix (tu en voulais ' + INV_PLAN.N + ').' : '') + (INV_PLAN.tooBig ? ' ' + INV_PLAN.tooBig + ' carte' + (INV_PLAN.tooBig > 1 ? 's' : '') + ' écartée' + (INV_PLAN.tooBig > 1 ? 's' : '') + ' car plus chère' + (INV_PLAN.tooBig > 1 ? 's' : '') + ' que ' + fmt(Math.floor(INV_PLAN.tot / INV_PLAN.N)) + '.' : '') + '</div><div class="small muted" style="margin-top:6px">Ce sont des estimations : tu peux aussi perdre. N\'investis que ce que tu peux te permettre de perdre.</div></div>';
-    h += res.slice(0, 10).map((x, i) => invCard(x, i, cfg.mode)).join('');
+    h += (cfg.mode === 'rapide' && cfg.n > 10 ? res.slice(0, 60).map((x, i) => invRow(x, i)) : res.slice(0, 10).map((x, i) => invCard(x, i, cfg.mode))).join('');
     h += '<div class="box"><button class="btn" data-act="invcopy">Copier le résumé pour demander un avis à Claude</button><div class="small muted" id="invCp" style="margin-top:6px">Tu colles le texte dans une discussion avec Claude pour une analyse plus poussée.</div></div>';
   }
   h += '<div class="note small">Points SBC : valeurs de lancement du score d\'objet des SBC simplifiés (or : 85 = 2 100 points, 86 = 4 100, etc.), <b>provisoires</b> : EA peut les changer. Cartes spéciales : seuls quelques scores sont publiés (Équipe de la semaine 85 et 86, Héros de base 89, Destined for Glory 86 et 87) ; pour les autres notes de ces types, c\'est une estimation (environ ×1,25). Icônes et Future Stars : valeur non publiée, donc aucun calcul.</div>';
@@ -1567,7 +1579,7 @@ document.addEventListener('input', (e) => {      // le budget est gardé dès qu
 document.addEventListener('change', (e) => {
   const t = e.target; if (!t || !t.id || t.id.indexOf('inv') !== 0) return;
   if (t.id === 'invT') S.inv.t = Number(t.value) || 0;
-  else if (t.id === 'invN') S.inv.n = Math.max(0, Math.min(10, Math.round(Number(t.value)) || 0));
+  else if (t.id === 'invN') S.inv.n = Math.max(0, Math.min(50, Math.round(Number(t.value)) || 0));
   else if (t.id === 'invTot') { const v = num(t.value); S.inv.tot = v && v > 0 ? Math.floor(v) : 0; }
   else if (t.id === 'invB') { const v = num(t.value); S.inv.bud = v && v > 0 ? Math.floor(v) : 0; }
   else return;
