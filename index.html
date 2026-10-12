@@ -452,6 +452,11 @@ button.dm.sel{outline:0!important;filter:drop-shadow(0 0 6px #ff4d00)}
 .psd-i .dm img{width:100%;height:100%}
 .pst.gold{background:var(--surface2)!important}
 .pst .psi{width:28px!important;height:28px!important}
+
+.stab button{flex:1;border:0;background:none;text-align:center;padding:11px;font-size:13.5px;font-weight:600;color:var(--muted)}
+.stab button.on{background:var(--surface);color:var(--text)}
+.tile{position:relative}
+.vtag{position:absolute;top:2px;left:2px;z-index:4;background:linear-gradient(135deg,#b46bff,#4cc9f0);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:2px 5px;border-radius:5px;pointer-events:none}
 </style>
 </head>
 <body>
@@ -589,6 +594,25 @@ const GROUP_NAMES = { GK: 'Gardiens', DEF: 'Défenseurs', MIL: 'Milieux', ATT: '
 const STATK = ['PAC', 'SHO', 'PAS', 'DRI', 'DEF', 'PHY'];
 const POS_RE = /LWB|RWB|GK|CB|LB|RB|CDM|CAM|CM|LM|RM|LW|RW|CF|ST|LF|RF|LS|RS/g;
 
+// Règle choisie par l'utilisateur : quand une même carte existe deux fois (même nom, même note, même fond),
+// la plus chère est considérée comme la version « Pristine Holographic », l'autre comme « Standard ».
+function markVariants() {
+  const g = new Map();
+  for (const c of CARDS) {
+    const k = [c.name, c.rating, String(c.cardImage || '').split('?')[0].split('/').pop()].join('|');
+    if (!g.has(k)) g.set(k, []);
+    g.get(k).push(c);
+  }
+  for (const list of g.values()) {
+    if (list.length < 2) continue;
+    const priced = list.filter((c) => c.price != null).sort((a, b) => b.price - a.price);
+    if (!priced.length) continue;
+    if (priced.length > 1 && priced[0].price === priced[1].price) continue; // prix égaux : on ne devine pas
+    const top = priced[0], low = list.filter((c) => c !== top).sort((a, b) => (b.price || 0) - (a.price || 0))[0];
+    for (const c of list) c.variant = c === top ? 'holo' : 'std';
+    top.alt = low.id; low.alt = top.id;
+  }
+}
 function prep(c) {
   const price = Number.isFinite(Number(c.price)) && c.price !== null && Number(c.price) > 0 ? Number(c.price) : null;
   const h = Array.isArray(c.history) ? c.history.filter((x) => x && Number.isFinite(Number(x.p))).map((x) => ({ t: Number(x.t) || 0, p: Number(x.p) })) : [];
@@ -616,6 +640,7 @@ function setData(d, u) {
     DATA = d;
     CARDS = d.cards.filter((c) => c && c.id != null).map(prep);
     MAP = new Map(CARDS.map((c) => [c.id, c]));
+    markVariants();
     MOVERS = CARDS.filter((c) => c._chg != null && c.price != null && c._chg !== 0)
       .sort((a, b) => Math.abs(b._chg) - Math.abs(a._chg)).slice(0, 14);
     POSLIST = [...new Set(CARDS.flatMap((c) => c._pos))].sort();
@@ -902,7 +927,7 @@ function rowHtml(c) {
   const fav = FAV.has(c.id);
   const p1 = (c._pos && c._pos[0]) || String(c.pos || '').split(',')[0].trim();
   return '<div class="tile"><button class="open" data-act="open" data-id="' + esc(c.id) + '" aria-label="' + esc(c.name) + '">' + cardImg(c, 'md') +
-    '<div class="mpill">' + (p1 ? '<span class="pb">' + esc(p1) + '</span>' : '') + '<span>' + esc(c.rating) + '</span>' +
+    (c.variant === 'holo' ? '<span class="vtag">HOLO</span>' : '') + '<div class="mpill">' + (p1 ? '<span class="pb">' + esc(p1) + '</span>' : '') + '<span>' + esc(c.rating) + '</span>' +
     (c.price != null ? '<span class="coin"></span><span class="pn">' + short(c.price) + '</span>' : '<span class="ex">—</span>') + '</div>' + chgHtml(c) + '</button>' +
     '<button class="star" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '" aria-label="' + (fav ? 'Retirer des favoris' : 'Ajouter aux favoris') + ' : ' + esc(c.name) + '">' + (fav ? '★' : '☆') + '</button></div>';
 }
@@ -1333,12 +1358,12 @@ function renderSheet() {
     '<div class="pgbody"><div class="bc">FC27 Companion › Joueurs › ' + esc(c.name) + (c.version ? ' › ' + esc(c.version) + ' ' + esc(c.rating) + ' OVR' : '') + '</div><h1>' + esc(title) + '</h1><p class="lead">' + esc(lead) + '</p>' +
     '<div class="ptabs"><button class="on" data-act="goto" data-t="sApercu">Aperçu</button><button data-act="goto" data-t="sPrix">Prix</button>' + (c.ps && c.ps.length ? '<button data-act="goto" data-t="sStyles">Styles de jeu</button>' : '') + '<button data-act="goto" data-t="sAttr">Attributs</button></div>' +
     '<div class="pg"><div class="pgl">' +
-      '<div class="card2" id="sApercu"><div class="stab"><span class="on">Standard</span></div><div class="hero">' + cardImg(c, 'lg') + psIcons(c) + '</div><div class="hero" style="padding-top:0">' +
+      '<div class="card2" id="sApercu">' + (c.alt ? '<div class="stab"><button class="' + (c.variant === 'std' ? 'on' : '') + '" data-act="open" data-id="' + esc(c.variant === 'std' ? c.id : c.alt) + '">Standard</button><button class="' + (c.variant === 'holo' ? 'on' : '') + '" data-act="open" data-id="' + esc(c.variant === 'holo' ? c.id : c.alt) + '">Pristine Holographic</button></div>' : '<div class="stab"><span class="on">Standard</span></div>') + '<div class="hero">' + cardImg(c, 'lg') + psIcons(c) + '</div><div class="hero" style="padding-top:0">' +
         '<button class="chip" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '">' + (fav ? '★ Dans les favoris' : '☆ Ajouter aux favoris') + '</button></div>' +
         '<div class="mini3"><div><b><span class="coin"></span> ' + short(c.price) + '</b><span>Prix</span></div><div><b>' + (c.sm && c.wf ? c.sm + '•' + c.wf : '—') + '</b><span>Gestes · Pied faible</span></div><div><b>' + (p1 ? '<span class="pb">' + esc(p1) + '</span> ' : '') + esc(c.rating) + '</b><span>Poste · Note</span></div></div></div>' +
       '<div class="card2 info"><h3><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M17 8h4M17 12h4"/></svg>Informations du joueur</h3>' +
         kv('Nom', esc(c.name)) + kv('Club', ico(c.clubImage) + esc(c.club)) + kv('Ligue', ico(c.leagueImage) + esc(c.league)) + kv('Nation', ico(safeUrl(c.nationImage) || flagUrl(c.nation)) + esc(c.nation)) +
-        kv('Rareté', esc(c.version)) + kv('Poste', esc(c._pos.length ? c._pos.join(', ') : c.pos)) + (c.sm ? kv('Gestes techniques', stars(c.sm)) : '') + (c.wf ? kv('Pied faible', stars(c.wf)) : '') +
+        kv('Rareté', esc(c.version)) + (c.variant ? kv('Variante', c.variant === 'holo' ? 'Pristine Holographic' : 'Standard') : '') + kv('Poste', esc(c._pos.length ? c._pos.join(', ') : c.pos)) + (c.sm ? kv('Gestes techniques', stars(c.sm)) : '') + (c.wf ? kv('Pied faible', stars(c.wf)) : '') +
         kv('AcceleRATE', esc(c.acc)) + kv('ID du joueur', esc(c.id)) + '</div>' +
     '</div><div class="pgr">' +
       '<div class="top2" id="sPrix"><div class="card2"><div class="pad"><div class="bh"><b>Prix minimum</b><span class="small muted">' + (upd && !isNaN(upd) ? 'relevé ' + agoText(upd.getTime()) : 'non temps réel') + '</span></div><div class="bigp"><span class="coin"></span><b>' + fmt(c.price) + '</b>' + chgHtml(c) + '</div>' +
