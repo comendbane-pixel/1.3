@@ -467,7 +467,7 @@ button.dm.sel{outline:0!important;filter:drop-shadow(0 0 6px #ff4d00)}
   background-size:300% 300%;mix-blend-mode:color-dodge;opacity:.55;animation:holo 6s linear infinite}
 .cardbox.holo .face,.cardbox.holo .ov{z-index:2}
 .cardbox.fbasic .face{left:55%;width:74%;height:46%;top:17%}
-.cardbox.fspec .face{width:104%;height:68%;top:20%}
+.cardbox.fspec .face{width:112%;height:76%;top:15%}
 @keyframes holo{0%{background-position:0% 50%}100%{background-position:100% 50%}}
 [data-anim=reduced] .holo-fx,[data-anim=none] .holo-fx{animation:none;background-position:50% 50%}
 </style>
@@ -729,14 +729,23 @@ function flagUrl(name) {
   return c ? 'https://flagcdn.com/w80/' + c + '.png' : '';
 }
 // Sur la carte : seulement le nom de famille (Kylian Mbappé -> Mbappé, Virgil van Dijk -> van Dijk)
+const NOMS = {  // noms d'usage connus (nom complet de la base -> nom sur la carte)
+  'Victoria López Serrano Felix': 'Vicky López', 'Pedro González López': 'Pedri', 'Vinícius José de Oliveira Júnior': 'Vini Jr.',
+  'C. Ronaldo dos Santos Aveiro': 'Ronaldo', 'Heung Min Son': 'Son', 'Rodrygo Silva de Goes': 'Rodrygo', 'Rúben Santos Gato Alves Dias': 'Rúben Dias',
+  'Nuno Alexandre Tavares Mendes': 'Nuno Mendes', 'Bruno Miguel Borges Fernandes': 'B. Fernandes', 'Gabriel dos S. Magalhães': 'Gabriel', 'Carlos Alberto Torres': 'Carlos Alberto'
+};
 function cardLabel(c) {
   if (c.cn) return c.cn;
-  const w = String(c.name || '').trim().split(/\s+/);
-  if (w.length < 2) return w.join(' ');
-  const part = /^(de|da|do|dos|das|di|del|della|van|von|der|den|ten|ter|le|la|el|al|bin|mac|mc|dal|du|des|y)$/i;
-  let i = w.length - 1;
-  while (i > 0 && part.test(w[i - 1])) i--;
-  return w.slice(i).join(' ');
+  const full = String(c.name || '').trim();
+  if (NOMS[full]) return NOMS[full];
+  const w = full.split(/\s+/);
+  if (w.length < 2) return full;
+  const part = /^(de|da|do|dos|das|di|del|della|van|von|der|den|ten|ter|le|la|el|al|bin|mac|mc|dal|du|des|y|i)$/i;
+  if (w.length === 2) return part.test(w[0]) ? full : w[1];
+  // 3 mots ou plus : on enlève le prénom et on garde le premier nom de famille (avec sa particule)
+  let i = part.test(w[0]) ? 0 : 1, j = i;
+  while (j < w.length - 1 && part.test(w[j])) j++;
+  return w.slice(i, j + 1).join(' ');
 }
 function ovHtml(c) {
   const st = STATK.map((k) => (c.stats[k] != null && c.stats[k] !== '') ? '<div><i>' + k + '</i><b>' + esc(c.stats[k]) + '</b></div>' : '').join('');
