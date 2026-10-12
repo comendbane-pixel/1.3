@@ -1,0 +1,49 @@
+name: Scanner maintenant (revente rapide)
+
+# Un seul bouton : relève le prix de TOUTES les cartes d'un coup (environ 190 crédits).
+# Lancé depuis le bouton « Scanner maintenant » de l'onglet Investir, ou depuis Actions -> Run workflow.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-prices
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Relever le prix de toutes les cartes
+        env:
+          PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
+          PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
+          API_BASE: ${{ vars.API_BASE }}
+          KEY_CREDITS: ${{ vars.KEY_CREDITS }}
+          TOTAL_CREDITS: ${{ vars.TOTAL_CREDITS }}
+          SNAPSHOT_PARTS: '100'        # autant de paquets de 500 que nécessaire : toutes les cartes
+          SNAPSHOT_FRESH_MIN: '5'      # un prix relevé il y a moins de 5 min n'est pas redemandé (évite de payer deux fois)
+        run: node update-prices.mjs snapshot
+
+      - name: Enregistrer data.json
+        if: ${{ always() }}
+        run: |
+          git config user.name "price-bot"
+          git config user.email "price-bot@users.noreply.github.com"
+          for f in data.json watch.json keys-state.json; do [ -f "$f" ] && git add "$f"; done
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau à enregistrer."
+          else
+            git commit -m "Scan rapide des prix"
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            git push
+          fi
