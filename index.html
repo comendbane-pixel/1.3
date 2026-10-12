@@ -1160,7 +1160,18 @@ function renderSbc() {
 // « provisoires » : EA peut les changer. Cartes or non rares.
 const ITEM_SCORE = { 75: 90, 76: 100, 77: 120, 78: 140, 79: 160, 80: 180, 81: 280, 82: 340, 83: 410, 84: 830, 85: 2100, 86: 4100, 87: 5500, 88: 8300, 89: 11000,
   90: 14000, 91: 19000, 92: 20000, 93: 25000, 94: 30000, 95: 40000, 96: 55000, 97: 85000, 98: 90000, 99: 100000 };
-const INV_UP = { petit: 0.04, moyen: 0.08, gros: 0.14 };   // hausse espérée (HYPOTHÈSE affichée à l'écran)
+// L'IA estime elle-même la hausse probable et la chance de gain (rien n'est choisi par l'utilisateur).
+const phi = (z) => { const t = 1 / (1 + 0.2316419 * Math.abs(z)), d = 0.3989423 * Math.exp(-z * z / 2), p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return z > 0 ? 1 - p : p; };
+function invOutlook(c, m, better, nEvents) {
+  const med = m.med || c.price, rev = Math.max(0, med / c.price - 1);          // retour vers le prix habituel
+  const pressure = Math.min(1, nEvents / 3), cheap = Math.max(0, Math.min(1, 0.5 + better));
+  const boost = 0.06 * pressure * cheap;                                        // demande SBC : part de l'estimation
+  const mean = Math.min(0.4, rev * 0.8 + boost);
+  const sd = m.n >= 4 && m.cv != null ? Math.max(0.03, m.cv) : 0.12;           // pas assez de relevés : risque supposé élevé
+  const need = 0.0527;                                                          // hausse minimale pour couvrir la taxe de 5 %
+  const prob = Math.max(1, Math.min(95, Math.round((1 - phi((need - mean) / sd)) * 100)));
+  return { mean, prob, boost, rev, sd };
+}
 const isFodder = (c) => /(^|[\/_])(gold|silver|bronze|rare|common)\.png/i.test(String(c.cardImage || '').split('?')[0]);
 // Cartes spéciales : seuls quelques scores sont publiés (FUTBIN, 12/10/2026). Autres notes : ×1,25 (estimation d'après ces exemples).
 const ITEM_SPECIAL = { team_of_the_week: { 85: 2625, 86: 5125 }, base_hero: { 89: 13750 }, destined_for_glory: { 86: 7688, 87: 6875 } };
@@ -1229,6 +1240,7 @@ function invLong(cfg) {
   }
   if (!pool.length) return { list: [], medCpp: null };
   const medCpp = median(pool.map((x) => x.cpp));
+  const nEv = (() => { try { const b = buildSbcs(); return b.up.length + b.cur.length; } catch (e) { return 0; } })();
   const out = pool.map((x) => {
     const c = x.c, m = invMetrics(c), why = [], warn = [];
     const better = (medCpp - x.cpp) / medCpp;
@@ -1243,12 +1255,13 @@ function invLong(cfg) {
       if (l > 0.08) { sc += 3; warn.push('Elle a déjà monté (' + pct(l) + ') au dernier relevé.'); } else sc += 15;
       sc += 10 * (1 - Math.min(1, m.cv / 0.2));
     } else { sc += 22; warn.push('Pas assez de relevés (' + m.n + ') pour lire la courbe : analyse partielle.'); }
-    const up = INV_UP[cfg.sz], base = Math.max(m.med || c.price, c.price);
-    const sell = Math.round(base * (1 + up)), net = sell * (1 - TAX) - c.price;
-    return { c, m, sc: Math.round(Math.min(100, sc)), why, warn, buy: c.price, sell, net, netPct: net / c.price, conf: confOf(m.n), is: x.is, cpp: x.cpp };
+    const ol = invOutlook(c, m, better, nEv), sell = Math.round(c.price * (1 + ol.mean)), net = sell * (1 - TAX) - c.price;
+    why.push('Chance de gain estimée par l\'IA : ' + ol.prob + ' % (hausse probable ' + pct(ol.mean) + (ol.boost > 0.005 ? ', dont ' + pct(ol.boost) + ' dus aux SBC annoncés' : '') + ').');
+    if (m.n < 4) warn.push('Peu de relevés : la chance de gain est une estimation prudente.');
+    return { c, m, prob: ol.prob, sc: Math.round(Math.min(100, sc)), why, warn, buy: c.price, sell, net, netPct: net / c.price, conf: confOf(m.n), is: x.is, cpp: x.cpp };
   });
   const w = { haute: 1, moyenne: 0.95, faible: 0.8 };
-  out.sort((a, b) => b.sc * w[b.conf] - a.sc * w[a.conf]);
+  out.sort((a, b) => (b.sc * 0.6 + b.prob * 0.4) * w[b.conf] - (a.sc * 0.6 + a.prob * 0.4) * w[a.conf]);
   return { list: out, medCpp };
 }
 function invSpark(c) {
@@ -1266,7 +1279,7 @@ function invCard(x, i, mode) {
     '<div class="invm"><div class="nm"><b>' + esc(c.name) + '</b> <span class="rt">' + esc(c.rating) + '</span></div><div class="small muted">' + esc(c.pos || '') + ' · ' + esc(c.club || '') + '</div>' +
     '<div class="small">Prix <b>' + money(c.price) + '</b> · habituel ' + money(x.m.med) + '</div>' +
     (x.is ? '<div class="small">Points SBC : <b>' + fmt(x.is.pts) + '</b>' + (x.is.est ? ' (estimé)' : '') + ' · <b>' + fmt(c.price / x.is.pts) + '</b> pièces/point</div>' : '') + '</div>' +
-    '<div class="invs"><div class="score">' + x.sc + '<small>/100</small></div><span class="badge ' + cl + '">Confiance ' + x.conf + '</span></div></div>' +
+    '<div class="invs"><div class="score">' + x.sc + '<small>/100</small></div><span class="badge ' + cl + '">Confiance ' + x.conf + '</span>' + (x.prob != null ? '<span class="small">Chance de gain <b>' + x.prob + ' %</b></span>' : '') + '</div></div>' +
     '<div class="invtrade"><div><span class="muted small">Acheter à</span><b>' + money(x.buy) + '</b></div><div><span class="muted small">Revendre vers</span><b>' + money(x.sell) + '</b></div>' +
     '<div><span class="muted small">Profit net (taxe 5 %)</span><b class="' + (x.net > 0 ? 'up' : 'dn') + '">' + (x.net > 0 ? '+' : '') + fmt(x.net) + ' (' + pct(x.netPct) + ')</b></div></div>' +
     '<div class="invsp">' + invSpark(c) + '</div>' +
@@ -1298,13 +1311,12 @@ function renderInvest() {
   }
   h += '<div class="box invf" id="invForm"><div class="invrow">';
   if (cfg.mode === 'long') {
-    h += '<label>Note visée<select id="invT">' + rs.map((r) => '<option value="' + r[0] + '"' + (Number(r[0]) === cfg.t ? ' selected' : '') + '>' + r[1] + '</option>').join('') + '</select></label>' +
-      '<label>Taille du SBC attendu<select id="invSz"><option value="petit"' + (cfg.sz === 'petit' ? ' selected' : '') + '>Petit (+4 %)</option><option value="moyen"' + (cfg.sz === 'moyen' ? ' selected' : '') + '>Moyen (+8 %)</option><option value="gros"' + (cfg.sz === 'gros' ? ' selected' : '') + '>Gros (+14 %)</option></select></label>';
+    h += '<label>Note visée<select id="invT">' + rs.map((r) => '<option value="' + r[0] + '"' + (Number(r[0]) === cfg.t ? ' selected' : '') + '>' + r[1] + '</option>').join('') + '</select></label>';
   }
   h += '<label>Budget max par carte<input id="invB" inputmode="numeric" placeholder="Illimité" value="' + (cfg.bud ? cfg.bud : '') + '"></label></div>';
   h += '<div class="small muted" style="margin-top:8px">' + (cfg.mode === 'rapide'
     ? 'Je cherche les cartes <b>nettement sous leur prix habituel</b> : tu achètes bas, tu revends dès que le prix revient à la normale (quelques heures à 1-2 jours).'
-    : 'Je cherche les cartes avec le <b>meilleur rapport points SBC / prix</b>. Les SBC simplifiés demandent des cartes en masse : celles qui rapportent le plus de points par pièce voient leur demande monter. Les « +4 / +8 / +14 % » sont des <b>hypothèses</b> de ma part.') + '</div></div>';
+    : 'Je cherche les cartes avec le <b>meilleur rapport points SBC / prix</b>. Les SBC simplifiés demandent des cartes en masse : celles qui rapportent le plus de points par pièce voient leur demande monter. La <b>hausse probable et la chance de gain sont calculées par l\'IA</b> à partir des vraies courbes, de la volatilité et des SBC annoncés (estimations, pas des certitudes).') + '</div></div>';
   if (cfg.mode === 'long') {
     h += '<h2>Ce qui arrive</h2>';
     h += feed.length ? feed.slice(0, 8).map((s) => '<div class="box invfeed"><b>' + esc(s.name) + '</b> <span class="small muted">' + (s.date ? (s.kind === 'cur' ? 'expire ' : 'prévu ') + fmtDate(s.date) + ' · ' + countdown(s.date) : 'date inconnue') + '</span>' +
@@ -1332,7 +1344,7 @@ function renderInvest() {
 }
 function invSummary() {
   const cfg = S.inv, d = DATA.updatedAt ? new Date(DATA.updatedAt) : null;
-  let t = 'Je veux investir (' + (cfg.mode === 'rapide' ? 'revente rapide' : 'long terme, avant un SBC ; taille ' + cfg.sz + (cfg.t ? ', note visée ' + cfg.t : '')) + (cfg.bud ? ', budget max par carte ' + fmt(cfg.bud) : '') + ').\n' +
+  let t = 'Je veux investir (' + (cfg.mode === 'rapide' ? 'revente rapide' : 'long terme, avant un SBC' + (cfg.t ? ', note visée ' + cfg.t : '')) + (cfg.bud ? ', budget max par carte ' + fmt(cfg.bud) : '') + ').\n' +
     'Prix relevés ' + (d ? 'le ' + d.toLocaleString('fr-FR') : '') + ' (pas en temps réel). Candidats avec leurs relevés réels :\n\n';
   INV_LAST.slice(0, 10).forEach((x, i) => {
     t += (i + 1) + '. ' + x.c.name + ' (' + x.c.rating + ', ' + x.c.pos + ') prix ' + fmt(x.c.price) + ' | habituel ' + fmt(x.m.med) + (x.is ? ' | points SBC ' + x.is.pts + ' | ' + fmt(x.c.price / x.is.pts) + ' pièces/point' : '') + ' | relevés : ' +
@@ -1343,7 +1355,6 @@ function invSummary() {
 document.addEventListener('change', (e) => {
   const t = e.target; if (!t || !t.id || t.id.indexOf('inv') !== 0) return;
   if (t.id === 'invT') S.inv.t = Number(t.value) || 0;
-  else if (t.id === 'invSz') S.inv.sz = t.value;
   else if (t.id === 'invB') { const v = num(t.value); S.inv.bud = v && v > 0 ? Math.floor(v) : 0; }
   else return;
   save(); renderInvest();
