@@ -1395,72 +1395,56 @@ function invCard(x, i, mode) {
 // Bouton « Scanner maintenant » : lance le scan sur GitHub (clé personnelle gardée sur cet appareil) + pause de 5 minutes
 const SCAN_WAIT = 5 * 60e3;
 let SCAN_AT = 0; try { SCAN_AT = Number(localStorage.getItem('fc27.scanAt')) || 0; } catch (e) { /* mémoire du navigateur indisponible : pause gardée en mémoire seulement */ }
-let SCAN_MSG = '', GH_MEM = '', SCAN_BUSY = false, SCAN_POLL = 0;
+let SCAN_MSG = '', SCAN_BUSY = false, SCAN_POLL = 0, SCAN_URL = '';
 const scanLeft = () => Math.max(0, SCAN_AT + SCAN_WAIT - Date.now());
 const scanTxt = () => { const t = Math.ceil(scanLeft() / 1000); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
-function ghToken() { try { return localStorage.getItem('fc27.ghtoken') || GH_MEM || ''; } catch (e) { return GH_MEM; } }
-function ghSetToken(v) { GH_MEM = v; try { if (v) localStorage.setItem('fc27.ghtoken', v); else localStorage.removeItem('fc27.ghtoken'); } catch (e) { /* ignoré */ } }
+// Adresse du relais : fichier scan-config.json  {"url":"https://….workers.dev"}  (voir le guide). Aucune clé n'est jamais dans le site.
+async function loadScanCfg() {
+  try { const r = await fetch('scan-config.json', { cache: 'no-store' }); if (!r.ok) return; const j = await r.json(); if (j && /^https:\/\/[^\s]+$/.test(String(j.url || ''))) { SCAN_URL = j.url; if (typeof renderInvest === 'function') renderInvest(); } } catch (e) { /* pas de fichier : bouton non relié */ }
+}
 function scanRepo() {
   let repo = 'comendbane-pixel/1.7';
   try { const mh = /^([^.]+)\.github\.io$/.exec(location.hostname), seg = location.pathname.split('/').filter(Boolean)[0]; if (mh && seg && !/\.html?$/i.test(seg)) repo = mh[1] + '/' + seg; } catch (e) { /* adresse inconnue : dépôt par défaut */ }
   return repo;
 }
-const ghHead = () => ({ Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + ghToken(), 'X-GitHub-Api-Version': '2022-11-28' });
 function scanSay(t) { SCAN_MSG = t; const m = document.getElementById('scanMsg'); if (m) m.textContent = t; }
-function scanWatch() {
+function scanWatch() {   // lecture publique du dépôt (sans clé) : on suit l'avancement du scan
   clearInterval(SCAN_POLL); let n = 0;
   SCAN_POLL = setInterval(async () => {
-    if (++n > 90) { clearInterval(SCAN_POLL); return; }
+    if (++n > 40) { clearInterval(SCAN_POLL); return; }
     try {
-      const r = await fetch('https://api.github.com/repos/' + scanRepo() + '/actions/workflows/scan-rapide.yml/runs?per_page=1&event=workflow_dispatch', { headers: ghHead() });
+      const r = await fetch('https://api.github.com/repos/' + scanRepo() + '/actions/workflows/scan-rapide.yml/runs?per_page=1&event=workflow_dispatch', { headers: { Accept: 'application/vnd.github+json' } });
       if (!r.ok) return; const j = await r.json(), run = j.workflow_runs && j.workflow_runs[0]; if (!run) return;
       if (run.status === 'completed') {
         clearInterval(SCAN_POLL);
-        scanSay(run.conclusion === 'success' ? 'Scan terminé. Les nouveaux prix arrivent sur cette page dans une minute environ.' : 'Le scan s\'est terminé avec une erreur (' + run.conclusion + '). Regarde Actions sur GitHub pour le détail.');
+        scanSay(run.conclusion === 'success' ? 'Scan terminé. Les nouveaux prix arrivent sur cette page dans une minute environ.' : 'Le scan s\'est terminé avec une erreur (' + run.conclusion + ').');
       } else scanSay('Scan en cours… (' + (run.status === 'queued' ? 'en attente de départ' : 'relevé des prix') + ')');
     } catch (e) { /* réseau coupé : on réessaie au prochain tour */ }
-  }, 20000);
+  }, 45000);
 }
 async function scanLaunch() {
   if (SCAN_BUSY || scanLeft() > 0) return;
-  if (!ghToken()) {
-    toast('Colle d\'abord ta clé GitHub ici (une seule fois)');
-    const tb = document.querySelector('#tabs button[data-tab="6"]'); if (tb) tb.click();
-    setTimeout(() => { const f = document.getElementById('ghTok'); if (f) { f.scrollIntoView({ block: 'center' }); f.focus(); } }, 150);
-    return;
-  }
+  if (!SCAN_URL) { scanSay('Le bouton n\'est pas encore relié à GitHub (étape à faire une fois par le propriétaire du site : voir le guide du relais).'); return; }
   SCAN_BUSY = true; scanSay('Lancement du scan…');
-  const repo = scanRepo();
   try {
-    const r1 = await fetch('https://api.github.com/repos/' + repo, { headers: ghHead() });
-    if (!r1.ok) throw { st: r1.status };
-    const ref = (await r1.json()).default_branch || 'main';
-    const r2 = await fetch('https://api.github.com/repos/' + repo + '/actions/workflows/scan-rapide.yml/dispatches', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, ghHead()), body: JSON.stringify({ ref }) });
-    if (r2.status !== 204) throw { st: r2.status };
-    SCAN_AT = Date.now(); try { localStorage.setItem('fc27.scanAt', String(SCAN_AT)); } catch (e) { /* ignoré */ }
-    scanSay('Scan lancé. Il prend quelques minutes : cette page te dit quand il est fini.'); scanWatch();
-  } catch (e) {
-    const st = e && e.st;
-    scanSay(st === 401 ? 'GitHub refuse ta clé (elle est fausse ou expirée). Refais-en une dans Réglages → Bouton de scan automatique.'
-      : st === 403 || st === 404 ? 'GitHub refuse : la clé n\'a pas le droit « Actions : Read and write » sur ce dépôt (' + repo + '), ou le dépôt est faux.'
-      : st === 422 ? 'GitHub ne trouve pas le fichier scan-rapide.yml. Ajoute-le dans .github/workflows.'
-      : st ? 'GitHub a répondu une erreur (' + st + ').' : 'Impossible de joindre GitHub (connexion ?).');
-  }
+    const r = await fetch(SCAN_URL, { method: 'POST' });
+    let j = {}; try { j = await r.json(); } catch (e) { /* réponse illisible */ }
+    if (r.ok && j.ok) {
+      SCAN_AT = Date.now(); try { localStorage.setItem('fc27.scanAt', String(SCAN_AT)); } catch (e) { /* ignoré */ }
+      scanSay('Scan lancé. Il prend quelques minutes : cette page te dit quand il est fini.'); scanWatch();
+    } else if (r.status === 429) {
+      const w = Math.max(5, Number(j.wait) || 60); SCAN_AT = Date.now() - SCAN_WAIT + w * 1000;
+      scanSay(j.state === 'running' ? 'Un scan est déjà en cours (lancé par quelqu\'un d\'autre) : patiente.' : 'Un scan vient d\'être lancé : réessaie dans quelques minutes.'); scanWatch();
+    } else scanSay(j.message || 'Le relais a répondu une erreur (' + r.status + ').');
+  } catch (e) { scanSay('Impossible de joindre le relais du scan (connexion ?).'); }
   SCAN_BUSY = false; renderInvest();
 }
-document.addEventListener('click', (e) => {
-  if (e.target.closest('[data-act=scannow]')) { scanLaunch(); return; }
-  if (e.target.closest('[data-act=ghsave]')) {
-    const v = (document.getElementById('ghTok') || {}).value; const t = String(v || '').trim();
-    if (!/^(github_pat_|ghp_)[A-Za-z0-9_]{20,}$/.test(t)) { toast('Ce n\'est pas une clé GitHub (elle commence par github_pat_)'); return; }
-    ghSetToken(t); toast('Clé enregistrée sur cet appareil'); renderSettings(); renderInvest(); return;
-  }
-  if (e.target.closest('[data-act=ghdel]')) { ghSetToken(''); toast('Clé supprimée'); renderSettings(); renderInvest(); }
-});
+document.addEventListener('click', (e) => { if (e.target.closest('[data-act=scannow]')) scanLaunch(); });
 setInterval(() => {
   const b = document.getElementById('scanBtn'); if (!b || b.dataset.act === 'scannow') return;
   if (scanLeft() > 0) b.textContent = 'Prochain scan possible dans ' + scanTxt(); else renderInvest();
 }, 1000);
+loadScanCfg();
 let INV_LAST = [];
 function renderInvest() {
   const cfg = S.inv, { cur, up } = buildSbcs();
@@ -1477,14 +1461,11 @@ function renderInvest() {
       (old == null || old > 2 ? 'Pour une revente rapide, c\'est trop vieux : la carte a peut-être déjà changé de prix. Vérifie le prix dans le jeu avant d\'acheter. ' : '') +
       'Les prix ne changent que quand le robot passe : utilise le bouton « Scanner maintenant » ci-dessous juste avant d\'investir.</div>'; }
   if (cfg.mode === 'rapide') {
-    const left = scanLeft(), tok = !!ghToken();
+    const left = scanLeft();
     h += '<div class="box"><b>Scanner maintenant</b><div class="small muted" style="margin:6px 0">Relève le prix de <b>toutes les cartes</b> d\'un coup (environ 190 crédits). Ça prend quelques minutes.</div>' +
-      (!tok
-        ? '<div class="note" style="margin:0 0 8px">Première fois : clique sur le bouton, il t\'emmène dans <b>Réglages</b> pour coller ta clé GitHub (une seule fois, 2 minutes).</div>' +
-          '<button class="btn primary" id="scanBtn" data-act="scannow">Scanner maintenant</button>'
-        : left > 0
-          ? '<button class="btn primary" id="scanBtn" disabled style="opacity:.5;cursor:not-allowed">Prochain scan possible dans ' + scanTxt() + '</button><div class="small muted" style="margin-top:6px">Pause de 5 minutes après chaque scan, pour ne pas dépenser des crédits pour rien.</div>'
-          : '<button class="btn primary" id="scanBtn" data-act="scannow">Scanner maintenant</button>') +
+      (left > 0
+        ? '<button class="btn primary" id="scanBtn" disabled style="opacity:.5;cursor:not-allowed">Prochain scan possible dans ' + scanTxt() + '</button><div class="small muted" style="margin-top:6px">Pause de 5 minutes après chaque scan, pour ne pas dépenser des crédits pour rien.</div>'
+        : '<button class="btn primary" id="scanBtn" data-act="scannow">Scanner maintenant</button>') +
       '<div class="small" id="scanMsg" style="margin-top:8px">' + esc(SCAN_MSG) + '</div></div>';
   }
   h += '<div class="box invf" id="invForm"><div class="invrow">';
@@ -1996,13 +1977,6 @@ function renderSettings() {
     '<label class="l" for="setAnim">Animations</label><select class="field" id="setAnim"><option value="full">Complètes</option><option value="reduced">Réduites</option><option value="none">Aucune</option></select>' +
     '<label class="l" for="setCard">Style des cartes</label><select class="field" id="setCard"><option value="source">Fond de la source (celui d\'avant)</option><option value="drawn">Carte dessinée par l\'appli (nette)</option></select>' +
     '<label class="l" for="setSim">Courbe de prix simulée (démonstration)</label><select class="field" id="setSim"><option value="1">Oui, historique simulé</option><option value="0">Non, vrais relevés du robot</option></select></div>' +
-    '<h2>Bouton de scan automatique</h2><div class="box"><p class="small muted" style="margin-top:0">Pour que « Scanner maintenant » (onglet Investir) lance le scan <b>sans ouvrir GitHub</b>, il faut une clé personnelle GitHub. Elle reste <b>uniquement sur cet appareil</b> et ne donne que le droit de lancer les robots de ce dépôt.</p>' +
-    (ghToken() ? '<div class="note" style="margin:0 0 8px">Clé enregistrée sur cet appareil. Le bouton est actif.</div><button class="btn danger" data-act="ghdel">Supprimer la clé</button>'
-      : '<label class="l" for="ghTok">Clé GitHub</label><input class="field" id="ghTok" type="password" autocomplete="off" placeholder="github_pat_…"><div class="row2" style="margin-top:6px"><button class="btn primary" data-act="ghsave">Enregistrer la clé</button></div>') +
-    '<details style="margin-top:10px"><summary class="small">Comment créer la clé (2 minutes)</summary><ol class="small" style="padding-left:18px"><li>Sur GitHub : ta photo en haut à droite → <b>Settings</b> → tout en bas <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>.</li>' +
-    '<li>Nom : <b>scan</b>. Expiration : la plus longue. <b>Repository access</b> : « Only select repositories », puis choisis ton dépôt <b>' + esc(scanRepo().split('/')[1] || '') + '</b>.</li>' +
-    '<li><b>Permissions</b> → <b>Repository permissions</b> → <b>Actions</b> : mets <b>Read and write</b>. Rien d\'autre.</li>' +
-    '<li><b>Generate token</b>, copie la clé (elle commence par github_pat_) et colle-la ci-dessus. Ne la mets jamais dans un fichier du dépôt ni dans un message.</li></ol></details></div>' +
     '<h2>Mes données</h2><div class="box">' +
     (storageOK ? '' : '<div class="note" style="margin-top:0">Ton navigateur bloque la sauvegarde : tes favoris, alertes et portefeuille seront perdus à la fermeture. Pense à faire une sauvegarde.</div>') +
     '<p class="small muted" style="margin-top:0">Favoris, alertes et portefeuille restent sur cet appareil. Fais une sauvegarde avant de changer de téléphone ou de vider ton navigateur.</p>' +
