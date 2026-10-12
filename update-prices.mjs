@@ -17,7 +17,7 @@ const BASE = (process.env.API_BASE ||
   'https://api.parse.bot/scraper/f56a52f1-08bd-4926-8246-945dc47bce4e').replace(/\/+$/, '');
 const PAUSE_MS = Number(process.env.PAUSE_MS ?? 13000); // 5 requêtes/minute max
 const MAX_PAGES = Number(process.env.MAX_PAGES) || 25;  // 25 pages x 3 crédits = 75 crédits
-const MIN_RATING = Number(process.env.MIN_RATING ?? 80);
+const MIN_RATING = Number(process.env.MIN_RATING) || 80;
 const SNAPSHOT_SIZE = Number(process.env.SNAPSHOT_SIZE ?? 500); // 500 maximum
 const HISTORY_MAX = 14;
 const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 150000); // parse.bot peut être lent (1 minute par page)
