@@ -22,6 +22,7 @@ const BASE = (process.env.API_BASE ||
 const PAUSE_MS = Number(process.env.PAUSE_MS ?? 13000); // pause entre deux requêtes DE LA MÊME clé (5 requêtes/minute max par clé)
 const MAX_PAGES = Number(process.env.MAX_PAGES) || 25;  // 25 pages x 3 crédits = 75 crédits
 const MIN_RATING = Number(process.env.MIN_RATING) || 80;
+const SORT_DIR = process.env.SORT === 'asc' ? 'asc' : 'desc'; // sens du tri par prix du catalogue ; « asc » sert de 2e passage de contrôle
 const SNAPSHOT_SIZE = Math.max(1, Math.min(Number(process.env.SNAPSHOT_SIZE) || 500, 500)); // cartes par requête (500 maximum)
 const SNAPSHOT_PARTS = Math.max(0, Math.floor(Number(process.env.SNAPSHOT_PARTS) || 0));    // paquets en même temps (0 = autant que d'ouvriers)
 const SNAPSHOT_FRESH_MIN = Number(process.env.SNAPSHOT_FRESH_MIN ?? 30);                    // un prix plus récent que ça n'est pas redemandé
@@ -510,7 +511,8 @@ async function fetchSbcs() {
 async function modeList(data) {
   const map = new Map(data.cards.map((c) => [c.id, c]));
   const now = Date.now();
-  const restart = process.env.RESTART === '1'; // test : repart de la page 1 sans toucher au point de reprise
+  const restart = process.env.RESTART === '1' || SORT_DIR === 'asc'; // repart de la page 1 sans toucher au point de reprise (toujours le cas pour le passage de contrôle « asc »)
+  const before = map.size;
   const start = Number.isInteger(data.listNext) && data.listNext > 0 && !restart ? data.listNext : 1;
   const pages = Array.from({ length: MAX_PAGES }, (_, i) => start + i);
   const done = new Set();
@@ -520,8 +522,13 @@ async function modeList(data) {
     if (stopAll || page >= endPage) return;
     console.log(`Catalogue : page ${page} (${page - start + 1}/${MAX_PAGES} de ce passage)`);
     let payload;
+    const getPage = () => api('list_fc27_players', { platform: 'ps', min_rating: MIN_RATING, sort_by_price: SORT_DIR, page }, 'list_fc27_players');
     try {
-      payload = await api('list_fc27_players', { platform: 'ps', min_rating: MIN_RATING, sort_by_price: 'desc', page }, 'list_fc27_players');
+      payload = await getPage();
+      if (!toArray(payload).length) { // une page vide peut être un raté de parse.bot : on la redemande une fois avant de croire que c'est la fin
+        console.log(`Page ${page} vide : on la redemande une fois pour confirmer la fin du catalogue.`);
+        payload = await getPage();
+      }
     } catch (e) {
       failedPages.push(page);
       if (!firstErr) firstErr = e;
@@ -541,7 +548,7 @@ async function modeList(data) {
       console.log('Image de carte HD trouvée : ' + (arr[0].cardImageLarge ? 'oui' : 'non') + ' | photo HD : ' + (arr[0].playerImageLarge ? 'oui' : 'non'));
     }
     done.add(page);
-    if (!arr.length) { endPage = Math.min(endPage, page); console.log(`Page ${page} vide : fin du catalogue.`); return; }
+    if (!arr.length) { endPage = Math.min(endPage, page); console.log(`Page ${page} vide (confirmée) : fin du catalogue.`); return; }
     for (const c of arr) mergeCard(map, c, Date.now());
     total += arr.length;
     data.cards = [...map.values()];
@@ -554,7 +561,9 @@ async function modeList(data) {
   while (done.has(nextOk)) nextOk++; // une page vide de fin peut arriver après la dernière page pleine
   const finished = endPage !== Infinity && nextOk > endPage;
   if (finished && !restart) { data.listNext = null; await saveData(data); }
-  console.log(`Catalogue : ${total} cartes lues, ${data.cards.length} au total.`);
+  console.log(`Catalogue : ${total} cartes lues, ${data.cards.length} au total. Nouvelles cartes dans ce passage : ${map.size - before}.`);
+  if (finished) console.log(`FIN DU CATALOGUE confirmée à la page ${endPage} (sens du tri : ${SORT_DIR}). Total : ${data.cards.length} cartes.` +
+    ' Contrôle : le tri par prix bouge pendant la lecture, donc quelques cartes peuvent être ratées. Relance une fois avec « sens du tri » = asc : si « Nouvelles cartes » est proche de 0, le catalogue est complet.');
   if (failedPages.length) {
     if (!total) throw firstErr;
     console.log(`ATTENTION : ${failedPages.length} page(s) non lue(s) (${failedPages.sort((a, b) => a - b).slice(0, 10).join(', ')}${failedPages.length > 10 ? '…' : ''}). Rien n'est perdu : relance le mode « list » pour reprendre à la page ${nextOk}.`);
