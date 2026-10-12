@@ -28,6 +28,9 @@ const SNAPSHOT_FRESH_MIN = Number(process.env.SNAPSHOT_FRESH_MIN ?? 30);        
 const PARALLEL = process.env.PARALLEL !== '0';                                              // PARALLEL=0 : un seul ouvrier à la fois
 const MAX_WORKERS = Math.max(1, Number(process.env.MAX_WORKERS) || 50);
 const STAGGER_MS = Number(process.env.STAGGER_MS ?? 500);                                   // départ décalé des ouvriers (évite 20 requêtes à la même milliseconde)
+const COST = { list_fc27_players: 3, get_fc27_market_snapshot: 10, get_fc27_sbcs_list: 1 }; // crédits par appel : ESTIMATIONS (jamais vérifiées)
+const COST_OTHER = Number(process.env.COST_OTHER ?? 3);
+const KEY_CREDITS = Number(process.env.KEY_CREDITS) || 0; // crédits de départ communs à toutes les clés sans total propre (facultatif)
 const HISTORY_MAX = 14;
 const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 150000); // parse.bot peut être lent (1 minute par page)
 const RETRY_MS = Number(process.env.RETRY_MS ?? 30000);      // pause avant un nouvel essai
@@ -53,10 +56,11 @@ const ENTRIES = (() => {
   const seen = new Set(), out = [];
   const toks = String(process.env.PARSE_API_KEYS || '').split(/[\s,;]+/).concat(String(process.env.PARSE_API_KEY || ''));
   for (const t of toks) {
-    const [k0, b0] = String(t).split('|');
+    const [k0, b0, c0] = String(t).split('|');
     const k = cleanKey(k0), b = normBase(cleanKey(b0));
+    const cr = Number(String(c0 || '').replace(/[^\d]/g, '')) || 0; // crédits de départ de cette clé (facultatif : CLE|ADRESSE|CREDITS)
     if (!k || seen.has(k + '|' + b)) continue;
-    seen.add(k + '|' + b); out.push({ k, b });
+    seen.add(k + '|' + b); out.push({ k, b, cr });
   }
   return out;
 })();
@@ -73,8 +77,8 @@ const shortUrl = (u) => String(u).replace(/^https?:\/\//, '').replace(/([0-9a-f]
 // Un ouvrier = une clé + son adresse de scraper + sa propre pause. Il fait une requête à la fois.
 class KeyDead extends Error {}
 const W = ENTRIES.map((e, i) => ({
-  i, k: e.k, b: e.b || BASE,
-  busy: false, dead: false, why: '', credit: false, keep: false, ok: false,
+  i, k: e.k, b: e.b || BASE, budget: e.cr || KEY_CREDITS || null,
+  busy: false, dead: false, why: '', credit: false, keep: false, ok: false, spent: 0, left: null,
   last: Date.now() - PAUSE_MS + i * STAGGER_MS, // le premier appel de chaque ouvrier est décalé de quelques dixièmes de seconde
 }));
 let anyOK = false;   // vrai dès qu'une clé a obtenu une réponse
@@ -123,14 +127,14 @@ function markDead(w, why, credit) {
 async function loadKeyState() {
   const month = new Date().toISOString().slice(0, 7);
   if (process.env.RESET_KEYS === '1') console.log('« Oublier les clés vides » demandé : toutes les clés sont réessayées.');
-  else {
-    try {
-      const st = JSON.parse(await readFile(STATE_FILE, 'utf8'));
-      // On ne reprend les clés vides mémorisées que si la liste de clés est la même qu'au dernier passage et que c'est le même mois.
-      if (st.fp === FP && st.month === month && Array.isArray(st.dead)) {
-        for (const i of st.dead) if (Number.isInteger(i) && W[i]) { W[i].dead = true; W[i].keep = true; W[i].credit = true; W[i].why = 'vide (mémorisée ce mois-ci)'; }
-      }
-    } catch { /* premier passage */ }
+  let st = null;
+  try { st = JSON.parse(await readFile(STATE_FILE, 'utf8')); } catch { /* premier passage */ }
+  // On ne reprend l'état mémorisé que si la liste de clés est la même qu'au dernier passage et que c'est le même mois.
+  if (st && st.fp === FP && st.month === month) {
+    if (Array.isArray(st.spent)) st.spent.forEach((v, i) => { if (W[i] && Number.isFinite(v)) W[i].spent = v; });
+    if (process.env.RESET_KEYS !== '1' && Array.isArray(st.dead)) {
+      for (const i of st.dead) if (Number.isInteger(i) && W[i]) { W[i].dead = true; W[i].keep = true; W[i].credit = true; W[i].why = 'vide (mémorisée ce mois-ci)'; }
+    }
   }
   const n = alive().length;
   console.log(`Clés disponibles : ${KEYS.length}.${n < KEYS.length ? ` Dont ${KEYS.length - n} vide(s) mémorisée(s) ce mois-ci : ignorée(s).` : ''}`);
@@ -143,12 +147,17 @@ async function saveKeyState() {
   // On mémorise une clé vide (crédits) toujours. Une clé « refusée » seulement si une autre a marché dans ce passage (sinon c'est peut-être une panne de parse.bot).
   const dead = W.filter((w) => w.dead && (w.keep || w.credit || anyOK)).map((w) => w.i);
   const month = new Date().toISOString().slice(0, 7);
+  const spent = W.map((w) => w.spent);
+  const left = W.map((w) => w.left);
   let prev = null;
   try { prev = JSON.parse(await readFile(STATE_FILE, 'utf8')); } catch { /* pas de fichier */ }
-  if (!dead.length && !prev) return;
-  if (prev && prev.fp === FP && prev.month === month && JSON.stringify(prev.dead || []) === JSON.stringify(dead)) return;
+  if (!dead.length && !prev && !spent.some((v) => v > 0)) return;
   const first = W.findIndex((w) => !w.dead);
-  await writeFile(STATE_FILE, JSON.stringify({ month, index: first < 0 ? KEYS.length : first, total: KEYS.length, fp: FP, dead }) + '\n', 'utf8');
+  const budget = W.map((w) => w.budget);
+  const out = { month, index: first < 0 ? KEYS.length : first, total: KEYS.length, fp: FP, dead, spent, left, budget, at: new Date().toISOString() };
+  const same = prev && prev.fp === FP && prev.month === month && JSON.stringify(prev.dead || []) === JSON.stringify(dead) && JSON.stringify(prev.spent || []) === JSON.stringify(spent) && JSON.stringify(prev.left || []) === JSON.stringify(left) && JSON.stringify(prev.budget || []) === JSON.stringify(budget);
+  if (same) return;
+  await writeFile(STATE_FILE, JSON.stringify(out) + '\n', 'utf8');
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -285,6 +294,19 @@ function normPlayer(p) {
   return out;
 }
 // ---------- appels API ----------
+// Si parse.bot indique le solde dans ses en-têtes de réponse, on le lit (seuls les NOMS d'en-têtes liés aux crédits sont affichés, une seule fois).
+let balanceHdrLogged = false;
+function readBalance(w, headers) {
+  try {
+    for (const [k, v] of headers.entries()) {
+      if (!/credit|balance|quota/i.test(k) || /rate/i.test(k)) continue; // « x-ratelimit-remaining » compte des requêtes, pas des crédits
+      if (!balanceHdrLogged) { balanceHdrLogged = true; console.log(`Solde lu dans l'en-tête de réponse « ${k} » (exemple clé n°${w.i + 1} : ${String(v).slice(0, 40)}).`); }
+      const n = Number(String(v).replace(/[^\d.]/g, ''));
+      if (/remain|left|balance|available/i.test(k) && Number.isFinite(n)) w.left = n;
+    }
+  } catch { /* en-têtes illisibles : on ignore */ }
+}
+
 // Une requête sur UN ouvrier (une clé). Si la clé est vide ou refusée, elle est mise de côté et KeyDead est levée :
 // api() redonne alors la même requête à un autre ouvrier.
 async function callOn(w, endpoint, params, label) {
@@ -363,6 +385,8 @@ async function callOn(w, endpoint, params, label) {
       throw new Error(`${label} : erreur HTTP ${res.status} ${txt}`);
     }
     w.ok = true; anyOK = true;
+    w.spent += COST[endpoint] ?? COST_OTHER;
+    readBalance(w, res.headers);
     return res.json();
   }
   throw new Error(`${label} : échec après ${MAX_TRIES} essais`);

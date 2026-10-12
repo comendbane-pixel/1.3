@@ -755,7 +755,7 @@ let FAV = new Set(S.favs);
    Données
    ===================================================================== */
 const EMPTY = { demo: false, updatedAt: null, source: 'En attente', cards: [], sbcs: [] };
-let WATCH = null, DATA = EMPTY, UPCOMING = [], CARDS = [], MAP = new Map(), MOVERS = [], POSLIST = [];
+let KS = null, WATCH = null, DATA = EMPTY, UPCOMING = [], CARDS = [], MAP = new Map(), MOVERS = [], POSLIST = [];
 let lastCheck = 0, loadedOnce = false;
 
 const GROUPS = { GK: ['GK'], DEF: ['CB', 'LB', 'RB', 'LWB', 'RWB'], MIL: ['CDM', 'CM', 'CAM', 'LM', 'RM'], ATT: ['LW', 'RW', 'CF', 'ST', 'LF', 'RF', 'LS', 'RS'] };
@@ -827,11 +827,13 @@ async function getJSON(url) {
 async function loadAll() {
   lastCheck = Date.now();
   // Les trois fichiers sont demandés en même temps. Ouverture en fichier ou aperçu : données vides.
-  const [d, u, wj] = await Promise.all([
+  const [d, u, wj, ks] = await Promise.all([
     getJSON('data.json').catch(() => null),
     getJSON('sbcs.json').catch(() => null),
-    getJSON('watch.json').catch(() => null)
+    getJSON('watch.json').catch(() => null),
+    getJSON('keys-state.json').catch(() => null)
   ]);
+  if (ks && Array.isArray(ks.spent)) { const chg = JSON.stringify(ks) !== JSON.stringify(KS); KS = ks; if (chg && TAB === 6) { try { renderSettings(); } catch (e) { } } }
   if (wj && Array.isArray(wj.items)) { const ch = JSON.stringify(wj) !== JSON.stringify(WATCH); WATCH = wj; if (ch && loadedOnce) { try { renderActive(); } catch (e) { } } }
   const first = !loadedOnce;
   loadedOnce = true;
@@ -1865,6 +1867,24 @@ function closeSheet() {
 /* =====================================================================
    Réglages
    ===================================================================== */
+// Crédits des clés : dépenses estimées par le robot (ce mois-ci) et solde réel seulement si parse.bot le donne. Jamais la clé elle-même.
+function ksHtml() {
+  if (!KS || !Array.isArray(KS.spent) || !KS.spent.length) return '';
+  const dead = Array.isArray(KS.dead) ? KS.dead : [];
+  const rows = KS.spent.map((sp, i) => {
+    const left = KS.left && KS.left[i] != null ? Number(KS.left[i]) : null;
+    const bud = KS.budget && Number(KS.budget[i]) > 0 ? Number(KS.budget[i]) : 0; // total de départ, si tu l'as indiqué au robot
+    const txt = left != null && isFinite(left) ? 'il reste <b>' + fmt(left) + '</b> crédits'
+      : bud ? 'il reste environ <b>' + fmt(Math.max(0, bud - (Number(sp) || 0))) + '</b> crédits <span class="muted">(' + fmt(sp) + ' dépensés sur ' + fmt(bud) + ', estimation)</span>'
+      : 'environ <b>' + fmt(sp) + '</b> crédits dépensés (estimation)';
+    return '<div>Clé n°' + (i + 1) + ' : ' + txt + (dead.includes(i) ? ' · <b style="color:var(--down)">vide</b>' : '') + '</div>';
+  }).join('');
+  const tot = KS.spent.reduce((a, b) => a + (Number(b) || 0), 0), at = KS.at ? new Date(KS.at) : null;
+  return '<br><br><b>Crédits des clés</b> · ' + esc(KS.month || '') + (at && !isNaN(at) ? ' · relevé du robot le ' + fmtDT(at) : '') + '<br>' + rows +
+    '<div>Total dépensé : <b>' + fmt(tot) + '</b> crédits (estimation)</div>' +
+    (KS.budget && KS.budget.some((b) => Number(b) > 0) && KS.budget.every((b) => Number(b) > 0) ? '<div>Total restant : environ <b>' + fmt(KS.budget.reduce((a, b, i) => a + Math.max(0, (KS.left && KS.left[i] != null ? Number(KS.left[i]) : Number(b) - (Number(KS.spent[i]) || 0))), 0)) + '</b> crédits (estimation)</div>' : '') +
+    '<div style="margin-top:4px">Le robot compte ses propres requêtes (3 crédits par page, 10 par paquet de prix) : ce n\'est pas le solde officiel. Vérifie le solde exact sur parse.bot.</div>';
+}
 function renderSettings() {
   const d = DATA.updatedAt ? new Date(DATA.updatedAt) : null;
   $('#p4').innerHTML = '<h2>Apparence</h2><div class="box">' +
@@ -1880,7 +1900,7 @@ function renderSettings() {
     '<div class="row2" style="margin-top:6px"><button class="btn" data-act="showtext">Afficher mon texte</button><button class="btn" data-act="restoretext">Restaurer ce texte</button></div></details></div>' +
     '<h2>Remise à zéro</h2><div class="box"><p class="small muted" style="margin-top:0">Efface tes favoris, alertes, portefeuille et réglages sur cet appareil. Les prix ne sont pas touchés.</p><button class="btn danger" data-act="reset">Tout remettre à zéro</button></div>' +
     '<h2>À propos</h2><div class="box small muted">Dernière mise à jour des prix : <b>' + (d && !isNaN(d) ? fmtDT(d) : 'aucune') + '</b><br>Cartes : <b>' + fmt(CARDS.length) + '</b> · Source : ' + esc(DATA.source || '—') +
-    '<br><br>Les prix ne sont pas en temps réel (jusqu\'à environ 2 jours de retard). Les gains et conseils sont des estimations. Application non officielle, sans lien avec EA.</div>';
+    ksHtml() + '<br><br>Les prix ne sont pas en temps réel (jusqu\'à environ 2 jours de retard). Les gains et conseils sont des estimations. Application non officielle, sans lien avec EA.</div>';
   $('#setCard').value = S.card; $('#setSim').value = S.sim ? '1' : '0'; $('#setTheme').value = S.theme; $('#setAnim').value = S.anim;
 }
 function download(name, text) {
