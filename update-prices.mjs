@@ -37,7 +37,9 @@ const KEY_CREDITS = Number(process.env.KEY_CREDITS) || 0; // crédits de départ
 const HISTORY_MAX = 14;
 const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 150000); // parse.bot peut être lent (1 minute par page)
 const RETRY_MS = Number(process.env.RETRY_MS ?? 30000);      // pause avant un nouvel essai
-const STRIKES = Number(process.env.STRIKES ?? 4);            // une clé n'est mise de côté qu'après ce nombre de refus de suite (un seul refus peut être passager)
+const STRIKE_MIN_MS = Number(process.env.STRIKE_MIN_MS ?? 10000);   // pause entre deux refus d'une même clé : au hasard entre ces deux valeurs
+const STRIKE_MAX_MS = Number(process.env.STRIKE_MAX_MS ?? 15000);
+const STRIKES = Number(process.env.STRIKES ?? 10);           // une clé n'est mise de côté qu'après ce nombre de refus de suite (un seul refus peut être passager)
 const MAX_TRIES = Number(process.env.MAX_TRIES ?? 4);        // essais par requête
 // ---------- clés ----------
 // Une seule clé (secret PARSE_API_KEY) OU plusieurs (secret PARSE_API_KEYS : une clé par ligne, ou séparées par des virgules).
@@ -339,8 +341,9 @@ async function callOn(w, endpoint, params, label) {
   const strike = async (why, credit, detail) => {
     w.strikes = (w.strikes ?? 0) + 1;
     if (w.strikes >= STRIKES) { w.strikes = 0; markDead(w, why, credit, detail); throw new KeyDead(); }
-    console.log(`${label} (clé n°${w.i + 1}) : refus ${w.strikes}/${STRIKES} (${why}) — ${detail}. On attend ${Math.round(RETRY_MS / 1000)} s et on réessaie avant de la mettre de côté.`);
-    await sleep(RETRY_MS);
+    const pause = STRIKE_MIN_MS + Math.random() * Math.max(0, STRIKE_MAX_MS - STRIKE_MIN_MS);
+    console.log(`${label} (clé n°${w.i + 1}) : refus ${w.strikes}/${STRIKES} (${why}) — ${detail}. On attend ${Math.round(pause / 1000)} s et on réessaie avant de la mettre de côté.`);
+    await sleep(pause);
     w.last = Date.now();
   };
   for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
