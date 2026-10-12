@@ -21,6 +21,11 @@ on:
         required: false
         default: ''
         type: string
+      min_rating:
+        description: 'Mode list : note minimale des cartes (vide = 80). Mets 45 pour avoir TOUTES les cartes.'
+        required: false
+        default: ''
+        type: string
       details_count:
         description: 'Modes details et fiche : combien de joueurs (les plus chers d abord). Vide = 3.'
         required: false
@@ -45,7 +50,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 340
     steps:
       - uses: actions/checkout@v4
 
@@ -59,6 +64,7 @@ jobs:
           PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
           MODE: ${{ github.event.inputs.mode || 'auto' }}
           MAX_PAGES: ${{ github.event.inputs.pages }}
+          MIN_RATING: ${{ github.event.inputs.min_rating }}
           DETAILS_COUNT: ${{ github.event.inputs.details_count }}
           RESTART: ${{ github.event.inputs.restart == 'oui' && '1' || '' }}
         run: node update-prices.mjs "$MODE"
