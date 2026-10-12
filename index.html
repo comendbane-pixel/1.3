@@ -1544,7 +1544,7 @@ function renderInvest(force) {
   if (cfg.mode === 'rapide') res = invRapide(cfg); else res = invLong(cfg).list;
   INV_LAST = res;
   h += '<div class="small muted" style="margin:6px 2px">' + full + ' carte' + (full > 1 ? 's ont' : ' a') + ' une courbe exploitable (4 relevés ou plus) sur ' + CARDS.length + '. ' +
-    (full < 20 ? '<b>Lance « snapshot » plusieurs fois par jour</b> (Actions → Mise à jour des prix) pour que l\'analyse devienne fiable.' : '') + '</div>';
+    (full < 20 ? '<b>Lance « Scanner maintenant » à plusieurs moments de la journée</b> : chaque scan ajoute un relevé à chaque carte, et il en faut 4 pour repérer une hausse.' : '') + '</div>';
   if (!res.length && cfg.mode === 'rapide' && INV_NOBUD) h += '<div class="box"><div class="big" style="font-weight:700">Ton budget est trop petit pour ces cartes</div><p class="muted">' + INV_NOBUD.n + ' carte' + (INV_NOBUD.n > 1 ? 's' : '') + ' en hausse ' + (INV_NOBUD.n > 1 ? 'passent' : 'passe') + ' le test de l\'IA, mais la moins chère coûte ' + fmt(INV_NOBUD.min) + ' alors que ton budget par carte est de ' + fmt(INV_NOBUD.cap) + ' (' + fmt(S.inv.tot) + ' pour ' + INV_NOBUD.N + ' carte' + (INV_NOBUD.N > 1 ? 's' : '') + '). Choisis moins de cartes ou augmente ton budget.</p></div>';
   else if (!res.length) h += '<div class="box"><div class="big" style="font-weight:700">Aucun conseil pour l\'instant</div><p class="muted">' + (INV_SKIP
     ? 'L\'IA a regardé ' + INV_SKIP + ' carte' + (INV_SKIP > 1 ? 's' : '') + ' mais n\'est pas sûre à ' + (cfg.mode === 'rapide' ? RISK[cfg.risk].p : MIN_PROB) + ' % ou plus de te faire gagner des crédits après la taxe : elle préfère ne rien conseiller. '
