@@ -320,9 +320,6 @@ label.l{display:block;font-size:13px;color:var(--muted);margin:8px 0 3px}
 @media(hover:none){.tile:hover{transform:none;filter:none}.tile:active{transform:scale(1.05)}}
 [data-anim=none] .tile:hover,[data-anim=none] .tile:focus-within{transform:none}
 .open{padding:2px 2px 0;gap:4px}
-.grid .tile.nm .cardbox.md{width:80%;margin:0 auto}
-.grid .tile.sp .cardbox.md{width:100%;max-width:190px;margin:0 auto}
-.grid .tile.nm .mpill{margin-left:10%;margin-right:10%}
 .cardbox.md,.fc.md{width:100%;max-width:170px}
 .mpill{overflow:hidden;display:flex;align-items:center;gap:5px;background:#0b0d12;border:1px solid var(--line);border-radius:7px;padding:2px 7px 2px 2px;margin-top:-14px;position:relative;z-index:2;font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;color:var(--text);max-width:100%;white-space:nowrap}
 [data-theme=light] .mpill{background:#fff}
@@ -466,6 +463,8 @@ button.dm.sel{outline:0!important;filter:drop-shadow(0 0 6px #ff4d00)}
   background:linear-gradient(115deg,rgba(255,0,150,.0) 15%,rgba(255,60,200,.55) 30%,rgba(60,200,255,.55) 45%,rgba(120,255,160,.5) 58%,rgba(255,230,90,.5) 70%,rgba(255,0,150,0) 85%);
   background-size:300% 300%;mix-blend-mode:color-dodge;opacity:.55;animation:holo 6s linear infinite}
 .cardbox.holo .face,.cardbox.holo .ov{z-index:2}
+.cardbox.fbasic .face{width:68%;height:42%;top:21%}
+.cardbox.fspec .face{width:98%;height:61%;top:2%}
 @keyframes holo{0%{background-position:0% 50%}100%{background-position:100% 50%}}
 [data-anim=reduced] .holo-fx,[data-anim=none] .holo-fx{animation:none;background-position:50% 50%}
 </style>
@@ -759,7 +758,7 @@ function cardImg(c, size) {
   }
   const alt = (alts ? ' data-alts="' + esc(alts) + '"' : '') + ' data-all="' + esc(first + (alts ? ' ' + alts : '')) + '"';
   const fx = c.variant === 'holo' ? '<span class="holo-fx" aria-hidden="true" style="-webkit-mask-image:url(&quot;' + esc(first) + '&quot;);mask-image:url(&quot;' + esc(first) + '&quot;)"></span>' : '';
-  return '<span class="cardbox ' + size + (fx ? ' holo' : '') + '"><img class="bg" src="' + esc(first) + '"' + alt + ' alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" crossorigin="anonymous" data-r="' + esc(c.rating || '?') + '">' + fx +
+  return '<span class="cardbox ' + size + (fx ? ' holo' : '') + (/(^|[\/_])(gold|silver|bronze|rare|common|icon|hero)\.png/i.test(u.split('?')[0]) ? ' fbasic' : ' fspec') + '"><img class="bg" src="' + esc(first) + '"' + alt + ' alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" crossorigin="anonymous" data-r="' + esc(c.rating || '?') + '">' + fx +
     (f ? '<img class="face" src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1">' : '') + (size === 'sm' ? '' : ovHtml(c)) + '</span>';
 }
 // Netteté : le fond de la source est minuscule (64 px). On l'agrandit en plusieurs étapes avec lissage,
