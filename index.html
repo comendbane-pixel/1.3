@@ -81,8 +81,8 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .cardbox.gd .ov{--g:#f4d97e;text-shadow:none}
 .cardbox.cr .ov{--g:#ece7da;text-shadow:none}
 .cardbox.lt .ov{--g:#2e2308;text-shadow:none}
-.ov .r{position:absolute;left:11%;width:18%;text-align:center;top:20%;font-weight:800;font-size:15cqw;line-height:1}
-.ov .p{position:absolute;left:11%;width:18%;text-align:center;top:34%;font-weight:700;font-size:8.5cqw;line-height:1}
+.ov .r{position:absolute;left:11%;width:18%;text-align:center;top:23%;font-weight:800;font-size:15cqw;line-height:1}
+.ov .p{position:absolute;left:11%;width:18%;text-align:center;top:37%;font-weight:700;font-size:8.5cqw;line-height:1}
 .ov .n{position:absolute;left:5%;right:5%;top:60%;text-align:center;font-weight:800;font-size:9.5cqw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ov .s{position:absolute;left:10%;right:10%;top:68.5%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
 .ov .s i{display:block;font-style:normal;font-size:5.6cqw;font-weight:700;line-height:1.1}
@@ -437,6 +437,21 @@ button.dm.sel{outline:2px solid #ff4d00;outline-offset:3px}
 .grid .ov .s,.grid .ov .bd,.grid .ov .sw{display:none}
 .grid .ov .n{top:66%;font-size:11.5cqw}
 .grid .fc-s,.grid .fc-b{display:none}
+
+/* Styles de jeu : seulement l'image, sans fond */
+.psi,.psi.gold,.hero .psi,.hero .psi.gold,.psi[class*=k-]{background:none!important;border:0!important;box-shadow:none!important;transform:none!important;border-radius:0!important;width:40px!important;height:40px!important;margin:2px}
+.psi img,.hero .psi img{width:100%!important;height:100%!important;transform:none!important}
+.psi b,.psi{color:var(--text)}
+.dm,.dm.gold{background:none!important;box-shadow:none!important;transform:none!important;border-radius:0!important;width:42px;height:42px;margin:3px}
+.dm img{width:100%;height:100%;transform:none!important}
+.dm b{transform:none!important;color:var(--text)!important}
+button.dm:hover{transform:scale(1.15)!important}
+button.dm.sel{outline:0!important;filter:drop-shadow(0 0 6px #ff4d00)}
+.dm.lock,.psi.lock{background:none!important;opacity:.4;filter:grayscale(1)}
+.psd-i .dm{width:64px;height:64px;margin:12px auto 18px}
+.psd-i .dm img{width:100%;height:100%}
+.pst.gold{background:var(--surface2)!important}
+.pst .psi{width:28px!important;height:28px!important}
 </style>
 </head>
 <body>
