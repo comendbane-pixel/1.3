@@ -533,6 +533,16 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .invw{margin:0;padding-left:18px;font-size:13px;display:flex;flex-direction:column;gap:3px}
 .invw li.w{color:var(--warn)}
 @media(max-width:430px){nav button{font-size:10px}}
+.invmode{margin:4px 0 10px;width:100%}
+.invmode button{flex:1;padding:8px 10px}
+.invmode button[aria-selected=true]{background:var(--accent);color:var(--accent-text)}
+.invtrade{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.invtrade>div{background:var(--surface2);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.invtrade b{font-size:15px;font-variant-numeric:tabular-nums}
+.invfeed{margin:6px 0;padding:10px 12px}
+.invfeed a{color:var(--accent)}
+.invtrade .coin{display:inline-block;vertical-align:-3px;width:15px;height:15px;margin-left:3px}
+@media(max-width:430px){.invtrade{grid-template-columns:1fr 1fr}.invtrade>div:last-child{grid-column:span 2}}
 </style>
 </head>
 <body>
@@ -639,7 +649,7 @@ const store = {
   del(k) { try { if (storageOK) localStorage.removeItem(k); } catch (e) { storageOK = false; } delete mem[k]; }
 };
 const prefersReduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
-const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'source', sim: true, favs: [], alerts: [], pf: [], inv: { t: 85, sz: 'gros', bud: 0 } });
+const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'source', sim: true, favs: [], alerts: [], pf: [], inv: { mode: 'rapide', t: 0, sz: 'gros', bud: 0 } });
 
 function sanitize(o) {
   const d = defaults();
@@ -648,7 +658,7 @@ function sanitize(o) {
   if (typeof o.sim === 'boolean') d.sim = o.sim;
   if (['full', 'reduced', 'none'].includes(o.anim)) d.anim = o.anim;
   if (['drawn', 'source'].includes(o.card)) d.card = o.card;
-  if (o.inv && typeof o.inv === 'object') { const t = Math.round(Number(o.inv.t)); if (t >= 75 && t <= 95) d.inv.t = t; if (['petit', 'moyen', 'gros'].includes(o.inv.sz)) d.inv.sz = o.inv.sz; const b = Number(o.inv.bud); if (isFinite(b) && b >= 0) d.inv.bud = Math.floor(b); }
+  if (o.inv && typeof o.inv === 'object') { const t = Math.round(Number(o.inv.t)); if (t === 0 || (t >= 75 && t <= 95)) d.inv.t = t; if (['petit', 'moyen', 'gros'].includes(o.inv.sz)) d.inv.sz = o.inv.sz; if (['rapide', 'long'].includes(o.inv.mode)) d.inv.mode = o.inv.mode; const b = Number(o.inv.bud); if (isFinite(b) && b >= 0) d.inv.bud = Math.floor(b); }
   if (Array.isArray(o.favs)) d.favs = [...new Set(o.favs.map(String))];
   if (Array.isArray(o.alerts)) d.alerts = o.alerts.filter((a) => a && a.cid != null && (a.dir === '<=' || a.dir === '>=') && isFinite(a.price))
     .map((a) => ({ id: String(a.id || uid()), cid: String(a.cid), dir: a.dir, price: Number(a.price), trig: !!a.trig, seen: !!a.seen, name: String(a.name || '') }));
@@ -1139,70 +1149,104 @@ function renderSbc() {
 }
 
 /* =====================================================================
-   Onglet Achat-revente : analyse automatique par règles
-   (ce n'est PAS une IA qui prédit l'avenir : elle lit les relevés de prix
-   réellement enregistrés, jamais de courbe simulée)
+   Onglet Investir : revente rapide ou long terme (analyse par règles)
+   Ce n'est PAS une IA qui prédit l'avenir : elle lit les prix réellement
+   relevés par le robot (jamais de courbe simulée).
    ===================================================================== */
+// Score d'objet des SBC simplifiés (FC 27). Valeurs de lancement relevées sur FUTBIN / allthings.how,
+// « provisoires » : EA peut les changer. Cartes or non rares.
+const ITEM_SCORE = { 75: 90, 76: 100, 77: 120, 78: 140, 79: 160, 80: 180, 81: 280, 82: 340, 83: 410, 84: 830, 85: 2100, 86: 4100, 87: 5500, 88: 8300, 89: 11000,
+  90: 14000, 91: 19000, 92: 20000, 93: 25000, 94: 30000, 95: 40000, 96: 55000, 97: 85000, 98: 90000, 99: 100000 };
 const INV_UP = { petit: 0.04, moyen: 0.08, gros: 0.14 };   // hausse espérée (HYPOTHÈSE affichée à l'écran)
 const isFodder = (c) => /(^|[\/_])(gold|silver|bronze|rare|common)\.png/i.test(String(c.cardImage || '').split('?')[0]);
+// Cartes spéciales : seuls quelques scores sont publiés (FUTBIN, 12/10/2026). Autres notes : ×1,25 (estimation d'après ces exemples).
+const ITEM_SPECIAL = { team_of_the_week: { 85: 2625, 86: 5125 }, base_hero: { 89: 13750 }, destined_for_glory: { 86: 7688, 87: 6875 } };
+function itemScore(c) {
+  const r = c.rating; if (!(r >= 45)) return null;
+  const base = r < 65 ? 20 : r < 75 ? 35 : ITEM_SCORE[r];
+  if (!base) return null;
+  if (isFodder(c)) return { pts: base, est: false };
+  const u = String(c.cardImage || '').toLowerCase();
+  const kind = /team_of_the_week/.test(u) ? 'team_of_the_week' : /base_hero/.test(u) ? 'base_hero' : /destined_for_glory/.test(u) ? 'destined_for_glory' : '';
+  if (!kind) return null;                                           // Icône, Future Stars, etc. : valeur non publiée, on n'invente pas
+  const known = ITEM_SPECIAL[kind][r];
+  return known ? { pts: known, est: false } : { pts: Math.round(base * 1.25), est: true };
+}
+const median = (a) => { const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 function invMetrics(c) {
   const sr = c._series, n = sr.length;
-  const m = { n, range: null, disc: null, slope: null, cv: null, last: c._chg };
+  const m = { n, range: null, disc: null, cv: null, last: c._chg, med: c._avg };
   if (n >= 2) {
-    const mn = c._min, mx = c._max;
-    m.range = mx > mn ? (c.price - mn) / (mx - mn) : 0.5;
-    m.disc = c._avg ? (c._avg - c.price) / c._avg : 0;
-    let sx = 0, sy = 0, sxy = 0, sxx = 0;
-    sr.forEach((q, i) => { sx += i; sy += q.p; sxy += i * q.p; sxx += i * i; });
-    const den = n * sxx - sx * sx;
-    m.slope = den ? ((n * sxy - sx * sy) / den) / (c._avg || 1) : 0;           // % de l'avg par relevé
+    m.med = median(sr.map((q) => q.p));
+    m.range = c._max > c._min ? (c.price - c._min) / (c._max - c._min) : 0.5;
+    m.disc = m.med ? (m.med - c.price) / m.med : 0;
     let sd = 0; sr.forEach((q) => { sd += (q.p - c._avg) * (q.p - c._avg); });
     m.cv = Math.sqrt(sd / n) / (c._avg || 1);
   }
   return m;
 }
-function invAnalyse(cfg) {
+const confOf = (n) => (n >= 10 ? 'haute' : n >= 4 ? 'moyenne' : 'faible');
+// --- Revente rapide : cartes nettement sous leur prix « normal » (médiane des relevés)
+function invRapide(cfg) {
   const out = [];
   for (const c of CARDS) {
-    if (c.price == null || c.price < 200) continue;
-    if (!isFodder(c)) continue;                                    // les cartes spéciales ne servent pas de « chair à SBC »
-    const dr = Math.abs(c.rating - cfg.t);
-    if (c.rating < cfg.t - 1 || c.rating > cfg.t + 1) continue;
+    if (c.price == null || c.price < 500 || c._series.length < 4) continue;
     if (cfg.bud > 0 && c.price > cfg.bud) continue;
-    const m = invMetrics(c), why = [], warn = [];
-    let sc = 0;
-    sc += dr === 0 ? 30 : 20;                                      // 1) la note est celle qui sera demandée
-    why.push(dr === 0 ? 'Sa note (' + c.rating + ') est exactement celle visée par le SBC.' : 'Sa note (' + c.rating + ') est proche de celle visée.');
-    const up = INV_UP[cfg.sz];
-    const base = Math.max(c._avg || c.price, c.price);
-    const sell = base * (1 + up), net = sell * (1 - TAX) - c.price, netPct = net / c.price;
-    let conf;
-    if (m.n >= 4) {
-      const lowPos = 1 - Math.min(1, Math.max(0, m.range));
-      sc += 30 * lowPos;                                           // 2) prix bas dans sa fourchette = bon moment pour acheter
-      if (m.range <= 0.25) why.push('Son prix est dans le bas de sa fourchette récente (' + fmt(c._min) + ' – ' + fmt(c._max) + ').');
-      else if (m.range >= 0.75) warn.push('Son prix est déjà dans le haut de sa fourchette : le meilleur moment est peut-être passé.');
-      if (m.disc > 0.03) why.push('Il est ' + (m.disc * 100).toFixed(0) + ' % sous sa moyenne récente (' + fmt(c._avg) + ').');
-      const l = m.last == null ? 0 : m.last;                       // 3) dynamique
-      if (l > 0.08) { sc += 4; warn.push('Il a déjà monté de ' + pct(l).replace('+', '') + ' au dernier relevé : la hausse a peut-être commencé.'); }
-      else if (l >= 0) { sc += 20; why.push('Son prix est stable ou commence à remonter (' + pct(l) + ').'); }
-      else if (l > -0.05) { sc += 12; why.push('Son prix baisse légèrement (' + pct(l) + ') : il peut encore descendre un peu.'); }
-      else { sc += 5; warn.push('Son prix chute (' + pct(l) + ') : attendre peut être plus malin.'); }
-      sc += 10 * (1 - Math.min(1, m.cv / 0.2));                    // 4) stabilité
-      if (m.cv > 0.15) warn.push('Son prix est très irrégulier, donc risqué.');
-      conf = m.n >= 10 ? 'haute' : 'moyenne';
-    } else {
-      sc += 25;                                                    // faute de courbe : score neutre, plafonné plus bas
-      warn.push('Pas assez de relevés (' + m.n + ') pour lire une vraie courbe : analyse partielle.');
-      conf = 'faible';
-    }
-    sc += 10 * Math.min(1, Math.max(0, netPct / 0.1));             // 5) gain net possible
-    if (net <= 0) warn.push('Avec la taxe de 5 %, le gain net serait nul ou négatif dans ce scénario.');
-    out.push({ c, m, sc: Math.round(Math.max(0, Math.min(100, sc))), why, warn, sell, net, netPct, conf });
+    const m = invMetrics(c);
+    if (m.disc < 0.04) continue;                                   // pas assez sous la normale
+    const why = [], warn = [];
+    const sell = Math.round(m.med * 0.98), net = sell * (1 - TAX) - c.price, netPct = net / c.price;
+    if (net <= 0 || netPct < 0.03) continue;                       // gain net trop petit : on ne propose pas
+    let sc = 40 * Math.min(1, m.disc / 0.15);
+    why.push('Son prix (' + fmt(c.price) + ') est ' + (m.disc * 100).toFixed(0) + ' % sous son prix habituel (' + fmt(m.med) + ').');
+    const lowPos = 1 - Math.min(1, Math.max(0, m.range)); sc += 25 * lowPos;
+    if (m.range <= 0.25) why.push('Il est dans le bas de sa fourchette récente (' + fmt(c._min) + ' – ' + fmt(c._max) + ').');
+    const l = m.last == null ? 0 : m.last;
+    if (l <= -0.06) { sc += 3; warn.push('Il chute encore (' + pct(l) + ') : attends un peu avant d\'acheter.'); }
+    else if (l < 0) { sc += 12; why.push('Il baisse légèrement (' + pct(l) + ').'); }
+    else { sc += 20; why.push('Il se stabilise ou remonte (' + pct(l) + ').'); }
+    sc += 15 * (1 - Math.min(1, m.cv / 0.2));
+    if (m.cv > 0.15) warn.push('Son prix est très irrégulier : risqué.');
+    if (c.price < 2000) warn.push('Carte bon marché : la marge est petite en valeur.');
+    out.push({ c, m, sc: Math.round(Math.min(100, sc)), why, warn, buy: c.price, sell, net, netPct, conf: confOf(m.n), is: itemScore(c) });
   }
-  const w = { haute: 1, moyenne: 0.95, faible: 0.75 };
+  const w = { haute: 1, moyenne: 0.9, faible: 0.7 };
   out.sort((a, b) => b.sc * w[b.conf] - a.sc * w[a.conf]);
   return out;
+}
+// --- Long terme : meilleur rapport points SBC / prix (cartes de base)
+function invLong(cfg) {
+  const pool = [];
+  for (const c of CARDS) {
+    if (c.price == null || c.price < 200 || !isFodder(c) || c.rating < 78) continue;
+    if (cfg.t && (c.rating < cfg.t - 1 || c.rating > cfg.t + 1)) continue;
+    if (cfg.bud > 0 && c.price > cfg.bud) continue;
+    const is = itemScore(c); if (!is) continue;
+    pool.push({ c, is, cpp: c.price / is.pts });
+  }
+  if (!pool.length) return { list: [], medCpp: null };
+  const medCpp = median(pool.map((x) => x.cpp));
+  const out = pool.map((x) => {
+    const c = x.c, m = invMetrics(c), why = [], warn = [];
+    const better = (medCpp - x.cpp) / medCpp;
+    let sc = 55 * Math.max(0, Math.min(1, 0.5 + better));            // 1) rapport points / prix
+    why.push(fmt(x.cpp) + ' pièces par point (médiane des cartes comparables : ' + fmt(medCpp) + ')' + (better > 0.05 ? ' → ' + (better * 100).toFixed(0) + ' % moins cher.' : '.'));
+    why.push('Elle rapporte ' + fmt(x.is.pts) + ' points' + (x.is.est ? ' (estimation).' : ' dans un SBC simplifié.'));
+    if (m.n >= 4) {
+      sc += 20 * (1 - Math.min(1, Math.max(0, m.range)));            // 2) pas déjà au sommet
+      if (m.range >= 0.75) warn.push('Son prix est déjà haut dans sa fourchette récente.');
+      else if (m.range <= 0.3) why.push('Son prix est bas dans sa fourchette récente.');
+      const l = m.last == null ? 0 : m.last;
+      if (l > 0.08) { sc += 3; warn.push('Elle a déjà monté (' + pct(l) + ') au dernier relevé.'); } else sc += 15;
+      sc += 10 * (1 - Math.min(1, m.cv / 0.2));
+    } else { sc += 22; warn.push('Pas assez de relevés (' + m.n + ') pour lire la courbe : analyse partielle.'); }
+    const up = INV_UP[cfg.sz], base = Math.max(m.med || c.price, c.price);
+    const sell = Math.round(base * (1 + up)), net = sell * (1 - TAX) - c.price;
+    return { c, m, sc: Math.round(Math.min(100, sc)), why, warn, buy: c.price, sell, net, netPct: net / c.price, conf: confOf(m.n), is: x.is, cpp: x.cpp };
+  });
+  const w = { haute: 1, moyenne: 0.95, faible: 0.8 };
+  out.sort((a, b) => b.sc * w[b.conf] - a.sc * w[a.conf]);
+  return { list: out, medCpp };
 }
 function invSpark(c) {
   const sr = c._series; if (sr.length < 2) return '<span class="small muted">pas de courbe</span>';
@@ -1210,65 +1254,85 @@ function invSpark(c) {
   const pts = sr.slice(-40).map((q, i, a) => [(i / Math.max(1, a.length - 1)) * (W - 4) + 2, H - 3 - ((q.p - lo) / sp) * (H - 6)]);
   const d = pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
   const up = sr[sr.length - 1].p >= sr[0].p;
-  return '<svg class="isp" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Courbe de prix réelle"><path d="' + d + '" fill="none" stroke="' + (up ? 'var(--up)' : 'var(--down)') + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="' + pts[pts.length - 1][0].toFixed(1) + '" cy="' + pts[pts.length - 1][1].toFixed(1) + '" r="2.6" fill="' + (up ? 'var(--up)' : 'var(--down)') + '"/></svg>';
+  return '<svg class="isp" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Courbe de prix réelle"><path d="' + d + '" fill="none" stroke="' + (up ? 'var(--up)' : 'var(--down)') + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="' + pts[pts.length - 1][0].toFixed(1) + '" cy="' + pts[pts.length - 1][1].toFixed(1) + '" r="2.6" fill="var(--up)"/></svg>';
+}
+function invCard(x, i, mode) {
+  const c = x.c, cl = x.conf === 'haute' ? 'hi' : x.conf === 'moyenne' ? 'mid' : 'lo';
+  const money = (v) => fmt(v) + '<span class="coin"></span>';
+  return '<div class="box invc"><div class="invh"><span class="invn">' + (i + 1) + '</span><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') + '</button>' +
+    '<div class="invm"><div class="nm"><b>' + esc(c.name) + '</b> <span class="rt">' + esc(c.rating) + '</span></div><div class="small muted">' + esc(c.pos || '') + ' · ' + esc(c.club || '') + '</div>' +
+    '<div class="small">Prix <b>' + money(c.price) + '</b> · habituel ' + money(x.m.med) + '</div>' +
+    (x.is ? '<div class="small">Points SBC : <b>' + fmt(x.is.pts) + '</b>' + (x.is.est ? ' (estimé)' : '') + ' · <b>' + fmt(c.price / x.is.pts) + '</b> pièces/point</div>' : '') + '</div>' +
+    '<div class="invs"><div class="score">' + x.sc + '<small>/100</small></div><span class="badge ' + cl + '">Confiance ' + x.conf + '</span></div></div>' +
+    '<div class="invtrade"><div><span class="muted small">Acheter à</span><b>' + money(x.buy) + '</b></div><div><span class="muted small">Revendre vers</span><b>' + money(x.sell) + '</b></div>' +
+    '<div><span class="muted small">Profit net (taxe 5 %)</span><b class="' + (x.net > 0 ? 'up' : 'dn') + '">' + (x.net > 0 ? '+' : '') + fmt(x.net) + ' (' + pct(x.netPct) + ')</b></div></div>' +
+    '<div class="invsp">' + invSpark(c) + '</div>' +
+    '<ul class="invw">' + x.why.map((t) => '<li>' + esc(t) + '</li>').join('') + x.warn.map((t) => '<li class="w">' + esc(t) + '</li>').join('') + '</ul></div>';
 }
 let INV_LAST = [];
 function renderInvest() {
   const cfg = S.inv, { cur, up } = buildSbcs();
-  const sbcs = cur.concat(up).filter((s) => s.reqs.length);
-  const rs = []; for (let r = 80; r <= 92; r++) rs.push(r);
-  let h = '<h2>Achat-revente avant un gros SBC</h2>' +
-    '<div class="note"><b>Analyse automatique, pas une boule de cristal.</b> Elle lit les prix réellement relevés par le robot (jamais de courbe simulée) et classe les cartes les plus utiles à un SBC. ' +
+  const feed = up.concat(cur);
+  const rs = [['0', 'Toutes les notes']]; for (let r = 80; r <= 92; r++) rs.push([String(r), 'Autour de ' + r + ' (' + (r - 1) + ' à ' + (r + 1) + ')']);
+  let h = '<h2>Investir : acheter pour revendre</h2>' +
+    '<div class="note"><b>Analyse automatique, pas une boule de cristal.</b> Elle lit les prix réellement relevés par le robot (jamais de courbe simulée). ' +
     'Un prix peut aussi baisser : ce sont des estimations, pas des conseils financiers. Les prix ont un à deux jours de retard.</div>';
-  h += '<div class="box invf" id="invForm"><div class="invrow"><label>Note la plus demandée par le SBC<select id="invT">' + rs.map((r) => '<option value="' + r + '"' + (r === cfg.t ? ' selected' : '') + '>' + r + '</option>').join('') + '</select></label>' +
-    '<label>Taille du SBC<select id="invSz"><option value="petit"' + (cfg.sz === 'petit' ? ' selected' : '') + '>Petit (hausse espérée +4 %)</option><option value="moyen"' + (cfg.sz === 'moyen' ? ' selected' : '') + '>Moyen (+8 %)</option><option value="gros"' + (cfg.sz === 'gros' ? ' selected' : '') + '>Gros (+14 %)</option></select></label>' +
-    '<label>Budget max par carte<input id="invB" inputmode="numeric" placeholder="Illimité" value="' + (cfg.bud ? cfg.bud : '') + '"></label></div>';
-  if (sbcs.length) h += '<label class="invl">Ou pars d\'un SBC connu<select id="invS"><option value="">— choisir —</option>' + sbcs.map((s, i) => '<option value="' + i + '">' + esc(s.name) + '</option>').join('') + '</select></label>';
-  h += '<div class="small muted" style="margin-top:6px">Les « hausses espérées » (+4 / +8 / +14 %) sont des <b>hypothèses</b> de ma part, pas des données : modifie la taille si tu penses autre chose.</div></div>';
+  h += '<div class="tabs2 invmode" role="tablist"><button role="tab" aria-selected="' + (cfg.mode === 'rapide') + '" data-act="invmode" data-m="rapide">Revente rapide</button><button role="tab" aria-selected="' + (cfg.mode === 'long') + '" data-act="invmode" data-m="long">Long terme (attendre un SBC)</button></div>';
+  h += '<div class="box invf" id="invForm"><div class="invrow">';
+  if (cfg.mode === 'long') {
+    h += '<label>Note visée<select id="invT">' + rs.map((r) => '<option value="' + r[0] + '"' + (Number(r[0]) === cfg.t ? ' selected' : '') + '>' + r[1] + '</option>').join('') + '</select></label>' +
+      '<label>Taille du SBC attendu<select id="invSz"><option value="petit"' + (cfg.sz === 'petit' ? ' selected' : '') + '>Petit (+4 %)</option><option value="moyen"' + (cfg.sz === 'moyen' ? ' selected' : '') + '>Moyen (+8 %)</option><option value="gros"' + (cfg.sz === 'gros' ? ' selected' : '') + '>Gros (+14 %)</option></select></label>';
+  }
+  h += '<label>Budget max par carte<input id="invB" inputmode="numeric" placeholder="Illimité" value="' + (cfg.bud ? cfg.bud : '') + '"></label></div>';
+  h += '<div class="small muted" style="margin-top:8px">' + (cfg.mode === 'rapide'
+    ? 'Je cherche les cartes <b>nettement sous leur prix habituel</b> : tu achètes bas, tu revends dès que le prix revient à la normale (quelques heures à 1-2 jours).'
+    : 'Je cherche les cartes avec le <b>meilleur rapport points SBC / prix</b>. Les SBC simplifiés demandent des cartes en masse : celles qui rapportent le plus de points par pièce voient leur demande monter. Les « +4 / +8 / +14 % » sont des <b>hypothèses</b> de ma part.') + '</div></div>';
+  if (cfg.mode === 'long') {
+    h += '<h2>Ce qui arrive</h2>';
+    h += feed.length ? feed.slice(0, 8).map((s) => '<div class="box invfeed"><b>' + esc(s.name) + '</b> <span class="small muted">' + (s.date ? (s.kind === 'cur' ? 'expire ' : 'prévu ') + fmtDate(s.date) + ' · ' + countdown(s.date) : 'date inconnue') + '</span>' +
+      (s.kind === 'up' ? (s.official ? ' <span class="badge hi">Officiel</span>' : ' <span class="badge lo">Prévision non officielle</span>') : '') + (s.note ? '<div class="small muted">' + esc(s.note) + '</div>' : '') +
+      (s.url ? ' <a class="small" href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer">Source</a>' : '') + '</div>').join('')
+      : '<div class="note">Aucun SBC connu. Ajoute-les dans <b>sbcs.json</b> (nom, date et heure prévues, source) : l\'analyse les affichera ici.</div>';
+  }
   if (!CARDS.length) { $('#pInv').innerHTML = h + '<div class="empty box"><div class="big">En attente des premiers prix</div><div class="muted">L\'analyse apparaîtra quand data.json contiendra des cartes.</div></div>'; return; }
-  const res = invAnalyse(cfg); INV_LAST = res;
   const full = CARDS.filter((c) => c._series.length >= 4).length;
+  let res;
+  if (cfg.mode === 'rapide') res = invRapide(cfg); else res = invLong(cfg).list;
+  INV_LAST = res;
   h += '<div class="small muted" style="margin:6px 2px">' + full + ' carte' + (full > 1 ? 's ont' : ' a') + ' une courbe exploitable (4 relevés ou plus) sur ' + CARDS.length + '. ' +
-    (full < 20 ? '<b>Lance « snapshot » plusieurs fois par jour</b> (Actions → Mise à jour des prix) pour que l\'analyse devienne vraiment fiable.' : '') + '</div>';
-  if (!res.length) h += '<div class="box"><div class="big" style="font-weight:700">Aucune carte ne correspond</div><p class="muted">Essaie une autre note, ou retire le budget max. Seules les cartes or, argent et bronze de base servent de « chair à SBC » : les cartes spéciales sont exclues.</p></div>';
+    (full < 20 ? '<b>Lance « snapshot » plusieurs fois par jour</b> (Actions → Mise à jour des prix) pour que l\'analyse devienne fiable.' : '') + '</div>';
+  if (!res.length) h += '<div class="box"><div class="big" style="font-weight:700">Rien à proposer pour l\'instant</div><p class="muted">' + (cfg.mode === 'rapide'
+    ? 'Aucune carte n\'est nettement sous son prix habituel avec assez de relevés (il en faut 4 ou plus). Relance « snapshot » plusieurs fois, puis reviens ici.'
+    : 'Aucune carte de base ne correspond. Essaie « Toutes les notes » ou retire le budget max.') + '</p></div>';
   else {
-    h += '<h2>Les meilleures cartes à acheter</h2>';
-    h += res.slice(0, 10).map((x, i) => {
-      const c = x.c, cl = x.conf === 'haute' ? 'hi' : x.conf === 'moyenne' ? 'mid' : 'lo';
-      return '<div class="box invc"><div class="invh"><span class="invn">' + (i + 1) + '</span><button class="open" style="padding:0" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') + '</button>' +
-        '<div class="invm"><div class="nm"><b>' + esc(c.name) + '</b> <span class="rt">' + esc(c.rating) + '</span></div><div class="small muted">' + esc(c.pos || '') + ' · ' + esc(c.club || '') + '</div>' +
-        '<div class="small">Prix <b>' + fmt(c.price) + '</b><span class="coin"></span> · moyenne ' + fmt(c._avg) + '</div></div>' +
-        '<div class="invs"><div class="score">' + x.sc + '<small>/100</small></div><span class="badge ' + cl + '">Confiance ' + x.conf + '</span></div></div>' +
-        '<div class="invsp">' + invSpark(c) + '<div class="small">Scénario : revente vers <b>' + fmt(x.sell) + '</b><span class="coin"></span><br>Gain net (taxe 5 % déduite) : <b class="' + (x.net > 0 ? 'up' : 'dn') + '">' + (x.net > 0 ? '+' : '') + fmt(x.net) + ' (' + pct(x.netPct) + ')</b></div></div>' +
-        '<ul class="invw">' + x.why.map((t) => '<li>' + esc(t) + '</li>').join('') + x.warn.map((t) => '<li class="w">' + esc(t) + '</li>').join('') + '</ul></div>';
-    }).join('');
+    h += '<h2>' + (cfg.mode === 'rapide' ? 'À acheter pour revendre vite' : 'À acheter avant le SBC') + '</h2>';
+    h += res.slice(0, 10).map((x, i) => invCard(x, i, cfg.mode)).join('');
     h += '<div class="box"><button class="btn" data-act="invcopy">Copier le résumé pour demander un avis à Claude</button><div class="small muted" id="invCp" style="margin-top:6px">Tu colles le texte dans une discussion avec Claude pour une analyse plus poussée.</div></div>';
   }
+  h += '<div class="note small">Points SBC : valeurs de lancement du score d\'objet des SBC simplifiés (or : 85 = 2 100 points, 86 = 4 100, etc.), relevées sur FUTBIN, <b>provisoires</b> : EA peut les changer. Cartes spéciales : seuls quelques scores sont publiés (Équipe de la semaine 85 et 86, Héros de base 89, Destined for Glory 86 et 87) ; pour les autres notes de ces types, c\'est une estimation (environ ×1,25). Icônes et Future Stars : valeur non publiée, donc aucun calcul.</div>';
   $('#pInv').innerHTML = h;
 }
 function invSummary() {
   const cfg = S.inv, d = DATA.updatedAt ? new Date(DATA.updatedAt) : null;
-  let t = 'Je veux investir avant un SBC (note la plus demandée : ' + cfg.t + ', taille : ' + cfg.sz + (cfg.bud ? ', budget max par carte : ' + fmt(cfg.bud) : '') + ').\n' +
-    'Prix relevés ' + (d ? 'le ' + d.toLocaleString('fr-FR') : '') + ' (pas en temps réel). Voici les candidats avec leurs relevés réels :\n\n';
+  let t = 'Je veux investir (' + (cfg.mode === 'rapide' ? 'revente rapide' : 'long terme, avant un SBC ; taille ' + cfg.sz + (cfg.t ? ', note visée ' + cfg.t : '')) + (cfg.bud ? ', budget max par carte ' + fmt(cfg.bud) : '') + ').\n' +
+    'Prix relevés ' + (d ? 'le ' + d.toLocaleString('fr-FR') : '') + ' (pas en temps réel). Candidats avec leurs relevés réels :\n\n';
   INV_LAST.slice(0, 10).forEach((x, i) => {
-    t += (i + 1) + '. ' + x.c.name + ' (' + x.c.rating + ', ' + x.c.pos + ') prix ' + fmt(x.c.price) + ' | min ' + fmt(x.c._min) + ' | max ' + fmt(x.c._max) + ' | moy ' + fmt(x.c._avg) + ' | relevés : ' +
+    t += (i + 1) + '. ' + x.c.name + ' (' + x.c.rating + ', ' + x.c.pos + ') prix ' + fmt(x.c.price) + ' | habituel ' + fmt(x.m.med) + (x.is ? ' | points SBC ' + x.is.pts + ' | ' + fmt(x.c.price / x.is.pts) + ' pièces/point' : '') + ' | relevés : ' +
       x.c._series.slice(-12).map((q) => q.p).join(', ') + ' | score appli ' + x.sc + '/100 (confiance ' + x.conf + ')\n';
   });
   return t + '\nDis-moi lesquelles te semblent les plus intéressantes, pourquoi, et ce qui est risqué. Ne suppose aucun prix absent de ces données.';
 }
 document.addEventListener('change', (e) => {
   const t = e.target; if (!t || !t.id || t.id.indexOf('inv') !== 0) return;
-  if (t.id === 'invT') S.inv.t = Number(t.value);
+  if (t.id === 'invT') S.inv.t = Number(t.value) || 0;
   else if (t.id === 'invSz') S.inv.sz = t.value;
   else if (t.id === 'invB') { const v = num(t.value); S.inv.bud = v && v > 0 ? Math.floor(v) : 0; }
-  else if (t.id === 'invS') {
-    const { cur, up } = buildSbcs(), all = cur.concat(up).filter((s) => s.reqs.length), s2 = all[Number(t.value)];
-    if (!s2) return;
-    const mx = Math.max(...s2.reqs.map((r) => r.minRating)); if (mx >= 75 && mx <= 95) S.inv.t = mx;
-  } else return;
+  else return;
   save(); renderInvest();
 });
 document.addEventListener('click', (e) => {
+  const mb = e.target.closest('[data-act=invmode]');
+  if (mb) { S.inv.mode = mb.dataset.m === 'long' ? 'long' : 'rapide'; save(); renderInvest(); return; }
   const b = e.target.closest('[data-act=invcopy]'); if (!b) return;
   const txt = invSummary(), box = $('#invCp');
   const ok = () => { if (box) box.textContent = 'Résumé copié. Colle-le dans une discussion avec Claude.'; };

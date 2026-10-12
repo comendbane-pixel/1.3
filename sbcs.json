@@ -1,1 +1,36 @@
-{"sbcs": []}
+{
+  "sbcs": [
+    {
+      "name": "Début de la saison 2 (prévu)",
+      "expectedDate": "2026-10-22",
+      "official": false,
+      "sourceUrl": "https://www.iggm.com/news/fc-27-leak-reveals-hero-card-virtual-character-return-more",
+      "requirements": [],
+      "note": "Calendrier prédit, pas confirmé par EA (relevé le 12/10/2026)."
+    },
+    {
+      "name": "Ultimate Scream (prévu)",
+      "expectedDate": "2026-10-23",
+      "official": false,
+      "sourceUrl": "https://www.iggm.com/news/fc-27-leak-reveals-hero-card-virtual-character-return-more",
+      "requirements": [],
+      "note": "Promo prédite, pas confirmée par EA. Les SBC de promo font monter la demande."
+    },
+    {
+      "name": "UEFA Road to the Knockouts (prévu)",
+      "expectedDate": "2026-11-06",
+      "official": false,
+      "sourceUrl": "https://www.iggm.com/news/fc-27-leak-reveals-hero-card-virtual-character-return-more",
+      "requirements": [],
+      "note": "Promo prédite, pas confirmée par EA."
+    },
+    {
+      "name": "Black Friday Thunderstruck (prévu)",
+      "expectedDate": "2026-11-27",
+      "official": false,
+      "sourceUrl": "https://www.iggm.com/news/fc-27-leak-reveals-hero-card-virtual-character-return-more",
+      "requirements": [],
+      "note": "Promo prédite, pas confirmée par EA."
+    }
+  ]
+}
