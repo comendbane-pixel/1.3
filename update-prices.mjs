@@ -37,6 +37,7 @@ const KEY_CREDITS = Number(process.env.KEY_CREDITS) || 0; // crédits de départ
 const HISTORY_MAX = 14;
 const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 150000); // parse.bot peut être lent (1 minute par page)
 const RETRY_MS = Number(process.env.RETRY_MS ?? 30000);      // pause avant un nouvel essai
+const STRIKES = Number(process.env.STRIKES ?? 4);            // une clé n'est mise de côté qu'après ce nombre de refus de suite (un seul refus peut être passager)
 const MAX_TRIES = Number(process.env.MAX_TRIES ?? 4);        // essais par requête
 // ---------- clés ----------
 // Une seule clé (secret PARSE_API_KEY) OU plusieurs (secret PARSE_API_KEYS : une clé par ligne, ou séparées par des virgules).
@@ -334,6 +335,14 @@ async function callOn(w, endpoint, params, label) {
     return u;
   };
 
+  // Un refus isolé n'est pas une panne : on ne met la clé de côté qu'après STRIKES refus de suite.
+  const strike = async (why, credit, detail) => {
+    w.strikes = (w.strikes ?? 0) + 1;
+    if (w.strikes >= STRIKES) { w.strikes = 0; markDead(w, why, credit, detail); throw new KeyDead(); }
+    console.log(`${label} (clé n°${w.i + 1}) : refus ${w.strikes}/${STRIKES} (${why}) — ${detail}. On attend ${Math.round(RETRY_MS / 1000)} s et on réessaie avant de la mettre de côté.`);
+    await sleep(RETRY_MS);
+    w.last = Date.now();
+  };
   for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
     const last = attempt >= MAX_TRIES;
     const t0 = Date.now();
@@ -355,8 +364,8 @@ async function callOn(w, endpoint, params, label) {
     if (res.status === 404) {
       const body404 = redact((await res.clone().text().catch(() => '')).slice(0, 200));
       if (/scraper/i.test(body404) && /not found/i.test(body404)) {
-        markDead(w, 'ne voit pas ce scraper (404)', false, `HTTP 404 ${body404}`);
-        throw new KeyDead();
+        await strike('ne voit pas ce scraper (404)', false, `HTTP 404 ${body404}`);
+        attempt--; continue;
       }
     }
     if ([401, 402, 403, 429].includes(res.status)) {
@@ -364,8 +373,8 @@ async function callOn(w, endpoint, params, label) {
       const creditLike = res.status === 402 || CREDIT_STRICT.test(peek) || (res.status !== 429 && CREDIT_LOOSE.test(peek));
       const fastBad = (res.status === 401 || res.status === 403) && (/invalid api key/i.test(peek) || (!w.ok && Date.now() - t0 < 60000));
       const snip = redact(peek.slice(0, 160).replace(/\s+/g, ' '));
-      if (creditLike) { markDead(w, 'plus de crédits', true, `HTTP ${res.status} ${snip}`); throw new KeyDead(); }
-      if (fastBad) { markDead(w, 'refusée', false, `HTTP ${res.status} ${snip}`); throw new KeyDead(); }
+      if (creditLike) { await strike('plus de crédits', true, `HTTP ${res.status} ${snip}`); attempt--; continue; }
+      if (fastBad) { await strike('refusée', false, `HTTP ${res.status} ${snip}`); attempt--; continue; }
     }
     if (res.status === 401 || res.status === 403) {
       // parse.bot explique souvent la raison dans sa réponse : on l'affiche (sans jamais afficher la clé).
@@ -398,7 +407,7 @@ async function callOn(w, endpoint, params, label) {
       const txt = redact((await res.text().catch(() => '')).slice(0, 200));
       throw new Error(`${label} : erreur HTTP ${res.status} ${txt}`);
     }
-    w.ok = true; anyOK = true;
+    w.ok = true; anyOK = true; w.strikes = 0;
     w.spent += COST[endpoint] ?? COST_OTHER;
     readBalance(w, res.headers);
     return res.json();
