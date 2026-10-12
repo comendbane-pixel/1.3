@@ -84,7 +84,7 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .ov .r{position:absolute;left:11%;width:18%;text-align:center;top:23%;font-weight:800;font-size:12.5cqw;line-height:1}
 .ov .p{position:absolute;left:11%;width:18%;text-align:center;top:34%;font-weight:700;font-size:8.5cqw;line-height:1}
 .ov .n{position:absolute;left:5%;right:5%;top:61.5%;text-align:center;font-weight:800;font-size:9cqw;letter-spacing:.07em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ov .s{position:absolute;top:71%;left:11%;right:11%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
+.ov .s{position:absolute;top:71%;left:12.5%;right:12.5%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
 .ov .s i{display:block;font-style:normal;font-size:5.6cqw;font-weight:700;line-height:.95}
 .ov .s b{display:block;font-size:8.6cqw;line-height:1;margin-top:-.4cqw}
 .ov .sw{position:absolute;right:10%;top:49%;width:17%;text-align:center;font-weight:800;font-size:7cqw;line-height:1.1;border:1px solid currentColor;border-radius:2cqw;padding:1cqw 0;opacity:.95}
@@ -150,10 +150,10 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .sg i{display:block;font-style:normal;font-size:9.5px;color:var(--muted);font-weight:600}
 .stats{font-size:10.5px;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pr{font-weight:800;font-size:16px;color:var(--warn);font-variant-numeric:tabular-nums;display:flex;align-items:center;justify-content:center;gap:5px}
-.coin{width:15px;height:15px;border-radius:50%;flex:none;position:relative;background:radial-gradient(circle at 32% 28%,#fff3c2,#f0b429 55%,#b57e00);box-shadow:0 0 0 1px #8a5d00,inset 0 0 0 2px rgba(255,255,255,.35)}
-.customcoin .coin{background:url(coin.png) center/contain no-repeat;box-shadow:none;border-radius:0;width:20px;height:20px}
+.coin{width:19px;height:19px;border-radius:50%;flex:none;position:relative;background:radial-gradient(circle at 32% 28%,#fff3c2,#f0b429 55%,#b57e00);box-shadow:0 0 0 1px #8a5d00,inset 0 0 0 2px rgba(255,255,255,.35)}
+.customcoin .coin{background:url(coin.png) center/contain no-repeat;box-shadow:none;border-radius:0;width:25px;height:25px}
 .customcoin .coin::after{display:none}
-.customcoin .big-price .coin{width:26px;height:26px}
+.customcoin .big-price .coin{width:32px;height:32px}
 .coin::after{content:"";position:absolute;inset:4px;border-radius:50%;border:1.5px solid rgba(120,80,0,.55)}
 .chg{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
 .up{color:var(--up)}.dn{color:var(--down)}.fl{color:var(--muted)}
@@ -221,7 +221,7 @@ nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;st
 .mini3 span{font-size:11px;color:var(--muted)}
 .bigp{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .bigp b{font-size:clamp(28px,6vw,38px);font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;line-height:1}
-.bigp .coin{width:26px;height:26px}
+.bigp .coin{width:32px;height:32px}
 .momo{position:relative;height:10px;border-radius:6px;background:linear-gradient(90deg,#5b3cff,#ff4d3d);margin:26px 0 8px}
 .momo i{position:absolute;top:-9px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:12px solid var(--text);transform:translateX(-50%)}
 .momo-l{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -249,7 +249,7 @@ nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;st
 .chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .chips span{background:var(--surface2);border-radius:20px;padding:3px 10px;font-size:12.5px;color:var(--muted);font-weight:600}
 .big-price{font-size:28px;font-weight:800;color:var(--warn);display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
-.big-price .coin{width:20px;height:20px}
+.big-price .coin{width:26px;height:26px}
 .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
 .sgrid div{background:var(--surface2);border-radius:10px;padding:6px 8px;text-align:center}
 .sgrid b{display:block;font-size:17px}
@@ -324,7 +324,7 @@ label.l{display:block;font-size:13px;color:var(--muted);margin:8px 0 3px}
 .mpill{overflow:hidden;display:flex;align-items:center;gap:5px;background:#0b0d12;border:1px solid var(--line);border-radius:7px;padding:2px 7px 2px 2px;margin-top:-14px;position:relative;z-index:2;font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;color:var(--text);max-width:100%;white-space:nowrap}
 [data-theme=light] .mpill{background:#fff}
 .mpill .pb{background:#d3322a;color:#fff;border-radius:5px;font-size:10px;padding:2px 4px;line-height:1.1}
-.mpill .coin{width:13px;height:13px}
+.mpill .coin{width:18px;height:18px}
 .mpill .pn{color:var(--warn)}
 .mpill .ex{color:var(--muted);font-weight:700}
 .tile .chg{font-size:11.5px}
@@ -343,7 +343,7 @@ label.l{display:block;font-size:13px;color:var(--muted);margin:8px 0 3px}
 .hero .psi{border-radius:9px;transform:rotate(45deg);background:#f4f4f4;border:0;width:34px;height:34px;margin:4px}
 .hero .psi img{transform:rotate(-45deg);width:26px;height:26px}
 .hero .psi.gold{background:linear-gradient(135deg,#ffe58a,#d9a620);box-shadow:0 0 8px rgba(240,180,41,.6);width:38px;height:38px}
-.mini3 .coin{display:inline-block;vertical-align:-2px;width:14px;height:14px}
+.mini3 .coin{display:inline-block;vertical-align:-2px;width:18px;height:18px}
 .pb{background:#d3322a;color:#fff;border-radius:5px;font-size:11px;padding:2px 5px;vertical-align:2px}
 .top2{display:grid;grid-template-columns:1fr;gap:14px}
 @media(min-width:760px){.top2{grid-template-columns:1fr 1fr}}
@@ -351,7 +351,7 @@ label.l{display:block;font-size:13px;color:var(--muted);margin:8px 0 3px}
 .hl{margin-top:10px;display:flex;flex-direction:column;gap:6px;font-size:13px}
 .hl .hr{display:flex;justify-content:space-between;color:var(--muted)}
 .hl .hr b{color:var(--text);display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
-.hl .coin{width:12px;height:12px}
+.hl .coin{width:15px;height:15px}
 .attr{grid-template-columns:1fr;gap:22px 34px}
 @media(min-width:620px){.attr{grid-template-columns:repeat(3,1fr)}}
 .at{border:0;background:none;padding:0}
@@ -420,7 +420,7 @@ button.dm.sel{outline:2px solid #ff4d00;outline-offset:3px}
 .tb .th,.tb .tr{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-top:1px solid var(--line);font-size:13px}
 .tb .th{font-size:12px;font-weight:700;color:var(--muted);background:var(--surface2)}
 .tb .tr b{display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
-.tb .coin{width:12px;height:12px}
+.tb .coin{width:15px;height:15px}
 
 .info .kv{align-items:center;padding:14px 16px;font-size:13.5px}
 .info .kv span{font-size:13px}
@@ -432,7 +432,10 @@ button.dm.sel{outline:2px solid #ff4d00;outline-offset:3px}
 .evh,.evr{display:grid;grid-template-columns:1.4fr .8fr 1fr;gap:10px;padding:10px 14px;border-top:1px solid var(--line);align-items:center}
 .evh{background:var(--surface2);font-size:12px;font-weight:700;color:var(--muted);border-top:0}
 .evr span{color:var(--muted)}
-@media(max-width:360px){.mpill{font-size:11.5px;gap:3px;padding-right:4px}.mpill .pb{font-size:9px;padding:2px 3px}.mpill .coin{width:11px;height:11px}.grid{gap:12px 4px}}
+@media(max-width:360px){.mpill{font-size:11.5px;gap:3px;padding-right:4px}.mpill .pb{font-size:9px;padding:2px 3px}.mpill .coin{width:13px;height:13px}.grid{gap:12px 4px}}
+@media(max-width:430px){.mpill .coin{width:13px;height:13px}.mpill{gap:3px;font-size:12px}}
+@media(max-width:360px){.mpill .coin{width:11px;height:11px}.mpill{font-size:11px;gap:2px}.mpill .pb{font-size:9px;padding:2px 3px}}
+@media(max-width:340px){.mpill .pb{display:none}.mpill{padding-left:5px}}
 @media(min-width:700px){.cl{font-size:12.5px}}
 .grid .ov .s,.grid .ov .bd,.grid .ov .sw{display:none}
 .grid .ov .n{top:68.5%;font-size:10.5cqw;letter-spacing:.05em}
@@ -464,7 +467,7 @@ button.dm.sel{outline:0!important;filter:drop-shadow(0 0 6px #ff4d00)}
   background-size:300% 300%;mix-blend-mode:color-dodge;opacity:.55;animation:holo 6s linear infinite}
 .cardbox.holo .face,.cardbox.holo .ov{z-index:2}
 .cardbox.fbasic .face{left:55%;width:74%;height:46%;top:17%}
-.cardbox.fspec .face{width:98%;height:57%;top:12%}
+.cardbox.fspec .face{width:100%;height:61%;top:15%}
 @keyframes holo{0%{background-position:0% 50%}100%{background-position:100% 50%}}
 [data-anim=reduced] .holo-fx,[data-anim=none] .holo-fx{animation:none;background-position:50% 50%}
 </style>
