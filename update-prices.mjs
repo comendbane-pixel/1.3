@@ -30,15 +30,25 @@ let authOK = false; // devient vrai dès qu'une requête a réussi
 // Le robot utilise la clé n°1 jusqu'à ce qu'elle n'ait plus de crédits, puis passe à la suivante.
 // Seul le NUMÉRO de la clé en cours est enregistré (fichier keys-state.json), jamais la clé elle-même.
 const cleanKey = (k) => String(k || '').replace(/^[\s"'`]+|[\s"'`]+$/g, '').replace(/\s+/g, '');
-const KEYS = [...new Set(
-  (String(process.env.PARSE_API_KEYS || '').split(/[\s,;]+/).concat(String(process.env.PARSE_API_KEY || '')))
-    .map(cleanKey).filter(Boolean)
-)];
+// Chaque entrée peut être « CLÉ » (adresse = API_BASE) ou « CLÉ|ADRESSE_DU_SCRAPER » (compte différent, scraper différent).
+const ENTRIES = (() => {
+  const seen = new Set(), out = [];
+  const toks = String(process.env.PARSE_API_KEYS || '').split(/[\s,;]+/).concat(String(process.env.PARSE_API_KEY || ''));
+  for (const t of toks) {
+    const [k0, b0] = String(t).split('|');
+    const k = cleanKey(k0), b = cleanKey(b0).replace(/\/+$/, '');
+    if (!k || seen.has(k + '|' + b)) continue;
+    seen.add(k + '|' + b); out.push({ k, b: /^https:\/\//i.test(b) ? b : '' });
+  }
+  return out;
+})();
+const KEYS = ENTRIES.map((e) => e.k);
+let CUR_BASE = BASE;
 const STATE_FILE = path.join(DIR, 'keys-state.json');
 let keyIdx = 0, keyIdxStart = 0;
 let KEY = '';
 const CREDIT_RE = /credit|quota|insufficient|exhaust|balance|limit reached|payment|plan limit/i;
-const redact = (t) => KEYS.reduce((a, k) => a.split(k).join('***'), String(t));
+const redact = (t) => KEYS.concat(ENTRIES.map((e) => e.b).filter(Boolean)).reduce((a, k) => a.split(k).join('***'), String(t));
 async function loadKeyState() {
   const month = new Date().toISOString().slice(0, 7);
   try {
@@ -47,7 +57,9 @@ async function loadKeyState() {
   } catch { /* premier passage */ }
   keyIdxStart = keyIdx;
   KEY = KEYS[keyIdx] || '';
-  if (KEYS.length > 1) console.log(`Clés disponibles : ${KEYS.length}. On commence avec la clé n°${keyIdx + 1}.`);
+  CUR_BASE = (ENTRIES[keyIdx] && ENTRIES[keyIdx].b) || BASE;
+  console.log(`Clés disponibles : ${KEYS.length}. On commence avec la clé n°${keyIdx + 1}.`);
+  console.log(`Scraper utilisé : ${CUR_BASE.replace(/^https?:\/\//, '').replace(/([0-9a-f]{8})[0-9a-f-]{28}/gi, '$1…')}`);
 }
 async function saveKeyState() {
   if (KEYS.length < 2 || keyIdx === keyIdxStart) return;
@@ -58,6 +70,7 @@ function nextKey(why) {
   console.log(`Clé n°${keyIdx + 1} : ${why}. Passage à la clé n°${keyIdx + 2} sur ${KEYS.length}.`);
   keyIdx++;
   KEY = KEYS[keyIdx];
+  CUR_BASE = ENTRIES[keyIdx].b || BASE;
   authOK = false;
   return true;
 }
@@ -202,13 +215,17 @@ async function api(endpoint, params = {}, label = endpoint) {
   const wait = lastCall + PAUSE_MS - Date.now();
   if (lastCall && wait > 0) await sleep(wait);
 
-  const url = new URL(`${BASE}/${endpoint}`);
-  for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
-  }
+  const mkUrl = () => { // refait à chaque essai : la clé (et donc l'adresse du scraper) peut changer
+    const u = new URL(`${CUR_BASE}/${endpoint}`);
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null) u.searchParams.set(k, String(v));
+    }
+    return u;
+  };
 
   for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
     const last = attempt >= MAX_TRIES;
+    const url = mkUrl();
     lastCall = Date.now();
     let res;
     try {
@@ -224,10 +241,21 @@ async function api(endpoint, params = {}, label = endpoint) {
       }
       throw new Error(`${label} : impossible de joindre parse.bot (${e.message})`);
     }
+    if (res.status === 404) {
+      const body404 = redact((await res.clone().text().catch(() => '')).slice(0, 200));
+      if (/scraper/i.test(body404) && /not found/i.test(body404)) {
+        if (nextKey('ne voit pas ce scraper (404)')) { attempt--; continue; }
+        throw new Error(`${label} : parse.bot répond « scraper introuvable » (404) avec toutes les clés. ` +
+          `Ces clés viennent sans doute d'un autre compte que celui où le scraper FUTBIN a été créé. ` +
+          `Solution : sur parse.bot, avec le compte qui a les crédits, ouvre le scraper FUTBIN, copie son adresse (URL de base) ` +
+          `et mets-la dans GitHub → Settings → Secrets and variables → Actions → Variables → nouvelle variable API_BASE. ` +
+          `Réponse : ${body404}`);
+      }
+    }
     if ([401, 402, 403, 429].includes(res.status)) {
       const peek = await res.clone().text().catch(() => '');
       const creditLike = res.status === 402 || CREDIT_RE.test(peek);
-      const fastBad = (res.status === 401 || res.status === 403) && !authOK && Date.now() - lastCall < 60000;
+      const fastBad = (res.status === 401 || res.status === 403) && (/invalid api key/i.test(peek) || (!authOK && Date.now() - lastCall < 60000));
       if ((creditLike || fastBad) && nextKey(creditLike ? 'plus de crédits' : 'refusée')) { attempt--; continue; }
     }
     if (res.status === 401 || res.status === 403) {
