@@ -1387,6 +1387,20 @@ function invCard(x, i, mode) {
     (mode === 'long' && x.is ? '<li>Elle rapporte ' + fmt(x.is.pts) + ' points dans un SBC' + (x.is.est ? ' (estimation)' : '') + ' : ' + fmt(c.price / x.is.pts) + ' pièces par point.</li>' : '') +
     x.why.map((t) => '<li>' + esc(t) + '</li>').join('') + x.warn.map((t) => '<li class="w">' + esc(t) + '</li>').join('') + '</ul></details></div>';
 }
+// Bouton « Scanner maintenant » : pause de 5 minutes après chaque clic (mémorisée si le navigateur le permet)
+const SCAN_WAIT = 5 * 60e3;
+let SCAN_AT = 0; try { SCAN_AT = Number(localStorage.getItem('fc27.scanAt')) || 0; } catch (e) { /* mémoire du navigateur indisponible : pause gardée en mémoire seulement */ }
+const scanLeft = () => Math.max(0, SCAN_AT + SCAN_WAIT - Date.now());
+const scanTxt = () => { const t = Math.ceil(scanLeft() / 1000); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('[data-act=scannow]'); if (!a || scanLeft() > 0) return;
+  SCAN_AT = Date.now(); try { localStorage.setItem('fc27.scanAt', String(SCAN_AT)); } catch (err) { /* ignoré */ }
+  setTimeout(renderInvest, 80);                      // le lien s'ouvre quand même ; le bouton se bloque
+});
+setInterval(() => {
+  const b = document.getElementById('scanBtn'); if (!b || b.tagName === 'A') return;
+  if (scanLeft() > 0) b.textContent = 'Prochain scan possible dans ' + scanTxt(); else renderInvest();
+}, 1000);
 let INV_LAST = [];
 function renderInvest() {
   const cfg = S.inv, { cur, up } = buildSbcs();
@@ -1403,10 +1417,12 @@ function renderInvest() {
       (old == null || old > 2 ? 'Pour une revente rapide, c\'est trop vieux : la carte a peut-être déjà changé de prix. Vérifie le prix dans le jeu avant d\'acheter. ' : '') +
       'Les prix ne changent que quand le robot passe : utilise le bouton « Scanner maintenant » ci-dessous juste avant d\'investir.</div>'; }
   if (cfg.mode === 'rapide') {
-    let repo = 'comendbane-pixel/1.3';
+    let repo = 'comendbane-pixel/1.7';
     try { const mh = /^([^.]+)\.github\.io$/.exec(location.hostname), seg = location.pathname.split('/').filter(Boolean)[0]; if (mh && seg && !/\.html?$/i.test(seg)) repo = mh[1] + '/' + seg; } catch (e) { /* adresse inconnue : dépôt par défaut */ }
     h += '<div class="box"><b>Scanner maintenant</b><div class="small muted" style="margin:6px 0">Relève le prix de <b>toutes les cartes</b> d\'un coup (environ 190 crédits). Ça prend quelques minutes.</div>' +
-      '<a class="btn primary" style="display:inline-block;text-decoration:none" target="_blank" rel="noopener" href="https://github.com/' + esc(repo) + '/actions/workflows/scan-rapide.yml">Scanner maintenant</a>' +
+      (scanLeft() > 0
+        ? '<span class="btn primary" id="scanBtn" aria-disabled="true" style="display:inline-block;opacity:.5;cursor:not-allowed">Prochain scan possible dans ' + scanTxt() + '</span><div class="small muted" style="margin-top:6px">Pause de 5 minutes après chaque scan, pour ne pas dépenser des crédits pour rien.</div>'
+        : '<a class="btn primary" id="scanBtn" data-act="scannow" style="display:inline-block;text-decoration:none" target="_blank" rel="noopener" href="https://github.com/' + esc(repo) + '/actions/workflows/scan-rapide.yml">Scanner maintenant</a>') +
       '<ol class="small" style="margin:8px 0 0;padding-left:18px"><li>Le bouton ouvre GitHub.</li><li>Clique sur <b>Run workflow</b> (bouton gris à droite), puis sur le bouton vert <b>Run workflow</b>.</li><li>Reviens ici : la page se met à jour toute seule dès que le scan est fini (vérifie « Prix datant de » ci-dessus).</li></ol></div>';
   }
   if (cfg.mode === 'rapide') {
