@@ -1,0 +1,53 @@
+name: Surveillance des cartes choisies par l'IA
+
+on:
+  schedule:
+    - cron: '7 * * * *'   # toutes les heures (ne fait rien tant que l'interrupteur est sur "off")
+  workflow_dispatch:
+    inputs:
+      count:
+        description: 'Combien de cartes surveiller (vide = 20)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-prices
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    # INTERRUPTEUR : le robot ne tourne seul que si la variable SURVEILLANCE vaut "on".
+    # Un lancement à la main (bouton Run workflow) marche toujours.
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.SURVEILLANCE == 'on' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Surveiller les cartes choisies
+        env:
+          PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
+          WATCH_COUNT: ${{ github.event.inputs.count }}
+        run: node update-prices.mjs watch
+
+      - name: Enregistrer data.json et watch.json
+        if: ${{ always() }}
+        run: |
+          git config user.name "price-bot"
+          git config user.email "price-bot@users.noreply.github.com"
+          git add data.json watch.json
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau à enregistrer."
+          else
+            git commit -m "Surveillance des prix"
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            git push
+          fi
