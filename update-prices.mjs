@@ -394,6 +394,7 @@ async function modeSnapshot(data) {
     await saveData(data);
     console.log(`SBC en cours : ${sbcs.length}.`);
   }
+  await runSelection(data, await loadWatch(), 'après la mise à jour complète');
 }
 
 
@@ -525,6 +526,110 @@ async function modeFiche(data) {
   console.log(`Fiches enregistrées : ${done}. Regarde ton solde de crédits sur parse.bot pour connaître le prix d'une requête.`);
 }
 
+// ---------- sélection des cartes à surveiller (calcul local : 0 crédit) ----------
+const WATCH_FILE = path.join(DIR, 'watch.json');
+const WATCH_COUNT = Number(process.env.WATCH_COUNT) || 20;               // combien de cartes surveillées
+const SELECT_MINUTES = Number(process.env.SELECT_MINUTES ?? 60);         // nouvelle sélection toutes les 60 min
+const WATCH_MINUTES = Number(process.env.WATCH_MINUTES ?? 60);           // pas de nouvelle requête avant 60 min
+const WATCH_COST = Number(process.env.WATCH_COST ?? 10);                 // crédits estimés par requête
+const MONTH_BUDGET = Number(process.env.MONTH_BUDGET ?? 100);            // crédits max/mois pour la surveillance
+const TAX = 0.05;
+
+async function loadWatch() {
+  try {
+    const w = JSON.parse(await readFile(WATCH_FILE, 'utf8'));
+    if (!Array.isArray(w.items)) w.items = [];
+    return w;
+  } catch {
+    return { selectedAt: null, checkedAt: null, month: '', spent: 0, items: [] };
+  }
+}
+async function saveWatch(w) {
+  const tmp = WATCH_FILE + '.tmp';
+  await writeFile(tmp, JSON.stringify(w) + '\n', 'utf8');
+  await rename(tmp, WATCH_FILE);
+}
+const med = (a) => { const b = [...a].sort((x, y) => x - y), n = b.length; return n % 2 ? b[(n - 1) / 2] : (b[n / 2 - 1] + b[n / 2]) / 2; };
+
+// Même idée que l'onglet « Revente rapide » du site : carte nettement sous son prix habituel, gain net (taxe 5 %) suffisant.
+function selectRapide(data, count) {
+  const out = [];
+  for (const c of data.cards) {
+    const price = Number(c.price);
+    const h = (Array.isArray(c.history) ? c.history : []).map((x) => Number(x && x.p)).filter((v) => v > 0);
+    if (!(price >= 500) || h.length < 4) continue;
+    const m = med(h);
+    const disc = (m - price) / m;
+    if (disc < 0.04) continue;
+    const sell = Math.round(m * 0.98);
+    const net = sell * (1 - TAX) - price, pct = net / price;
+    if (net <= 0 || pct < 0.03) continue;
+    const mn = Math.min(...h), mx = Math.max(...h);
+    const range = mx > mn ? (price - mn) / (mx - mn) : 0.5;
+    const avg = h.reduce((a, b) => a + b, 0) / h.length;
+    const cv = Math.sqrt(h.reduce((a, b) => a + (b - avg) ** 2, 0) / h.length) / avg;
+    const prev = h[h.length - 2], last = h[h.length - 1];
+    const chg = prev > 0 ? (last - prev) / prev : 0;
+    let sc = 40 * Math.min(1, disc / 0.15) + 25 * (1 - Math.min(1, Math.max(0, range)));
+    sc += chg <= -0.06 ? 3 : chg < 0 ? 12 : 20;
+    sc += 15 * (1 - Math.min(1, cv / 0.2));
+    const w = h.length >= 10 ? 1 : h.length >= 4 ? 0.9 : 0.7;
+    out.push({ id: c.id, score: Math.round(Math.min(100, sc) * w), buy: price, sell, why: `${(disc * 100).toFixed(0)} % sous son prix habituel` });
+  }
+  out.sort((a, b) => b.score - a.score);
+  return out.slice(0, count);
+}
+
+async function runSelection(data, w, why) {
+  const items = selectRapide(data, WATCH_COUNT);
+  w.items = items;
+  w.selectedAt = new Date().toISOString();
+  await saveWatch(w);
+  console.log(`Sélection (${why}) : ${items.length} cartes à surveiller (0 crédit).`);
+}
+
+async function modeSelect(data) {
+  await runSelection(data, await loadWatch(), 'manuelle');
+}
+
+async function modeWatch(data) {
+  const w = await loadWatch();
+  const now = Date.now();
+  const age = (iso) => (iso ? (now - Date.parse(iso)) / 60000 : Infinity);
+  if (age(w.selectedAt) >= SELECT_MINUTES || !w.items.length) await runSelection(data, w, 'toutes les heures');
+  if (!w.items.length) { console.log('Rien à surveiller pour le moment : aucune requête envoyée, 0 crédit dépensé.'); return; }
+  if (age(w.checkedAt) < WATCH_MINUTES) { console.log(`Dernier contrôle il y a ${Math.round(age(w.checkedAt))} min (< ${WATCH_MINUTES}) : rien envoyé, 0 crédit.`); return; }
+  const month = new Date(now).toISOString().slice(0, 7);
+  if (w.month !== month) { w.month = month; w.spent = 0; }
+  if (w.spent + WATCH_COST > MONTH_BUDGET) { console.log(`Budget du mois atteint (${w.spent}/${MONTH_BUDGET} crédits estimés) : surveillance en pause jusqu'au mois prochain.`); await saveWatch(w); return; }
+  const ids = w.items.map((i) => i.id);
+  console.log(`Surveillance : ${ids.length} cartes demandées (seulement celles choisies par l'IA).`);
+  const payload = await api('get_fc27_market_snapshot', { player_ids: ids.join(',') }, 'get_fc27_market_snapshot');
+  w.spent += WATCH_COST; // compté dès que la requête part
+  const arr = toArray(payload);
+  const map = new Map(data.cards.map((c) => [c.id, c]));
+  const want = new Set(ids);
+  let updated = 0;
+  for (const r of arr) {
+    const id = pick(r, ['player_id', 'id', 'playerId']);
+    if (id === undefined || !want.has(String(id))) continue;
+    const card = map.get(String(id));
+    const price = toPrice(pick(r, ['price', 'ps_price', 'current_price', 'prices']));
+    if (!card || price === null) continue;
+    card.price = price;
+    addHistory(card, price, now);
+    updated++;
+  }
+  console.log(`Surveillance : ${updated} prix mis à jour. Crédits estimés ce mois-ci : ${w.spent}/${MONTH_BUDGET}.`);
+  if (!arr.length) { await saveWatch(w); throw new Error('Réponse vide de get_fc27_market_snapshot.'); }
+  data.updatedAt = new Date(now).toISOString();
+  await saveData(data);
+  w.checkedAt = new Date(now).toISOString();
+  await saveWatch(w);
+  // Les prix ont bougé : l'IA refait son choix tout de suite (gratuit).
+  await runSelection(data, w, 'après mise à jour des prix');
+}
+
 // ---------- départ ----------
 async function main() {
   if (!KEY) {
@@ -532,13 +637,15 @@ async function main() {
     process.exit(1);
   }
   let mode = (process.argv[2] || process.env.MODE || 'auto').trim().toLowerCase();
-  if (!['auto', 'list', 'snapshot', 'details', 'fiche'].includes(mode)) mode = 'auto';
+  if (!['auto', 'list', 'snapshot', 'details', 'fiche', 'select', 'watch'].includes(mode)) mode = 'auto';
   const data = await loadData();
   if (mode === 'auto') mode = data.cards.length ? 'snapshot' : 'list';
   console.log(`Mode : ${mode}`);
   if (mode === 'list') await modeList(data);
   else if (mode === 'fiche') await modeFiche(data);
   else if (mode === 'details') await modeDetails(data);
+  else if (mode === 'select') await modeSelect(data);
+  else if (mode === 'watch') await modeWatch(data);
   else await modeSnapshot(data);
   console.log('Terminé.');
 }

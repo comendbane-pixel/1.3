@@ -533,6 +533,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .invw{margin:0;padding-left:18px;font-size:13px;display:flex;flex-direction:column;gap:3px}
 .invw li.w{color:var(--warn)}
 @media(max-width:430px){nav button{font-size:10px}}
+.invold{border:1px solid var(--warn)}
 .invmode{margin:4px 0 10px;width:100%}
 .invmode button{flex:1;padding:8px 10px}
 .invmode button[aria-selected=true]{background:var(--accent);color:var(--accent-text)}
@@ -675,7 +676,7 @@ let FAV = new Set(S.favs);
    Données
    ===================================================================== */
 const EMPTY = { demo: false, updatedAt: null, source: 'En attente', cards: [], sbcs: [] };
-let DATA = EMPTY, UPCOMING = [], CARDS = [], MAP = new Map(), MOVERS = [], POSLIST = [];
+let WATCH = null, DATA = EMPTY, UPCOMING = [], CARDS = [], MAP = new Map(), MOVERS = [], POSLIST = [];
 let lastCheck = 0, loadedOnce = false;
 
 const GROUPS = { GK: ['GK'], DEF: ['CB', 'LB', 'RB', 'LWB', 'RWB'], MIL: ['CDM', 'CM', 'CAM', 'LM', 'RM'], ATT: ['LW', 'RW', 'CF', 'ST', 'LF', 'RF', 'LS', 'RS'] };
@@ -748,6 +749,8 @@ async function loadAll() {
   let d = null, u = null;
   try { d = await getJSON('data.json'); } catch (e) { /* ouverture en fichier ou aperçu : données vides */ }
   try { u = await getJSON('sbcs.json'); } catch (e) { }
+  let wj = null; try { wj = await getJSON('watch.json'); } catch (e) { }
+  if (wj && Array.isArray(wj.items)) { const ch = JSON.stringify(wj) !== JSON.stringify(WATCH); WATCH = wj; if (ch && loadedOnce) { try { renderActive(); } catch (e) { } } }
   const first = !loadedOnce;
   loadedOnce = true;
   const changed = first || (d && (d.updatedAt !== DATA.updatedAt || (d.cards || []).length !== CARDS.length)) || (u && JSON.stringify(u.sbcs) !== JSON.stringify(UPCOMING));
@@ -1136,7 +1139,7 @@ function sbcBlock(s) {
       : '<div class="small muted" style="margin-top:6px">Prérequis inconnus : ajoute-les dans sbcs.json pour obtenir des conseils.</div>') +
     (s.reward ? '<div class="small" style="margin-top:4px">Récompense : ' + esc(s.reward) + '</div>' : '') +
     (s.note ? '<div class="small muted" style="margin-top:4px">' + esc(s.note) + '</div>' : '') +
-    (s.url ? '<div class="small" style="margin-top:4px"><a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer">Source</a></div>' : '') + '</div>';
+    '</div>';
 }
 
 function renderSbc() {
@@ -1278,6 +1281,21 @@ function renderInvest() {
     '<div class="note"><b>Analyse automatique, pas une boule de cristal.</b> Elle lit les prix réellement relevés par le robot (jamais de courbe simulée). ' +
     'Un prix peut aussi baisser : ce sont des estimations, pas des conseils financiers. Les prix ont un à deux jours de retard.</div>';
   h += '<div class="tabs2 invmode" role="tablist"><button role="tab" aria-selected="' + (cfg.mode === 'rapide') + '" data-act="invmode" data-m="rapide">Revente rapide</button><button role="tab" aria-selected="' + (cfg.mode === 'long') + '" data-act="invmode" data-m="long">Long terme (attendre un SBC)</button></div>';
+  { const t0 = DATA.updatedAt ? Date.parse(DATA.updatedAt) : NaN, old = isFinite(t0) ? (Date.now() - t0) / 36e5 : null;
+    if (cfg.mode === 'rapide') h += '<div class="note ' + (old == null || old > 2 ? 'invold' : '') + '"><b>Prix datant de : ' + (isFinite(t0) ? agoText(t0) : 'inconnu') + '.</b> ' +
+      (old == null || old > 2 ? 'Pour une revente rapide, c\'est trop vieux : la carte a peut-être déjà changé de prix. Vérifie le prix dans le jeu avant d\'acheter. ' : '') +
+      'Cette page relit les prix toutes les 5 minutes, mais ils ne changent que quand le robot passe (gratuitement : un jour sur deux ; à la demande : Actions → Mise à jour des prix → mode snapshot).</div>'; }
+  if (cfg.mode === 'rapide') {
+    const wi = WATCH && Array.isArray(WATCH.items) ? WATCH.items.filter((i) => i && MAP.get(String(i.id))) : [];
+    h += '<div class="box"><b>Cartes surveillées par le robot</b>';
+    if (!wi.length) h += '<div class="small muted" style="margin-top:6px">Pas encore de sélection. Elle apparaît après une mise à jour des prix (il faut au moins 4 relevés par carte).</div>';
+    else {
+      const tS = WATCH.selectedAt ? Date.parse(WATCH.selectedAt) : NaN, tC = WATCH.checkedAt ? Date.parse(WATCH.checkedAt) : NaN;
+      h += '<div class="small muted" style="margin:6px 0">Choisies par l\'IA ' + (isFinite(tS) ? agoText(tS) : '') + '. Dernier contrôle de leurs prix : ' + (isFinite(tC) ? agoText(tC) : 'pas encore') + '. L\'IA refait son choix toutes les heures.</div>';
+      h += wi.slice(0, 20).map((i) => { const c = MAP.get(String(i.id)); return '<div class="small">• <b>' + esc(c.name) + '</b> (' + esc(String(c.rating)) + ') : acheter vers ' + fmt(i.buy) + ', revendre vers ' + fmt(i.sell) + ' <span class="muted">— ' + esc(i.why || '') + '</span></div>'; }).join('');
+    }
+    h += '</div>';
+  }
   h += '<div class="box invf" id="invForm"><div class="invrow">';
   if (cfg.mode === 'long') {
     h += '<label>Note visée<select id="invT">' + rs.map((r) => '<option value="' + r[0] + '"' + (Number(r[0]) === cfg.t ? ' selected' : '') + '>' + r[1] + '</option>').join('') + '</select></label>' +
@@ -1291,7 +1309,7 @@ function renderInvest() {
     h += '<h2>Ce qui arrive</h2>';
     h += feed.length ? feed.slice(0, 8).map((s) => '<div class="box invfeed"><b>' + esc(s.name) + '</b> <span class="small muted">' + (s.date ? (s.kind === 'cur' ? 'expire ' : 'prévu ') + fmtDate(s.date) + ' · ' + countdown(s.date) : 'date inconnue') + '</span>' +
       (s.kind === 'up' ? (s.official ? ' <span class="badge hi">Officiel</span>' : ' <span class="badge lo">Prévision non officielle</span>') : '') + (s.note ? '<div class="small muted">' + esc(s.note) + '</div>' : '') +
-      (s.url ? ' <a class="small" href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer">Source</a>' : '') + '</div>').join('')
+      '</div>').join('')
       : '<div class="note">Aucun SBC connu. Ajoute-les dans <b>sbcs.json</b> (nom, date et heure prévues, source) : l\'analyse les affichera ici.</div>';
   }
   if (!CARDS.length) { $('#pInv').innerHTML = h + '<div class="empty box"><div class="big">En attente des premiers prix</div><div class="muted">L\'analyse apparaîtra quand data.json contiendra des cartes.</div></div>'; return; }
@@ -1309,7 +1327,7 @@ function renderInvest() {
     h += res.slice(0, 10).map((x, i) => invCard(x, i, cfg.mode)).join('');
     h += '<div class="box"><button class="btn" data-act="invcopy">Copier le résumé pour demander un avis à Claude</button><div class="small muted" id="invCp" style="margin-top:6px">Tu colles le texte dans une discussion avec Claude pour une analyse plus poussée.</div></div>';
   }
-  h += '<div class="note small">Points SBC : valeurs de lancement du score d\'objet des SBC simplifiés (or : 85 = 2 100 points, 86 = 4 100, etc.), relevées sur FUTBIN, <b>provisoires</b> : EA peut les changer. Cartes spéciales : seuls quelques scores sont publiés (Équipe de la semaine 85 et 86, Héros de base 89, Destined for Glory 86 et 87) ; pour les autres notes de ces types, c\'est une estimation (environ ×1,25). Icônes et Future Stars : valeur non publiée, donc aucun calcul.</div>';
+  h += '<div class="note small">Points SBC : valeurs de lancement du score d\'objet des SBC simplifiés (or : 85 = 2 100 points, 86 = 4 100, etc.), <b>provisoires</b> : EA peut les changer. Cartes spéciales : seuls quelques scores sont publiés (Équipe de la semaine 85 et 86, Héros de base 89, Destined for Glory 86 et 87) ; pour les autres notes de ces types, c\'est une estimation (environ ×1,25). Icônes et Future Stars : valeur non publiée, donc aucun calcul.</div>';
   $('#pInv').innerHTML = h;
 }
 function invSummary() {
@@ -1841,7 +1859,9 @@ $('#fSort').addEventListener('change', (e) => { M.sort = e.target.value; M.page 
 $('#fFav').addEventListener('click', (e) => { M.fav = !M.fav; e.currentTarget.setAttribute('aria-pressed', String(M.fav)); M.page = 1; renderMarket(); });
 
 // Mise à jour seulement quand la page est visible
-function maybeRefresh() { if (document.visibilityState === 'visible' && Date.now() - lastCheck > REFRESH) loadAll(); }
+// Sur « Investir > Revente rapide », on relit data.json toutes les 5 minutes (au lieu de 10) : le site voit tout de suite un nouveau relevé du robot.
+const liveMs = () => (TAB === 1 && S.inv && S.inv.mode === 'rapide' ? 5 * 60e3 : REFRESH);
+function maybeRefresh() { if (document.visibilityState === 'visible' && Date.now() - lastCheck > liveMs()) loadAll(); }
 document.addEventListener('visibilitychange', maybeRefresh);
 setInterval(maybeRefresh, 60e3);
 try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (S.theme === 'auto') applyLook(); }); } catch (e) { }
