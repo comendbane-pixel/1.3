@@ -17,7 +17,7 @@ on:
           - details
           - fiche
       pages:
-        description: 'Nombre de pages (mode list). Vide = 25. Mets 1 pour un test à 3 crédits.'
+        description: 'Nombre de pages (mode list). Vide = 25. Mets 350 pour tout le catalogue d un coup (3 crédits par page). Mets 1 pour un test.'
         required: false
         default: ''
         type: string
@@ -31,6 +31,19 @@ on:
         required: false
         default: ''
         type: string
+      parts:
+        description: 'Mode snapshot : combien de paquets de 500 cartes en même temps. Vide = autant que de clés (le plus rapide).'
+        required: false
+        default: ''
+        type: string
+      reset_keys:
+        description: 'Oublier les clés marquées vides ce mois-ci (à mettre sur oui si tu as rechargé des crédits)'
+        required: true
+        default: 'non'
+        type: choice
+        options:
+          - 'non'
+          - 'oui'
       restart:
         description: 'Repartir de la page 1 (test, ne change pas le point de reprise)'
         required: true
@@ -62,10 +75,13 @@ jobs:
         env:
           PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
           PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
+          API_BASE: ${{ vars.API_BASE }}
           MODE: ${{ github.event.inputs.mode || 'auto' }}
           MAX_PAGES: ${{ github.event.inputs.pages }}
           MIN_RATING: ${{ github.event.inputs.min_rating }}
           DETAILS_COUNT: ${{ github.event.inputs.details_count }}
+          SNAPSHOT_PARTS: ${{ github.event.inputs.parts }}
+          RESET_KEYS: ${{ github.event.inputs.reset_keys == 'oui' && '1' || '' }}
           RESTART: ${{ github.event.inputs.restart == 'oui' && '1' || '' }}
         run: node update-prices.mjs "$MODE"
 
