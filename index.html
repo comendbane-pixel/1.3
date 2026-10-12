@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0c11" id="metaTheme">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Barlow+Condensed:wght@600;700;800&display=swap">
 <title>FC27 Companion</title>
 <style>
 :root{
@@ -80,13 +80,15 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 /* Couleur du texte selon la carte : violet/foncé coloré = doré, noir = crème, clair (or, icône) = brun foncé */
 .cardbox.gd .ov{--g:#f4d97e;text-shadow:none}
 .cardbox.cr .ov{--g:#ece7da;text-shadow:none}
+.cardbox.toty .ov{--g:#fff;--c-r:#00C8FF;--c-p:#00C8FF;--c-l:#00C8FF;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.cardbox.tots .ov{--g:#fff;--c-r:#00FF87;--c-p:#00FF87;--c-l:#00FF87;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .cardbox.wh .ov{--g:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55)}
 .cardbox.lt .ov{--g:#2e2308;text-shadow:none}
-.ov .r{position:absolute;left:11%;width:18%;text-align:center;top:19%;font-weight:800;font-size:13.5cqw;line-height:1}
-.ov .p{position:absolute;left:11%;width:18%;text-align:center;top:30%;font-weight:700;font-size:8.5cqw;line-height:1}
+.ov .r{color:var(--c-r,var(--g));position:absolute;left:11%;width:18%;text-align:center;top:21.5%;font-weight:800;font-size:13cqw;line-height:1}
+.ov .p{color:var(--c-p,var(--g));position:absolute;left:11%;width:18%;text-align:center;top:30%;font-weight:700;font-size:8.5cqw;line-height:1}
 .ov .n{position:absolute;left:5%;right:5%;top:61.5%;text-align:center;font-weight:800;font-size:9cqw;letter-spacing:.07em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ov .s{position:absolute;top:71%;left:12.5%;right:12.5%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
-.ov .s i{display:block;font-style:normal;font-size:5.6cqw;font-weight:700;line-height:.95}
+.ov .s i{color:var(--c-l,var(--g));display:block;font-style:normal;font-size:5.6cqw;font-weight:700;line-height:.95}
 .ov .s b{display:block;font-size:8.6cqw;line-height:1;margin-top:-.4cqw}
 .ov .ap{position:absolute;right:-5.5cqw;top:30%;display:flex;flex-direction:column;gap:1.3cqw;align-items:stretch}
 .ov .ap i{font-style:normal;font-weight:800;font-size:5cqw;line-height:1;color:#fff;background:#1a1d25;border:1px solid rgba(255,255,255,.22);border-radius:1.8cqw;padding:1.4cqw 2.2cqw;text-align:center;text-shadow:none;box-shadow:0 2px 6px rgba(0,0,0,.45);letter-spacing:.02em}
@@ -503,6 +505,11 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .vtag{box-shadow:0 3px 10px -3px rgba(124,92,255,.7)}
 ::selection{background:color-mix(in srgb,var(--accent) 35%,transparent)}
 *{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.ov .n{font-family:'Bebas Neue','Barlow Condensed','Arial Narrow',sans-serif;font-weight:400;font-size:11.5cqw;letter-spacing:.06em;line-height:1.05}
+.ov .r{font-family:'Anton','Oswald','Barlow Condensed','Arial Narrow',sans-serif;font-weight:400}
+.ov .p{font-family:'Barlow Condensed','Arial Narrow',sans-serif;font-weight:800;letter-spacing:.03em}
+.ov .s i,.ov .s b{font-family:'Barlow Condensed','Arial Narrow',sans-serif;font-weight:800}
+.grid .ov .n{font-size:12.5cqw}
 </style>
 </head>
 <body>
@@ -850,6 +857,8 @@ function urlTone(u) {
   u = String(u || '').toLowerCase();
   if (/icon|hero/.test(u)) return 'lt';
   if (/(^|[\/_])(gold|silver|bronze|rare|common)([._?]|$)/.test(u)) return 'lt';
+  if (/toty|team_of_the_year/.test(u)) return 'toty';
+  if (/tots|team_of_the_season/.test(u)) return 'tots';
   if (/future_stars/.test(u)) return 'wh';
   if (/team_of_the_week|totw|toty|tots|black|dark/.test(u)) return 'cr';
   if (/destined|ones_to_watch|otw|promo|futties|fof|path_to_glory/.test(u)) return 'gd';
