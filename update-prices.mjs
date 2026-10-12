@@ -25,11 +25,42 @@ const RETRY_MS = Number(process.env.RETRY_MS ?? 30000);      // pause avant un n
 const MAX_TRIES = Number(process.env.MAX_TRIES ?? 4);        // essais par requête
 let authOK = false; // devient vrai dès qu'une requête a réussi
 
-// ---------- clé ----------
-// On enlève les espaces, retours à la ligne et guillemets collés par erreur.
-const KEY = String(process.env.PARSE_API_KEY || '')
-  .replace(/^[\s"'`]+|[\s"'`]+$/g, '')
-  .replace(/\s+/g, '');
+// ---------- clés ----------
+// Une seule clé (secret PARSE_API_KEY) OU plusieurs (secret PARSE_API_KEYS : une clé par ligne, ou séparées par des virgules).
+// Le robot utilise la clé n°1 jusqu'à ce qu'elle n'ait plus de crédits, puis passe à la suivante.
+// Seul le NUMÉRO de la clé en cours est enregistré (fichier keys-state.json), jamais la clé elle-même.
+const cleanKey = (k) => String(k || '').replace(/^[\s"'`]+|[\s"'`]+$/g, '').replace(/\s+/g, '');
+const KEYS = [...new Set(
+  (String(process.env.PARSE_API_KEYS || '').split(/[\s,;]+/).concat(String(process.env.PARSE_API_KEY || '')))
+    .map(cleanKey).filter(Boolean)
+)];
+const STATE_FILE = path.join(DIR, 'keys-state.json');
+let keyIdx = 0, keyIdxStart = 0;
+let KEY = '';
+const CREDIT_RE = /credit|quota|insufficient|exhaust|balance|limit reached|payment|plan limit/i;
+const redact = (t) => KEYS.reduce((a, k) => a.split(k).join('***'), String(t));
+async function loadKeyState() {
+  const month = new Date().toISOString().slice(0, 7);
+  try {
+    const st = JSON.parse(await readFile(STATE_FILE, 'utf8'));
+    if (st.month === month && Number.isInteger(st.index) && st.index >= 0 && st.index < KEYS.length) keyIdx = st.index;
+  } catch { /* premier passage */ }
+  keyIdxStart = keyIdx;
+  KEY = KEYS[keyIdx] || '';
+  if (KEYS.length > 1) console.log(`Clés disponibles : ${KEYS.length}. On commence avec la clé n°${keyIdx + 1}.`);
+}
+async function saveKeyState() {
+  if (KEYS.length < 2 || keyIdx === keyIdxStart) return;
+  await writeFile(STATE_FILE, JSON.stringify({ month: new Date().toISOString().slice(0, 7), index: keyIdx, total: KEYS.length }) + '\n', 'utf8');
+}
+function nextKey(why) {
+  if (keyIdx + 1 >= KEYS.length) return false;
+  console.log(`Clé n°${keyIdx + 1} : ${why}. Passage à la clé n°${keyIdx + 2} sur ${KEYS.length}.`);
+  keyIdx++;
+  KEY = KEYS[keyIdx];
+  authOK = false;
+  return true;
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -193,10 +224,16 @@ async function api(endpoint, params = {}, label = endpoint) {
       }
       throw new Error(`${label} : impossible de joindre parse.bot (${e.message})`);
     }
+    if ([401, 402, 403, 429].includes(res.status)) {
+      const peek = await res.clone().text().catch(() => '');
+      const creditLike = res.status === 402 || CREDIT_RE.test(peek);
+      const fastBad = (res.status === 401 || res.status === 403) && !authOK && Date.now() - lastCall < 60000;
+      if ((creditLike || fastBad) && nextKey(creditLike ? 'plus de crédits' : 'refusée')) { attempt--; continue; }
+    }
     if (res.status === 401 || res.status === 403) {
       // parse.bot explique souvent la raison dans sa réponse : on l'affiche (sans jamais afficher la clé).
       let body = (await res.text().catch(() => '')).slice(0, 300).replace(/\s+/g, ' ');
-      if (KEY) body = body.split(KEY).join('***');
+      body = redact(body);
       const secs = Math.round((Date.now() - lastCall) / 1000);
       // Une vraie clé refusée est rejetée en quelques secondes. Un « refus » après ~2 minutes, ou alors que la
       // clé a déjà marché, est en fait un délai dépassé chez parse.bot : on réessaie.
@@ -223,7 +260,7 @@ async function api(endpoint, params = {}, label = endpoint) {
       continue;
     }
     if (!res.ok) {
-      const txt = (await res.text().catch(() => '')).slice(0, 200).replace(KEY || '\u0000', '***');
+      const txt = redact((await res.text().catch(() => '')).slice(0, 200));
       throw new Error(`${label} : erreur HTTP ${res.status} ${txt}`);
     }
     authOK = true;
@@ -532,7 +569,7 @@ const WATCH_COUNT = Number(process.env.WATCH_COUNT) || 20;               // comb
 const SELECT_MINUTES = Number(process.env.SELECT_MINUTES ?? 60);         // nouvelle sélection toutes les 60 min
 const WATCH_MINUTES = Number(process.env.WATCH_MINUTES ?? 60);           // pas de nouvelle requête avant 60 min
 const WATCH_COST = Number(process.env.WATCH_COST ?? 10);                 // crédits estimés par requête
-const MONTH_BUDGET = Number(process.env.MONTH_BUDGET ?? 100);            // crédits max/mois pour la surveillance
+const MONTH_BUDGET = Number(process.env.MONTH_BUDGET ?? 8000);           // crédits max/mois pour la surveillance
 const TAX = 0.05;
 
 async function loadWatch() {
@@ -632,8 +669,9 @@ async function modeWatch(data) {
 
 // ---------- départ ----------
 async function main() {
+  await loadKeyState();
   if (!KEY) {
-    console.error('La variable PARSE_API_KEY est vide. Crée le secret PARSE_API_KEY dans Settings → Secrets and variables → Actions.');
+    console.error('Aucune clé : la variable PARSE_API_KEY (ou PARSE_API_KEYS) est vide. Crée le secret PARSE_API_KEY dans Settings → Secrets and variables → Actions.');
     process.exit(1);
   }
   let mode = (process.argv[2] || process.env.MODE || 'auto').trim().toLowerCase();
@@ -648,9 +686,11 @@ async function main() {
   else if (mode === 'watch') await modeWatch(data);
   else await modeSnapshot(data);
   console.log('Terminé.');
+  await saveKeyState();
 }
 
-main().catch((e) => {
-  console.error('ERREUR :', e.message);
+main().catch(async (e) => {
+  console.error('ERREUR :', redact(e.message));
+  try { await saveKeyState(); } catch { /* rien */ }
   process.exit(1);
 });
