@@ -35,6 +35,7 @@ jobs:
       - name: Surveiller les cartes choisies
         env:
           PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
+          PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
           WATCH_COUNT: ${{ github.event.inputs.count }}
         run: node update-prices.mjs watch
 
@@ -43,7 +44,7 @@ jobs:
         run: |
           git config user.name "price-bot"
           git config user.email "price-bot@users.noreply.github.com"
-          git add data.json watch.json
+          for f in data.json watch.json keys-state.json; do [ -f "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then
             echo "Rien de nouveau à enregistrer."
           else
