@@ -184,15 +184,15 @@ nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;st
 .sheet[hidden]{display:none}
 .panel{position:absolute;inset:0;overflow:auto;background:var(--bg);animation:up var(--tsheet) var(--ease)}
 .pgtop{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 8px) 14px 8px}
-.pgtop .in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.pgtop .in{max-width:1560px;margin:0 auto;display:flex;align-items:center;gap:10px}
 .back{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 12px;font-weight:700;display:flex;align-items:center;gap:6px}
 .crumb{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .crumb b{color:var(--text)}
-.pgbody{max-width:1180px;margin:0 auto;padding:14px 14px calc(env(safe-area-inset-bottom) + 40px)}
+.pgbody{max-width:1560px;margin:0 auto;padding:14px 14px calc(env(safe-area-inset-bottom) + 40px)}
 .pgbody h1{font-size:clamp(22px,4.6vw,34px);margin:4px 0 4px;line-height:1.15;text-wrap:balance}
 .pgbody .lead{color:var(--muted);font-size:13.5px;margin:0 0 14px;max-width:80ch}
 .pg{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
-@media(min-width:860px){.pg{grid-template-columns:330px 1fr}}
+@media(min-width:860px){.pg{grid-template-columns:clamp(330px,22vw,420px) minmax(0,1fr)}}
 .pgl,.pgr{display:flex;flex-direction:column;gap:14px;min-width:0}
 .card2{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .card2>h3{margin:0;padding:11px 14px;font-size:14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
@@ -282,8 +282,8 @@ nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;st
 label.l{display:block;font-size:13px;color:var(--muted);margin:8px 0 3px}
 
 /* ---------- Marché façon FUT.GG ---------- */
-.wrap{max-width:1240px}
-.page:not(#p0){max-width:980px;margin-inline:auto}
+.wrap{max-width:1560px}
+.page:not(#p0){max-width:1100px;margin-inline:auto}
 .crumbs{font-size:13px;color:var(--muted);margin:4px 2px 0}.crumbs b{color:var(--text);font-weight:600}
 .mk-title{font-family:"Barlow Condensed",system-ui,sans-serif;font-weight:800;font-size:34px;line-height:1.05;margin:4px 2px 2px;letter-spacing:.2px}
 .mk-sub{margin:0 2px 12px;color:var(--muted);font-size:13.5px;max-width:70ch}
@@ -311,6 +311,9 @@ label.l{display:block;font-size:13px;color:var(--muted);margin:8px 0 3px}
 @media(min-width:520px){.grid{grid-template-columns:repeat(4,1fr)}}
 @media(min-width:700px){.grid{grid-template-columns:repeat(5,1fr)}}
 @media(min-width:1100px){.grid{grid-template-columns:repeat(6,1fr)}}
+@media(min-width:1450px){.grid{grid-template-columns:repeat(7,1fr)}}
+@media(min-width:1750px){.grid{grid-template-columns:repeat(8,1fr)}}
+@media(min-width:1100px){.mk{grid-template-columns:minmax(0,1fr) clamp(300px,19vw,360px)}}
 .tile{background:none;border:0;border-radius:0}
 .tile{transition:transform .18s var(--ease),filter .18s;z-index:0}
 .tile:hover,.tile:focus-within{transform:scale(1.09);z-index:3;filter:drop-shadow(0 8px 14px rgba(0,0,0,.55))}
@@ -430,6 +433,10 @@ button.dm.sel{outline:2px solid #ff4d00;outline-offset:3px}
 .evh{background:var(--surface2);font-size:12px;font-weight:700;color:var(--muted);border-top:0}
 .evr span{color:var(--muted)}
 @media(max-width:360px){.mpill{font-size:11.5px;gap:3px;padding-right:4px}.mpill .pb{font-size:9px;padding:2px 3px}.mpill .coin{width:11px;height:11px}.grid{gap:12px 4px}}
+@media(min-width:700px){.cl{font-size:12.5px}}
+.grid .ov .s,.grid .ov .bd,.grid .ov .sw{display:none}
+.grid .ov .n{top:66%;font-size:11.5cqw}
+.grid .fc-s,.grid .fc-b{display:none}
 </style>
 </head>
 <body>
@@ -1163,7 +1170,7 @@ function chartHead(c, sr, i) {
   return '<div class="ch-price"><span class="coin"></span><b>' + fmt(q.p) + '</b>' + pillHtml(diff, base) + '</div><div class="ch-date">' + line + '</div>';
 }
 function chartBoxHtml(c) {
-  try { if (window.innerWidth >= 700) { CH.W = 720; CH.H = 290; CH.L = 40; } else { CH.W = 360; CH.H = 220; CH.L = 34; } } catch (e) { }
+  try { if (window.innerWidth >= 700) { CH.W = Math.max(640, Math.min(1250, Math.round(window.innerWidth - 640))); CH.H = 300; CH.L = 44; } else { CH.W = 360; CH.H = 220; CH.L = 34; } } catch (e) { }
   const sr = seriesFor(c, CHP);
   const tabs = '<div class="tabs2" role="tablist">' + PERIODS.map(([k, l]) => '<button role="tab" aria-selected="' + (k === CHP) + '" data-act="cperiod" data-p="' + k + '">' + l + '</button>').join('') + '</div>';
   const sim = S.sim ? '<span class="simtag">Simulation (démo)</span>' : '';
