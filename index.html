@@ -320,6 +320,9 @@ label.l{display:block;font-size:13px;color:var(--muted);margin:8px 0 3px}
 @media(hover:none){.tile:hover{transform:none;filter:none}.tile:active{transform:scale(1.05)}}
 [data-anim=none] .tile:hover,[data-anim=none] .tile:focus-within{transform:none}
 .open{padding:2px 2px 0;gap:4px}
+.grid .tile.nm .cardbox.md{width:80%;margin:0 auto}
+.grid .tile.sp .cardbox.md{width:100%;max-width:190px;margin:0 auto}
+.grid .tile.nm .mpill{margin-left:10%;margin-right:10%}
 .cardbox.md,.fc.md{width:100%;max-width:170px}
 .mpill{overflow:hidden;display:flex;align-items:center;gap:5px;background:#0b0d12;border:1px solid var(--line);border-radius:7px;padding:2px 7px 2px 2px;margin-top:-14px;position:relative;z-index:2;font-weight:800;font-size:13px;font-variant-numeric:tabular-nums;color:var(--text);max-width:100%;white-space:nowrap}
 [data-theme=light] .mpill{background:#fff}
@@ -935,7 +938,8 @@ function short(n) {
 function rowHtml(c) {
   const fav = FAV.has(c.id);
   const p1 = (c._pos && c._pos[0]) || String(c.pos || '').split(',')[0].trim();
-  return '<div class="tile"><button class="open" data-act="open" data-id="' + esc(c.id) + '" aria-label="' + esc(c.name) + '">' + cardImg(c, 'md') +
+  const normal = /(^|[\/_])(gold|silver|bronze|rare|common)\.png/i.test(String(c.cardImage || '').split('?')[0]);
+  return '<div class="tile ' + (normal ? 'nm' : 'sp') + '"><button class="open" data-act="open" data-id="' + esc(c.id) + '" aria-label="' + esc(c.name) + '">' + cardImg(c, 'md') +
     (c.variant === 'holo' ? '<span class="vtag">HOLO</span>' : '') + '<div class="mpill">' + (p1 ? '<span class="pb">' + esc(p1) + '</span>' : '') + '<span>' + esc(c.rating) + '</span>' +
     (c.price != null ? '<span class="coin"></span><span class="pn">' + short(c.price) + '</span>' : '<span class="ex">—</span>') + '</div>' + chgHtml(c) + '</button>' +
     '<button class="star" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '" aria-label="' + (fav ? 'Retirer des favoris' : 'Ajouter aux favoris') + ' : ' + esc(c.name) + '">' + (fav ? '★' : '☆') + '</button></div>';
