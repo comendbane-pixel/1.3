@@ -733,7 +733,7 @@ const FORMS = {
   '532': { n: '5-3-2', rows: [['ST', 'ST'], ['CM', 'CM', 'CM'], ['LWB', 'CB', 'CB', 'CB', 'RWB'], ['GK']] },
   '451': { n: '4-5-1', rows: [['ST'], ['LM', 'CM', 'CM', 'CM', 'RM'], ['LB', 'CB', 'CB', 'RB'], ['GK']] }
 };
-const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'source', sim: true, favs: [], alerts: [], pf: [], inv: { mode: 'rapide', t: 0, sz: 'gros', bud: 0, tot: 0, risk: '' }, sq: { f: '433', s: Array(18).fill(null) } });
+const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'source', sim: true, favs: [], alerts: [], pf: [], inv: { mode: 'rapide', t: 0, sz: 'gros', bud: 0, tot: 0, risk: '', n: 0 }, sq: { f: '433', s: Array(18).fill(null) } });
 
 function sanitize(o) {
   const d = defaults();
@@ -742,7 +742,7 @@ function sanitize(o) {
   if (typeof o.sim === 'boolean') d.sim = o.sim;
   if (['full', 'reduced', 'none'].includes(o.anim)) d.anim = o.anim;
   if (['drawn', 'source'].includes(o.card)) d.card = o.card;
-  if (o.inv && typeof o.inv === 'object') { const t = Math.round(Number(o.inv.t)); if (t === 0 || (t >= 75 && t <= 95)) d.inv.t = t; if (['petit', 'moyen', 'gros'].includes(o.inv.sz)) d.inv.sz = o.inv.sz; if (['rapide', 'long'].includes(o.inv.mode)) d.inv.mode = o.inv.mode; const b = Number(o.inv.bud); if (isFinite(b) && b >= 0) d.inv.bud = Math.floor(b); const tt = Number(o.inv.tot); if (isFinite(tt) && tt >= 0) d.inv.tot = Math.floor(tt); if (['prudent', 'moyen', 'audacieux'].includes(o.inv.risk)) d.inv.risk = o.inv.risk; }
+  if (o.inv && typeof o.inv === 'object') { const t = Math.round(Number(o.inv.t)); if (t === 0 || (t >= 75 && t <= 95)) d.inv.t = t; if (['petit', 'moyen', 'gros'].includes(o.inv.sz)) d.inv.sz = o.inv.sz; if (['rapide', 'long'].includes(o.inv.mode)) d.inv.mode = o.inv.mode; const b = Number(o.inv.bud); if (isFinite(b) && b >= 0) d.inv.bud = Math.floor(b); const tt = Number(o.inv.tot); if (isFinite(tt) && tt >= 0) d.inv.tot = Math.floor(tt); if (['prudent', 'moyen', 'audacieux'].includes(o.inv.risk)) d.inv.risk = o.inv.risk; const nn = Math.round(Number(o.inv.n)); if (nn >= 0 && nn <= 10) d.inv.n = nn; }
   if (o.sq && typeof o.sq === 'object') {
     if (FORMS[o.sq.f]) d.sq.f = o.sq.f;
     if (Array.isArray(o.sq.s)) { const seen = new Set(); d.sq.s = Array.from({ length: 18 }, (_, i) => { const v = o.sq.s[i]; if (v == null || seen.has(String(v))) return null; seen.add(String(v)); return String(v); }); }
@@ -1313,14 +1313,14 @@ function invMomentum(c, R) {
 }
 // Profil de risque choisi par la personne : seuil de chance de gain, hausse maximale acceptée, part du budget par carte, critère de classement
 const RISK = {
-  prudent:   { name: 'Prudent',   p: 75, riseMax: 0.15, cvMax: 0.12, rangeMax: 0.9,  cap: 1 / 6, sort: (x) => x.prob },
-  moyen:     { name: 'Équilibré', p: 65, riseMax: 0.30, cvMax: 9,    rangeMax: 1.01, cap: 1 / 4, sort: (x) => x.prob / 100 * x.netPct },
-  audacieux: { name: 'Audacieux', p: 65, riseMax: 0.40, cvMax: 9,    rangeMax: 1.01, cap: 1 / 3, sort: (x) => x.netPct },
+  prudent:   { name: 'Prudent',   p: 75, riseMax: 0.15, cvMax: 0.12, rangeMax: 0.9,  sort: (x) => x.prob },
+  moyen:     { name: 'Équilibré', p: 65, riseMax: 0.30, cvMax: 9,    rangeMax: 1.01, sort: (x) => x.prob / 100 * x.netPct },
+  audacieux: { name: 'Audacieux', p: 65, riseMax: 0.40, cvMax: 9,    rangeMax: 1.01, sort: (x) => x.netPct },
 };
 let INV_PLAN = null, INV_NOBUD = null;
 function invRapide(cfg) {
   const out = []; INV_SKIP = 0; INV_PLAN = null; INV_NOBUD = null;
-  const R = RISK[cfg.risk]; if (!R || !(cfg.tot > 0)) return out;               // pas de profil : pas de conseil
+  const R = RISK[cfg.risk]; if (!R || !(cfg.tot > 0) || !(cfg.n > 0)) return out;               // pas de profil : pas de conseil
   for (const c of CARDS) {
     if (c.price == null || c.price < 500 || c._series.length < 4) continue;
     if (cfg.bud > 0 && c.price > cfg.bud) continue;
@@ -1339,16 +1339,19 @@ function invRapide(cfg) {
   }
   const w = { haute: 1, moyenne: 0.95, faible: 0.85 };
   out.sort((a, b) => R.sort(b) * w[b.conf] - R.sort(a) * w[a.conf]);
-  // Répartition du budget : on prend les meilleures, 10 au maximum, sans dépasser la part de budget par carte
-  let rest = cfg.tot, tooBig = 0; const picked = [], cap = cfg.tot * R.cap;
+  // Répartition du budget : la personne veut acheter N cartes, donc chaque carte a droit à budget ÷ N.
+  // On garde les 10 meilleures cartes qui rentrent dans cette part ; les N premières forment le plan, les autres sont des idées de rechange.
+  const N = Math.max(1, Math.min(10, cfg.n || 1)), cap = cfg.tot / N;
+  let tooBig = 0; const picked = [];
   for (const x of out) {
     if (picked.length >= 10) break;
-    const q = Math.min(10, Math.floor(Math.min(cap, rest) / x.buy));
+    const q = Math.min(10, Math.floor(cap / x.buy));
     if (q < 1) { tooBig++; continue; }
-    x.qty = q; x.cost = q * x.buy; x.gain = q * x.net; rest -= x.cost; picked.push(x);
+    x.qty = q; x.cost = q * x.buy; x.gain = q * x.net; x.alt = picked.length >= N; picked.push(x);
   }
-  if (!picked.length && out.length) INV_NOBUD = { n: out.length, min: Math.min(...out.map((x) => x.buy)), cap: Math.floor(cap) };
-  if (picked.length) INV_PLAN = { tot: cfg.tot, spent: cfg.tot - rest, gain: picked.reduce((a, x) => a + x.gain, 0), n: picked.length, tooBig, prob: Math.round(picked.reduce((a, x) => a + x.prob, 0) / picked.length), R };
+  if (!picked.length && out.length) INV_NOBUD = { n: out.length, min: Math.min(...out.map((x) => x.buy)), cap: Math.floor(cap), N };
+  const plan = picked.filter((x) => !x.alt);
+  if (plan.length) INV_PLAN = { tot: cfg.tot, N, spent: plan.reduce((a, x) => a + x.cost, 0), gain: plan.reduce((a, x) => a + x.gain, 0), n: plan.length, tooBig, prob: Math.round(plan.reduce((a, x) => a + x.prob, 0) / plan.length), R };
   return picked;
 }
 // --- Long terme : meilleur rapport points SBC / prix (cartes de base)
@@ -1408,7 +1411,8 @@ function invCard(x, i, mode) {
     '<div class="invm"><div class="nm"><b>' + esc(c.name) + '</b> <span class="rt">' + esc(c.rating) + '</span></div><div class="small muted">' + esc(c.pos || '') + ' · ' + esc(c.club || '') + '</div></div>' +
     '<div class="invs"><div class="score">' + x.prob + ' %</div><span class="small muted">chance de gagner</span></div></div>' +
     '<div class="invtodo">' + todo + '</div>' +
-    (x.qty ? '<div class="invqty">Avec ton budget : achète <b>' + x.qty + '</b> exemplaire' + (x.qty > 1 ? 's' : '') + ' = <b>' + money(x.cost) + '</b> → gain net estimé <b class="up">+' + fmt(x.gain) + '<span class="coin"></span></b></div>' : '') +
+    (x.alt ? '<div class="small muted" style="margin:-2px 0 0">Idée de rechange (hors de ton plan de ' + (INV_PLAN ? INV_PLAN.N : '') + ' carte' + (INV_PLAN && INV_PLAN.N > 1 ? 's' : '') + ')</div>' : '') +
+    (x.qty && !x.alt ? '<div class="invqty">Avec ton budget : achète <b>' + x.qty + '</b> exemplaire' + (x.qty > 1 ? 's' : '') + ' = <b>' + money(x.cost) + '</b> → gain net estimé <b class="up">+' + fmt(x.gain) + '<span class="coin"></span></b></div>' : '') +
     '<div class="invtrade"><div><span class="muted small">1. Tu achètes à</span><b>' + money(x.buy) + '</b></div><div><span class="muted small">2. Tu revends vers</span><b>' + money(x.sell) + '</b></div>' +
     '<div><span class="muted small">3. Tu gagnes (taxe EA 5 % déjà retirée)</span><b class="up">+' + fmt(x.net) + '<span class="coin"></span> (' + pct(x.netPct) + ')</b></div></div>' +
     '<div class="invsp">' + invSpark(c) + '<span class="small muted">Courbe réelle des prix · données ' + data + '</span></div>' +
@@ -1449,7 +1453,7 @@ function scanWatch() {   // lecture publique du dépôt (sans clé) : on suit l'
 }
 async function scanLaunch() {
   if (SCAN_BUSY || scanLeft() > 0) return;
-  if (!(S.inv.tot > 0) || !RISK[S.inv.risk]) { scanSay('Réponds d\'abord aux questions (budget et risque).'); return; }
+  if (!(S.inv.tot > 0) || !(S.inv.n > 0) || !RISK[S.inv.risk]) { scanSay('Réponds d\'abord aux questions (budget, nombre de cartes et risque).'); return; }
   if (!SCAN_URL) { scanSay('Le bouton n\'est pas encore relié à GitHub (étape à faire une fois par le propriétaire du site : voir le guide du relais).'); return; }
   SCAN_BUSY = true; scanSay('Lancement du scan…');
   try {
@@ -1467,12 +1471,13 @@ async function scanLaunch() {
 }
 document.addEventListener('click', (e) => { if (e.target.closest('[data-act=scannow]')) scanLaunch(); });
 setInterval(() => {
-  const b = document.getElementById('scanBtn'); if (!b || b.dataset.act === 'scannow') return;
+  const b = document.getElementById('scanBtn'); if (!b || !b.dataset.cd) return;     // seulement pendant la pause de 5 minutes
   if (scanLeft() > 0) b.textContent = 'Prochain scan possible dans ' + scanTxt(); else renderInvest();
 }, 1000);
 loadScanCfg();
 let INV_LAST = [];
-function renderInvest() {
+function renderInvest(force) {
+  if (force !== true) { const ae = document.activeElement; if (ae && ae.closest && ae.closest('#pInv') && /^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName)) return; }   // on ne redessine pas pendant que la personne écrit
   const cfg = S.inv, { cur, up } = buildSbcs();
   const feed = up.concat(cur);
   const rs = [['0', 'Toutes les notes']]; for (let r = 80; r <= 92; r++) rs.push([String(r), 'Autour de ' + r + ' (' + (r - 1) + ' à ' + (r + 1) + ')']);
@@ -1486,20 +1491,23 @@ function renderInvest() {
     if (cfg.mode === 'rapide') h += '<div class="note ' + (old == null || old > 2 ? 'invold' : '') + '"><b>Prix datant de : ' + (isFinite(t0) ? agoText(t0) : 'inconnu') + '.</b> ' +
       (old == null || old > 2 ? 'Pour une revente rapide, c\'est trop vieux : la carte a peut-être déjà changé de prix. Vérifie le prix dans le jeu avant d\'acheter. ' : '') +
       'Les prix ne changent que quand le robot passe : utilise le bouton « Scanner maintenant » ci-dessous juste avant d\'investir.</div>'; }
-  const prof = cfg.mode !== 'rapide' || (cfg.tot > 0 && !!RISK[cfg.risk]);
+  const prof = cfg.mode !== 'rapide' || (cfg.tot > 0 && cfg.n > 0 && !!RISK[cfg.risk]);
   if (cfg.mode === 'rapide') {
     const RD = { prudent: 'Je veux peu de risque : seulement les cartes où l\'IA est très sûre (75 % ou plus), qui montent tranquillement.', moyen: 'Un bon équilibre : l\'IA doit être sûre à 65 % ou plus, et je vise le meilleur gain probable.', audacieux: 'Je veux le plus gros gain possible : des cartes qui montent vite, avec plus de risque de me tromper (65 % de chance minimum).' };
+    const per = cfg.tot > 0 && cfg.n > 0 ? Math.floor(cfg.tot / cfg.n) : 0;
     h += '<div class="box invf"><b>1. Dis-moi qui tu es comme investisseur</b>' +
       '<label style="margin-top:8px">Combien veux-tu investir en tout ? (en crédits)<input id="invTot" inputmode="numeric" placeholder="ex : 100000" value="' + (cfg.tot ? cfg.tot : '') + '"></label>' +
+      '<label style="margin-top:10px">Combien de cartes veux-tu acheter ?<select id="invN"><option value="0"' + (cfg.n ? '' : ' selected') + '>Choisis…</option>' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((k) => '<option value="' + k + '"' + (cfg.n === k ? ' selected' : '') + '>' + k + ' carte' + (k > 1 ? 's' : '') + '</option>').join('') + '</select></label>' +
+      (per ? '<div class="small muted" style="margin-top:4px">Ça fait environ <b>' + fmt(per) + '</b> crédits par carte : l\'IA cherchera des cartes à ce prix (ou moins, pour en acheter plusieurs).</div>' : '') +
       '<div class="small muted" style="margin-top:10px;font-weight:600">Quel risque acceptes-tu ?</div><div class="invrisk">' +
       ['prudent', 'moyen', 'audacieux'].map((k) => '<button data-act="invrisk" data-r="' + k + '" aria-pressed="' + (cfg.risk === k) + '">' + RISK[k].name + '</button>').join('') + '</div>' +
       '<div class="small muted">' + (RISK[cfg.risk] ? RD[cfg.risk] : 'Choisis un des trois.') + '</div></div>';
     const left = scanLeft();
-    h += '<div class="box"><b>2. Scanner maintenant</b><div class="small muted" style="margin:6px 0">Relève le prix de <b>toutes les cartes</b> d\'un coup (environ 190 crédits), puis l\'IA choisit les 10 meilleures cartes en hausse pour ton profil. Ça prend quelques minutes, la liste se met à jour toute seule.</div>' +
+    h += '<div class="box"><b>2. Scanner maintenant</b><div class="small muted" style="margin:6px 0">Relève le prix de <b>toutes les cartes</b> d\'un coup (environ 190 crédits), puis l\'IA choisit les meilleures cartes en hausse pour ton profil. Ça prend quelques minutes, la liste se met à jour toute seule.</div>' +
       (left > 0
-        ? '<button class="btn primary" id="scanBtn" disabled style="opacity:.5;cursor:not-allowed">Prochain scan possible dans ' + scanTxt() + '</button><div class="small muted" style="margin-top:6px">Pause de 5 minutes après chaque scan, pour ne pas dépenser des crédits pour rien.</div>'
+        ? '<button class="btn primary" id="scanBtn" data-cd="1" disabled style="opacity:.5;cursor:not-allowed">Prochain scan possible dans ' + scanTxt() + '</button><div class="small muted" style="margin-top:6px">Pause de 5 minutes après chaque scan, pour ne pas dépenser des crédits pour rien.</div>'
         : prof ? '<button class="btn primary" id="scanBtn" data-act="scannow">Scanner maintenant</button>'
-        : '<button class="btn primary" id="scanBtn" disabled style="opacity:.5;cursor:not-allowed">Scanner maintenant</button><div class="small muted" style="margin-top:6px">Réponds d\'abord aux questions ci-dessus (budget et risque).</div>') +
+        : '<button class="btn primary" id="scanBtn" disabled style="opacity:.5;cursor:not-allowed">Scanner maintenant</button><div class="small muted" style="margin-top:6px">Réponds d\'abord aux 3 questions ci-dessus (budget, nombre de cartes et risque).</div>') +
       '<div class="small" id="scanMsg" style="margin-top:8px">' + esc(SCAN_MSG) + '</div></div>';
   }
   h += '<div class="box invf" id="invForm"><div class="invrow">';
@@ -1519,13 +1527,13 @@ function renderInvest() {
   }
   if (!CARDS.length) { $('#pInv').innerHTML = h + '<div class="empty box"><div class="big">En attente des premiers prix</div><div class="muted">L\'analyse apparaîtra quand data.json contiendra des cartes.</div></div>'; return; }
   const full = CARDS.filter((c) => c._series.length >= 4).length;
-  if (!prof) { $('#pInv').innerHTML = h + '<div class="box"><div class="big" style="font-weight:700">Réponds aux questions pour voir les conseils</div><p class="muted">Dis-moi combien tu veux investir et quel risque tu acceptes : je choisirai les 10 meilleures cartes pour toi.</p></div>'; INV_LAST = []; return; }
+  if (!prof) { $('#pInv').innerHTML = h + '<div class="box"><div class="big" style="font-weight:700">Réponds aux questions pour voir les conseils</div><p class="muted">Dis-moi combien tu veux investir, combien de cartes tu veux acheter et quel risque tu acceptes : je choisirai les meilleures cartes pour toi.</p></div>'; INV_LAST = []; return; }
   let res;
   if (cfg.mode === 'rapide') res = invRapide(cfg); else res = invLong(cfg).list;
   INV_LAST = res;
   h += '<div class="small muted" style="margin:6px 2px">' + full + ' carte' + (full > 1 ? 's ont' : ' a') + ' une courbe exploitable (4 relevés ou plus) sur ' + CARDS.length + '. ' +
     (full < 20 ? '<b>Lance « snapshot » plusieurs fois par jour</b> (Actions → Mise à jour des prix) pour que l\'analyse devienne fiable.' : '') + '</div>';
-  if (!res.length && cfg.mode === 'rapide' && INV_NOBUD) h += '<div class="box"><div class="big" style="font-weight:700">Ton budget est trop petit pour ces cartes</div><p class="muted">' + INV_NOBUD.n + ' carte' + (INV_NOBUD.n > 1 ? 's' : '') + ' en hausse ' + (INV_NOBUD.n > 1 ? 'passent' : 'passe') + ' le test de l\'IA, mais la moins chère coûte ' + fmt(INV_NOBUD.min) + ' alors que ton profil limite chaque carte à ' + fmt(INV_NOBUD.cap) + '. Augmente ton budget ou choisis « Audacieux » (plus de budget par carte).</p></div>';
+  if (!res.length && cfg.mode === 'rapide' && INV_NOBUD) h += '<div class="box"><div class="big" style="font-weight:700">Ton budget est trop petit pour ces cartes</div><p class="muted">' + INV_NOBUD.n + ' carte' + (INV_NOBUD.n > 1 ? 's' : '') + ' en hausse ' + (INV_NOBUD.n > 1 ? 'passent' : 'passe') + ' le test de l\'IA, mais la moins chère coûte ' + fmt(INV_NOBUD.min) + ' alors que ton budget par carte est de ' + fmt(INV_NOBUD.cap) + ' (' + fmt(S.inv.tot) + ' pour ' + INV_NOBUD.N + ' carte' + (INV_NOBUD.N > 1 ? 's' : '') + '). Choisis moins de cartes ou augmente ton budget.</p></div>';
   else if (!res.length) h += '<div class="box"><div class="big" style="font-weight:700">Aucun conseil pour l\'instant</div><p class="muted">' + (INV_SKIP
     ? 'L\'IA a regardé ' + INV_SKIP + ' carte' + (INV_SKIP > 1 ? 's' : '') + ' mais n\'est pas sûre à ' + (cfg.mode === 'rapide' ? RISK[cfg.risk].p : MIN_PROB) + ' % ou plus de te faire gagner des crédits après la taxe : elle préfère ne rien conseiller. '
     : (cfg.mode === 'rapide'
@@ -1533,9 +1541,9 @@ function renderInvest() {
       : 'Aucune carte de base ne correspond. Essaie « Toutes les notes » ou retire le budget max. ')) +
     (cfg.mode === 'rapide' ? 'Lance « Scanner maintenant » à plusieurs moments de la journée : l\'IA a besoin de voir les prix bouger.' : '') + '</p></div>';
   else {
-    h += '<h2>' + (cfg.mode === 'rapide' ? 'Tes 10 cartes à acheter (profil ' + RISK[cfg.risk].name.toLowerCase() + ')' : 'À acheter avant le SBC') + '</h2>';
-    if (cfg.mode === 'rapide' && INV_PLAN) h += '<div class="box"><b>Ton plan</b><div class="small" style="margin-top:6px">Tu mets <b>' + fmt(INV_PLAN.spent) + '</b> sur <b>' + INV_PLAN.n + '</b> carte' + (INV_PLAN.n > 1 ? 's' : '') + ' (sur ' + fmt(INV_PLAN.tot) + ' prévus). Gain net estimé si tout se passe comme prévu : <b class="up">+' + fmt(INV_PLAN.gain) + '</b> (taxe de 5 % retirée). Chance de gagner moyenne : <b>' + INV_PLAN.prob + ' %</b>.' +
-      (INV_PLAN.tooBig ? ' ' + INV_PLAN.tooBig + ' carte' + (INV_PLAN.tooBig > 1 ? 's' : '') + ' écartée' + (INV_PLAN.tooBig > 1 ? 's' : '') + ' car trop chère' + (INV_PLAN.tooBig > 1 ? 's' : '') + ' pour ton budget.' : '') + '</div><div class="small muted" style="margin-top:6px">Ce sont des estimations : tu peux aussi perdre. N\'investis que ce que tu peux te permettre de perdre.</div></div>';
+    h += '<h2>' + (cfg.mode === 'rapide' ? 'Tes ' + cfg.n + ' carte' + (cfg.n > 1 ? 's' : '') + ' à acheter (profil ' + RISK[cfg.risk].name.toLowerCase() + ')' : 'À acheter avant le SBC') + '</h2>';
+    if (cfg.mode === 'rapide' && INV_PLAN) h += '<div class="box"><b>Ton plan</b><div class="small" style="margin-top:6px">Tu mets <b>' + fmt(INV_PLAN.spent) + '</b> sur <b>' + INV_PLAN.n + '</b> carte' + (INV_PLAN.n > 1 ? 's' : '') + ' (sur ' + fmt(INV_PLAN.tot) + ' prévus, soit ' + fmt(Math.floor(INV_PLAN.tot / INV_PLAN.N)) + ' maximum par carte). Gain net estimé si tout se passe comme prévu : <b class="up">+' + fmt(INV_PLAN.gain) + '</b> (taxe de 5 % retirée). Chance de gagner moyenne : <b>' + INV_PLAN.prob + ' %</b>.' +
+      (INV_PLAN.n < INV_PLAN.N ? ' L\'IA n\'a trouvé que ' + INV_PLAN.n + ' carte' + (INV_PLAN.n > 1 ? 's' : '') + ' sûre' + (INV_PLAN.n > 1 ? 's' : '') + ' pour ce prix (tu en voulais ' + INV_PLAN.N + ').' : '') + (INV_PLAN.tooBig ? ' ' + INV_PLAN.tooBig + ' carte' + (INV_PLAN.tooBig > 1 ? 's' : '') + ' écartée' + (INV_PLAN.tooBig > 1 ? 's' : '') + ' car plus chère' + (INV_PLAN.tooBig > 1 ? 's' : '') + ' que ' + fmt(Math.floor(INV_PLAN.tot / INV_PLAN.N)) + '.' : '') + '</div><div class="small muted" style="margin-top:6px">Ce sont des estimations : tu peux aussi perdre. N\'investis que ce que tu peux te permettre de perdre.</div></div>';
     h += res.slice(0, 10).map((x, i) => invCard(x, i, cfg.mode)).join('');
     h += '<div class="box"><button class="btn" data-act="invcopy">Copier le résumé pour demander un avis à Claude</button><div class="small muted" id="invCp" style="margin-top:6px">Tu colles le texte dans une discussion avec Claude pour une analyse plus poussée.</div></div>';
   }
@@ -1552,19 +1560,24 @@ function invSummary() {
   });
   return t + '\nDis-moi lesquelles te semblent les plus intéressantes, pourquoi, et ce qui est risqué. Ne suppose aucun prix absent de ces données.';
 }
+document.addEventListener('input', (e) => {      // le budget est gardé dès qu'on tape (sans redessiner la page)
+  const t = e.target; if (!t || t.id !== 'invTot') return;
+  const v = num(t.value); S.inv.tot = v && v > 0 ? Math.floor(v) : 0; save();
+});
 document.addEventListener('change', (e) => {
   const t = e.target; if (!t || !t.id || t.id.indexOf('inv') !== 0) return;
   if (t.id === 'invT') S.inv.t = Number(t.value) || 0;
+  else if (t.id === 'invN') S.inv.n = Math.max(0, Math.min(10, Math.round(Number(t.value)) || 0));
   else if (t.id === 'invTot') { const v = num(t.value); S.inv.tot = v && v > 0 ? Math.floor(v) : 0; }
   else if (t.id === 'invB') { const v = num(t.value); S.inv.bud = v && v > 0 ? Math.floor(v) : 0; }
   else return;
-  save(); renderInvest();
+  save(); renderInvest(true);
 });
 document.addEventListener('click', (e) => {
   const rb = e.target.closest('[data-act=invrisk]');
-  if (rb) { S.inv.risk = RISK[rb.dataset.r] ? rb.dataset.r : ''; save(); renderInvest(); return; }
+  if (rb) { S.inv.risk = RISK[rb.dataset.r] ? rb.dataset.r : ''; save(); renderInvest(true); return; }
   const mb = e.target.closest('[data-act=invmode]');
-  if (mb) { S.inv.mode = mb.dataset.m === 'long' ? 'long' : 'rapide'; save(); renderInvest(); return; }
+  if (mb) { S.inv.mode = mb.dataset.m === 'long' ? 'long' : 'rapide'; save(); renderInvest(true); return; }
   const b = e.target.closest('[data-act=invcopy]'); if (!b) return;
   const txt = invSummary(), box = $('#invCp');
   const ok = () => { if (box) box.textContent = 'Résumé copié. Colle-le dans une discussion avec Claude.'; };
@@ -2146,7 +2159,7 @@ function showTab(i) {
     p.classList.remove('from-r', 'from-l');
     if (k === i && i !== prev) p.classList.add(i > prev ? 'from-r' : 'from-l');
   });
-  if (i !== 0) RENDER[i]();
+  if (i !== 0) RENDER[i](true);
   window.scrollTo(0, 0);
 }
 
