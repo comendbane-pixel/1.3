@@ -23,6 +23,28 @@ jobs:
         with:
           node-version: 20
 
+      - name: Chercher les nouvelles cartes (une fois par jour au maximum, environ 12 crédits)
+        continue-on-error: true
+        env:
+          PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
+          PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
+          API_BASE: ${{ vars.API_BASE }}
+          KEY_CREDITS: ${{ vars.KEY_CREDITS }}
+          TOTAL_CREDITS: ${{ vars.TOTAL_CREDITS }}
+          MAX_PAGES: '2'               # 2 pages de chaque côté du classement par prix (60 cartes) : les nouvelles cartes chères ou très bon marché
+          MIN_RATING: '45'
+          RESTART: '1'                 # repart de la page 1 sans toucher au point de reprise du catalogue complet
+        run: |
+          NOW=$(date +%s)
+          LAST=$(cat probe-at.txt 2>/dev/null || echo 0)
+          if [ $((NOW - LAST)) -gt 72000 ]; then
+            SORT=desc node update-prices.mjs list
+            SORT=asc node update-prices.mjs list
+            echo "$NOW" > probe-at.txt
+          else
+            echo "Nouvelles cartes : déjà cherchées il y a moins de 20 h, rien à payer."
+          fi
+
       - name: Relever le prix de toutes les cartes
         env:
           PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
@@ -31,6 +53,7 @@ jobs:
           KEY_CREDITS: ${{ vars.KEY_CREDITS }}
           TOTAL_CREDITS: ${{ vars.TOTAL_CREDITS }}
           SNAPSHOT_PARTS: '100'        # autant de paquets de 500 que nécessaire : toutes les cartes
+          SNAPSHOT_SMART: '1'          # mode économie : les cartes dont le prix ne bouge plus ne sont relues que toutes les 12 h
           SNAPSHOT_SPREAD: '1'         # paquets plus petits : toutes les clés travaillent en même temps (plus de demandes, donc un peu plus de crédits)
           SNAPSHOT_FRESH_MIN: '5'      # un prix relevé il y a moins de 5 min n'est pas redemandé (évite de payer deux fois)
         run: node update-prices.mjs snapshot
@@ -40,7 +63,7 @@ jobs:
         run: |
           git config user.name "price-bot"
           git config user.email "price-bot@users.noreply.github.com"
-          for f in data.json watch.json keys-state.json; do [ -f "$f" ] && git add "$f"; done
+          for f in data.json watch.json keys-state.json probe-at.txt; do [ -f "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then
             echo "Rien de nouveau à enregistrer."
           else
