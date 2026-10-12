@@ -25,6 +25,8 @@ const MIN_RATING = Number(process.env.MIN_RATING) || 80;
 const SORT_DIR = process.env.SORT === 'asc' ? 'asc' : 'desc'; // sens du tri par prix du catalogue ; « asc » sert de 2e passage de contrôle
 const SNAPSHOT_SIZE = Math.max(1, Math.min(Number(process.env.SNAPSHOT_SIZE) || 500, 500)); // cartes par requête (500 maximum)
 const SNAPSHOT_PARTS = Math.max(0, Math.floor(Number(process.env.SNAPSHOT_PARTS) || 0));    // paquets en même temps (0 = autant que d'ouvriers)
+const SNAPSHOT_SPREAD = process.env.SNAPSHOT_SPREAD === '1';                               // 1 = paquets plus petits, pour que TOUTES les clés travaillent en même temps (plus de demandes : plus de crédits)
+const SNAPSHOT_MIN_CHUNK = Math.max(1, Number(process.env.SNAPSHOT_MIN_CHUNK) || 100);     // taille minimale d'un paquet quand SNAPSHOT_SPREAD = 1
 const SNAPSHOT_FRESH_MIN = Number(process.env.SNAPSHOT_FRESH_MIN ?? 30);                    // un prix plus récent que ça n'est pas redemandé
 const PARALLEL = process.env.PARALLEL !== '0';                                              // PARALLEL=0 : un seul ouvrier à la fois
 const MAX_WORKERS = Math.max(1, Number(process.env.MAX_WORKERS) || 50);
@@ -611,10 +613,12 @@ async function modeSnapshot(data) {
   const map = new Map(data.cards.map((c) => [c.id, c]));
   if (!eligible.length) console.log('Prix : rien à mettre à jour pour le moment (tous les prix sont récents).');
   else {
-    const parts = Math.max(1, Math.min(SNAPSHOT_PARTS || Math.max(1, poolSize()), Math.ceil(eligible.length / SNAPSHOT_SIZE)));
-    const ids = eligible.slice(0, parts * SNAPSHOT_SIZE).map((x) => x.c.id);
+    // Taille d'un paquet : 500 au maximum. En mode « répartition », on la réduit pour qu'il y ait au moins autant de paquets que de clés.
+    const size = SNAPSHOT_SPREAD && poolSize() > 1 ? Math.max(Math.min(SNAPSHOT_MIN_CHUNK, SNAPSHOT_SIZE), Math.min(SNAPSHOT_SIZE, Math.ceil(eligible.length / poolSize()))) : SNAPSHOT_SIZE;
+    const parts = Math.max(1, Math.min(SNAPSHOT_PARTS || Math.max(1, poolSize()), Math.ceil(eligible.length / size)));
+    const ids = eligible.slice(0, parts * size).map((x) => x.c.id);
     const chunks = [];
-    for (let i = 0; i < ids.length; i += SNAPSHOT_SIZE) chunks.push(ids.slice(i, i + SNAPSHOT_SIZE));
+    for (let i = 0; i < ids.length; i += size) chunks.push(ids.slice(i, i + size));
     console.log(`Prix : ${ids.length} cartes à relever sur ${data.cards.length}, en ${chunks.length} paquet(s) envoyé(s) en parallèle.`);
     let updated = 0, nulls = 0, okChunks = 0, firstErr = null, stopAll = false;
     await forEachPar(chunks, async (part, k) => {
