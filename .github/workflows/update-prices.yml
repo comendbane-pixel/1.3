@@ -31,6 +31,14 @@ on:
         required: false
         default: ''
         type: string
+      sort:
+        description: 'Mode list : sens du tri. desc = normal. asc = 2e passage de contrôle pour rattraper les cartes ratées (le robot repart alors de la page 1).'
+        required: true
+        default: 'desc'
+        type: choice
+        options:
+          - 'desc'
+          - 'asc'
       parts:
         description: 'Mode snapshot : combien de paquets de 500 cartes en même temps. Vide = autant que de clés (le plus rapide).'
         required: false
@@ -81,6 +89,7 @@ jobs:
           MAX_PAGES: ${{ github.event.inputs.pages }}
           MIN_RATING: ${{ github.event.inputs.min_rating }}
           DETAILS_COUNT: ${{ github.event.inputs.details_count }}
+          SORT: ${{ github.event.inputs.sort }}
           SNAPSHOT_PARTS: ${{ github.event.inputs.parts }}
           RESET_KEYS: ${{ github.event.inputs.reset_keys == 'oui' && '1' || '' }}
           RESTART: ${{ github.event.inputs.restart == 'oui' && '1' || '' }}
