@@ -1,10 +1,13 @@
 // update-prices.mjs — récupère les prix FC 27 via parse.bot et met à jour data.json
-// Node 20, aucune dépendance. La clé vient UNIQUEMENT de la variable PARSE_API_KEY.
+// Node 20, aucune dépendance. Les clés viennent UNIQUEMENT des secrets GitHub PARSE_API_KEYS / PARSE_API_KEY.
 //
-// Utilisation :  node update-prices.mjs [auto|list|snapshot]
+// Utilisation :  node update-prices.mjs [auto|list|snapshot|details|fiche|select|watch]
 //   auto     : "list" si data.json est vide, sinon "snapshot"
 //   list     : remplit le catalogue (3 crédits par page)
-//   snapshot : met à jour les prix (10 crédits) + SBC en cours (1 crédit)
+//   snapshot : met à jour les prix (≈10 crédits par paquet de 500 cartes) + SBC en cours
+//
+// TRAVAIL EN PARALLÈLE : chaque clé est un « ouvrier ». Avec 20 clés, 20 requêtes partent en même temps
+// (chaque ouvrier garde sa propre pause entre deux requêtes). Une clé en panne rend sa tâche aux autres.
 
 import { readFile, writeFile, rename } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -16,16 +19,19 @@ const DATA_FILE = path.join(DIR, 'data.json');
 
 const BASE = (process.env.API_BASE ||
   'https://api.parse.bot/scraper/f56a52f1-08bd-4926-8246-945dc47bce4e').replace(/\/+$/, '');
-const PAUSE_MS = Number(process.env.PAUSE_MS ?? 13000); // 5 requêtes/minute max
+const PAUSE_MS = Number(process.env.PAUSE_MS ?? 13000); // pause entre deux requêtes DE LA MÊME clé (5 requêtes/minute max par clé)
 const MAX_PAGES = Number(process.env.MAX_PAGES) || 25;  // 25 pages x 3 crédits = 75 crédits
 const MIN_RATING = Number(process.env.MIN_RATING) || 80;
-const SNAPSHOT_SIZE = Number(process.env.SNAPSHOT_SIZE ?? 500); // 500 maximum
+const SNAPSHOT_SIZE = Math.max(1, Math.min(Number(process.env.SNAPSHOT_SIZE) || 500, 500)); // cartes par requête (500 maximum)
+const SNAPSHOT_PARTS = Math.max(0, Math.floor(Number(process.env.SNAPSHOT_PARTS) || 0));    // paquets en même temps (0 = autant que d'ouvriers)
+const SNAPSHOT_FRESH_MIN = Number(process.env.SNAPSHOT_FRESH_MIN ?? 30);                    // un prix plus récent que ça n'est pas redemandé
+const PARALLEL = process.env.PARALLEL !== '0';                                              // PARALLEL=0 : un seul ouvrier à la fois
+const MAX_WORKERS = Math.max(1, Number(process.env.MAX_WORKERS) || 50);
+const STAGGER_MS = Number(process.env.STAGGER_MS ?? 500);                                   // départ décalé des ouvriers (évite 20 requêtes à la même milliseconde)
 const HISTORY_MAX = 14;
 const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 150000); // parse.bot peut être lent (1 minute par page)
 const RETRY_MS = Number(process.env.RETRY_MS ?? 30000);      // pause avant un nouvel essai
 const MAX_TRIES = Number(process.env.MAX_TRIES ?? 4);        // essais par requête
-let authOK = false; // devient vrai dès qu'une requête a réussi
-
 // ---------- clés ----------
 // Une seule clé (secret PARSE_API_KEY) OU plusieurs (secret PARSE_API_KEYS : une clé par ligne, ou séparées par des virgules).
 // Le robot utilise la clé n°1 jusqu'à ce qu'elle n'ait plus de crédits, puis passe à la suivante.
@@ -55,42 +61,94 @@ const ENTRIES = (() => {
   return out;
 })();
 const KEYS = ENTRIES.map((e) => e.k);
-let CUR_BASE = BASE;
 const STATE_FILE = path.join(DIR, 'keys-state.json');
 const FP = createHash('sha256').update(ENTRIES.map((e) => e.k + '|' + e.b).join('\n')).digest('hex').slice(0, 12);
-let keyIdx = 0, keyIdxStart = 0;
-let KEY = '';
-const CREDIT_RE = /credit|quota|insufficient|exhaust|balance|limit reached|payment|plan limit/i;
+// Mots qui disent clairement « plus de crédits ». « limit reached » peut n'être qu'un trop-plein de requêtes : on ne le prend pas pour une clé vide si le code est 429.
+const CREDIT_STRICT = /credit|quota|insufficient|exhaust|balance|payment/i;
+const CREDIT_LOOSE = /limit reached|plan limit/i;
 const redact = (t) => KEYS.concat(ENTRIES.map((e) => e.b).filter(Boolean)).reduce((a, k) => a.split(k).join('***'), String(t));
+const shortUrl = (u) => String(u).replace(/^https?:\/\//, '').replace(/([0-9a-f]{8})[0-9a-f-]{28}/gi, '$1…');
+
+// ---------- ouvriers : un par clé ----------
+// Un ouvrier = une clé + son adresse de scraper + sa propre pause. Il fait une requête à la fois.
+class KeyDead extends Error {}
+const W = ENTRIES.map((e, i) => ({
+  i, k: e.k, b: e.b || BASE,
+  busy: false, dead: false, why: '', credit: false, keep: false, ok: false,
+  last: Date.now() - PAUSE_MS + i * STAGGER_MS, // le premier appel de chaque ouvrier est décalé de quelques dixièmes de seconde
+}));
+let anyOK = false;   // vrai dès qu'une clé a obtenu une réponse
+let waiters = [];
+const alive = () => W.filter((w) => !w.dead);
+const pool = () => { const a = alive(); return PARALLEL ? a.slice(0, MAX_WORKERS) : a.slice(0, 1); };
+const poolSize = () => pool().length;
+
+function noKeyMessage() {
+  if (!W.length) return 'Aucune clé : la variable PARSE_API_KEYS (ou PARSE_API_KEY) est vide.';
+  if (W.some((w) => /404/.test(w.why))) {
+    return 'parse.bot répond « scraper introuvable » (404) avec ces clés. ' +
+      'Ces clés viennent sans doute d\'un autre compte que celui où le scraper FUTBIN a été créé. ' +
+      'Solution : écris chaque clé avec son adresse de scraper dans le secret PARSE_API_KEYS (une ligne : CLE|https://api.parse.bot/scraper/ID), ' +
+      'ou mets l\'adresse commune dans la variable API_BASE.';
+  }
+  return 'Plus aucune clé utilisable (' + W.map((w) => `n°${w.i + 1} : ${w.why || 'ok'}`).join(' ; ') + '). ' +
+    'Si tu as rechargé des crédits, relance avec « oublier les clés vides » = oui.';
+}
+async function acquire() {
+  for (;;) {
+    const p = pool();
+    if (!p.length) throw new Error(noKeyMessage());
+    const free = p.filter((w) => !w.busy);
+    if (free.length) {
+      free.sort((a, b) => a.last - b.last); // celui qui a le plus longtemps attendu
+      free[0].busy = true;
+      return free[0];
+    }
+    await new Promise((r) => waiters.push(r));
+  }
+}
+function release(w) {
+  w.busy = false;
+  const r = waiters.shift();
+  if (r) r();
+}
+function markDead(w, why, credit) {
+  if (w.dead) return;
+  w.dead = true; w.why = why; w.credit = !!credit;
+  console.log(`Clé n°${w.i + 1} : ${why}. ${alive().length} clé(s) encore utilisable(s) sur ${KEYS.length}.`);
+  const ws = waiters; waiters = [];
+  ws.forEach((r) => r()); // tout le monde se réveille et refait son choix
+}
+
 async function loadKeyState() {
   const month = new Date().toISOString().slice(0, 7);
-  try {
-    const st = JSON.parse(await readFile(STATE_FILE, 'utf8'));
-    // On ne reprend la position mémorisée que si la liste de clés est la même qu'au dernier passage.
-    if (st.fp === FP && st.month === month && Number.isInteger(st.index) && st.index >= 0 && st.index < KEYS.length) keyIdx = st.index;
-  } catch { /* premier passage */ }
-  keyIdxStart = keyIdx;
-  KEY = KEYS[keyIdx] || '';
-  CUR_BASE = (ENTRIES[keyIdx] && ENTRIES[keyIdx].b) || BASE;
-  console.log(`Clés disponibles : ${KEYS.length}. On commence avec la clé n°${keyIdx + 1}.`);
-  const short = (u) => u.replace(/^https?:\/\//, '').replace(/([0-9a-f]{8})[0-9a-f-]{28}/gi, '$1…');
-  ENTRIES.forEach((e, i) => console.log(`  clé n°${i + 1} → ${e.b ? 'scraper ' + short(e.b) : 'adresse par défaut ' + short(BASE) + ' (aucune adresse écrite après la clé)'}`));
-  console.log(`Scraper utilisé : ${CUR_BASE.replace(/^https?:\/\//, '').replace(/([0-9a-f]{8})[0-9a-f-]{28}/gi, '$1…')}`);
+  if (process.env.RESET_KEYS === '1') console.log('« Oublier les clés vides » demandé : toutes les clés sont réessayées.');
+  else {
+    try {
+      const st = JSON.parse(await readFile(STATE_FILE, 'utf8'));
+      // On ne reprend les clés vides mémorisées que si la liste de clés est la même qu'au dernier passage et que c'est le même mois.
+      if (st.fp === FP && st.month === month && Array.isArray(st.dead)) {
+        for (const i of st.dead) if (Number.isInteger(i) && W[i]) { W[i].dead = true; W[i].keep = true; W[i].credit = true; W[i].why = 'vide (mémorisée ce mois-ci)'; }
+      }
+    } catch { /* premier passage */ }
+  }
+  const n = alive().length;
+  console.log(`Clés disponibles : ${KEYS.length}.${n < KEYS.length ? ` Dont ${KEYS.length - n} vide(s) mémorisée(s) ce mois-ci : ignorée(s).` : ''}`);
+  W.forEach((w) => console.log(`  clé n°${w.i + 1} → ${ENTRIES[w.i].b ? 'scraper ' + shortUrl(w.b) : 'adresse par défaut ' + shortUrl(BASE) + ' (aucune adresse écrite après la clé)'}${w.dead ? ' [' + w.why + ']' : ''}`));
+  if (PARALLEL) console.log(`Travail en parallèle : ${poolSize()} ouvrier(s), une clé chacun, pause de ${Math.round(PAUSE_MS / 1000)} s entre deux requêtes d'une même clé.`);
+  else console.log('Travail en parallèle désactivé (PARALLEL=0) : un seul ouvrier à la fois, les autres clés prennent le relais si elle est vide.');
 }
 async function saveKeyState() {
-  if (KEYS.length < 2) return;
-  if (!authOK) keyIdx = keyIdxStart; // aucune clé n'a marché dans ce passage : on ne mémorise rien
-  if (keyIdx === keyIdxStart) return;
-  await writeFile(STATE_FILE, JSON.stringify({ month: new Date().toISOString().slice(0, 7), index: keyIdx, total: KEYS.length, fp: FP }) + '\n', 'utf8');
-}
-function nextKey(why) {
-  if (keyIdx + 1 >= KEYS.length) return false;
-  console.log(`Clé n°${keyIdx + 1} : ${why}. Passage à la clé n°${keyIdx + 2} sur ${KEYS.length}.`);
-  keyIdx++;
-  KEY = KEYS[keyIdx];
-  CUR_BASE = ENTRIES[keyIdx].b || BASE;
-  authOK = false;
-  return true;
+  if (!KEYS.length) return;
+  // On mémorise une clé vide (crédits) toujours. Une clé « refusée » seulement si une autre a marché dans ce passage (sinon c'est peut-être une panne de parse.bot).
+  const dead = W.filter((w) => w.dead && (w.keep || w.credit || anyOK)).map((w) => w.i);
+  const month = new Date().toISOString().slice(0, 7);
+  let prev = null;
+  try { prev = JSON.parse(await readFile(STATE_FILE, 'utf8')); } catch { /* pas de fichier */ }
+  if (!dead.length && !prev) return;
+  if (prev && prev.fp === FP && prev.month === month && JSON.stringify(prev.dead || []) === JSON.stringify(dead)) return;
+  const first = W.findIndex((w) => !w.dead);
+  await writeFile(STATE_FILE, JSON.stringify({ month, index: first < 0 ? KEYS.length : first, total: KEYS.length, fp: FP, dead }) + '\n', 'utf8');
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -226,15 +284,15 @@ function normPlayer(p) {
   if (!out.leagueImage && lid) out.leagueImage = `${cdn}leaguelogo/${lid}.png`;
   return out;
 }
-
 // ---------- appels API ----------
-let lastCall = 0;
-async function api(endpoint, params = {}, label = endpoint) {
-  const wait = lastCall + PAUSE_MS - Date.now();
-  if (lastCall && wait > 0) await sleep(wait);
+// Une requête sur UN ouvrier (une clé). Si la clé est vide ou refusée, elle est mise de côté et KeyDead est levée :
+// api() redonne alors la même requête à un autre ouvrier.
+async function callOn(w, endpoint, params, label) {
+  const wait = w.last + PAUSE_MS - Date.now();
+  if (wait > 0) await sleep(wait);
 
-  const mkUrl = () => { // refait à chaque essai : la clé (et donc l'adresse du scraper) peut changer
-    const u = new URL(`${CUR_BASE}/${endpoint}`);
+  const mkUrl = () => {
+    const u = new URL(`${w.b}/${endpoint}`);
     for (const [k, v] of Object.entries(params)) {
       if (v !== undefined && v !== null) u.searchParams.set(k, String(v));
     }
@@ -243,49 +301,44 @@ async function api(endpoint, params = {}, label = endpoint) {
 
   for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
     const last = attempt >= MAX_TRIES;
-    const url = mkUrl();
-    lastCall = Date.now();
+    const t0 = Date.now();
+    w.last = t0;
     let res;
     try {
-      res = await fetch(url, {
-        headers: { 'X-API-Key': KEY, Accept: 'application/json' },
+      res = await fetch(mkUrl(), {
+        headers: { 'X-API-Key': w.k, Accept: 'application/json' },
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
     } catch (e) {
       if (!last) {
-        console.log(`${label} : pas de réponse (${e.name}). Nouvel essai dans ${Math.round(RETRY_MS / 1000)} s (essai ${attempt}/${MAX_TRIES}).`);
+        console.log(`${label} (clé n°${w.i + 1}) : pas de réponse (${e.name}). Nouvel essai dans ${Math.round(RETRY_MS / 1000)} s (essai ${attempt}/${MAX_TRIES}).`);
         await sleep(RETRY_MS);
         continue;
       }
-      throw new Error(`${label} : impossible de joindre parse.bot (${e.message})`);
+      throw new Error(`${label} : impossible de joindre parse.bot (${redact(e.message)})`);
     }
     if (res.status === 404) {
       const body404 = redact((await res.clone().text().catch(() => '')).slice(0, 200));
       if (/scraper/i.test(body404) && /not found/i.test(body404)) {
-        if (nextKey('ne voit pas ce scraper (404)')) { attempt--; continue; }
-        throw new Error(`${label} : parse.bot répond « scraper introuvable » (404) avec toutes les clés. ` +
-          `Ces clés viennent sans doute d'un autre compte que celui où le scraper FUTBIN a été créé. ` +
-          `Solution : sur parse.bot, avec le compte qui a les crédits, ouvre le scraper FUTBIN, copie son adresse (URL de base) ` +
-          `et mets-la dans GitHub → Settings → Secrets and variables → Actions → Variables → nouvelle variable API_BASE. ` +
-          `Réponse : ${body404}`);
+        markDead(w, 'ne voit pas ce scraper (404)', false);
+        throw new KeyDead();
       }
     }
     if ([401, 402, 403, 429].includes(res.status)) {
       const peek = await res.clone().text().catch(() => '');
-      const creditLike = res.status === 402 || CREDIT_RE.test(peek);
-      const fastBad = (res.status === 401 || res.status === 403) && (/invalid api key/i.test(peek) || (!authOK && Date.now() - lastCall < 60000));
-      if ((creditLike || fastBad) && nextKey(creditLike ? 'plus de crédits' : 'refusée')) { attempt--; continue; }
+      const creditLike = res.status === 402 || CREDIT_STRICT.test(peek) || (res.status !== 429 && CREDIT_LOOSE.test(peek));
+      const fastBad = (res.status === 401 || res.status === 403) && (/invalid api key/i.test(peek) || (!w.ok && Date.now() - t0 < 60000));
+      if (creditLike) { markDead(w, 'plus de crédits', true); throw new KeyDead(); }
+      if (fastBad) { markDead(w, 'refusée', false); throw new KeyDead(); }
     }
     if (res.status === 401 || res.status === 403) {
       // parse.bot explique souvent la raison dans sa réponse : on l'affiche (sans jamais afficher la clé).
-      let body = (await res.text().catch(() => '')).slice(0, 300).replace(/\s+/g, ' ');
-      body = redact(body);
-      const secs = Math.round((Date.now() - lastCall) / 1000);
-      // Une vraie clé refusée est rejetée en quelques secondes. Un « refus » après ~2 minutes, ou alors que la
-      // clé a déjà marché, est en fait un délai dépassé chez parse.bot : on réessaie.
-      const timeoutLike = authOK || secs >= 60;
+      const body = redact((await res.text().catch(() => '')).slice(0, 300).replace(/\s+/g, ' '));
+      const secs = Math.round((Date.now() - t0) / 1000);
+      // Un « refus » après ~1 minute, ou alors que la clé a déjà marché, est en fait un délai dépassé chez parse.bot : on réessaie.
+      const timeoutLike = w.ok || secs >= 60;
       if (timeoutLike && !last) {
-        console.log(`${label} : refus (HTTP ${res.status}) après ${secs} s, probablement un délai dépassé chez parse.bot. Réponse : ${body || '(vide)'}`);
+        console.log(`${label} (clé n°${w.i + 1}) : refus (HTTP ${res.status}) après ${secs} s, probablement un délai dépassé chez parse.bot. Réponse : ${body || '(vide)'}`);
         console.log(`Nouvel essai dans ${Math.round(RETRY_MS / 1000)} s (essai ${attempt}/${MAX_TRIES}).`);
         await sleep(RETRY_MS);
         continue;
@@ -294,14 +347,14 @@ async function api(endpoint, params = {}, label = endpoint) {
       throw new Error(
         `${label} : accès refusé (HTTP ${res.status}) après ${secs} s. ` +
         `Réponse de parse.bot : ${body || '(vide)'}. ` +
-        `La clé reçue par le robot fait ${KEY.length} caractères. ` +
-        (secs < 60 && !authOK
-          ? `Refus immédiat : la clé est sans doute fausse. Teste-la avec « Send request » sur parse.bot, puis vérifie le secret PARSE_API_KEY.`
+        `La clé n°${w.i + 1} fait ${w.k.length} caractères. ` +
+        (secs < 60 && !w.ok
+          ? `Refus immédiat : la clé est sans doute fausse. Teste-la avec « Send request » sur parse.bot, puis vérifie le secret PARSE_API_KEYS.`
           : `Refus lent : parse.bot n'arrive pas à répondre à temps. Réessaie plus tard, la clé semble bonne.`)
       );
     }
     if (res.status === 429 && !last) {
-      console.log(`${label} : trop de requêtes, pause de 60 s puis nouvel essai.`);
+      console.log(`${label} (clé n°${w.i + 1}) : trop de requêtes, pause de 60 s puis nouvel essai.`);
       await sleep(60000);
       continue;
     }
@@ -309,10 +362,33 @@ async function api(endpoint, params = {}, label = endpoint) {
       const txt = redact((await res.text().catch(() => '')).slice(0, 200));
       throw new Error(`${label} : erreur HTTP ${res.status} ${txt}`);
     }
-    authOK = true;
+    w.ok = true; anyOK = true;
     return res.json();
   }
   throw new Error(`${label} : échec après ${MAX_TRIES} essais`);
+}
+
+// Envoie la requête au premier ouvrier libre. Si sa clé tombe en panne, un autre reprend la même requête.
+async function api(endpoint, params = {}, label = endpoint) {
+  for (;;) {
+    const w = await acquire();
+    try { return await callOn(w, endpoint, params, label); }
+    catch (e) { if (e instanceof KeyDead) continue; throw e; }
+    finally { release(w); }
+  }
+}
+
+// Fait tourner fn sur chaque élément, autant à la fois qu'il y a d'ouvriers.
+async function forEachPar(items, fn) {
+  let next = 0;
+  const n = Math.max(1, Math.min(items.length, poolSize()));
+  await Promise.all(Array.from({ length: n }, async () => {
+    for (;;) {
+      const k = next++;
+      if (k >= items.length) return;
+      await fn(items[k], k);
+    }
+  }));
 }
 
 // ---------- data.json ----------
@@ -327,20 +403,32 @@ async function loadData() {
   }
 }
 
-async function saveData(d) {
-  const tmp = DATA_FILE + '.tmp';
-  await writeFile(tmp, JSON.stringify(d) + '\n', 'utf8');
-  await rename(tmp, DATA_FILE); // écriture atomique : jamais de fichier à moitié écrit
+// Écritures en file d'attente : plusieurs ouvriers peuvent finir en même temps, mais le fichier n'est jamais écrit par deux à la fois.
+// Si une sauvegarde est déjà en attente, elle contiendra aussi les dernières données : on n'en empile pas d'autres.
+let saveChain = Promise.resolve(), savePending = false;
+function saveData(d) {
+  if (savePending) return saveChain;
+  savePending = true;
+  saveChain = saveChain.catch(() => { }).then(async () => {
+    savePending = false;
+    const tmp = DATA_FILE + '.tmp';
+    await writeFile(tmp, JSON.stringify(d) + '\n', 'utf8');
+    await rename(tmp, DATA_FILE); // écriture atomique : jamais de fichier à moitié écrit
+  });
+  return saveChain;
 }
 
 function addHistory(card, price, now) {
   if (price === null) return;
+  card.pt = Math.floor(now / 1000); // heure du dernier relevé de prix (en secondes), même si le prix n'a pas bougé
   const h = Array.isArray(card.history) ? card.history : [];
   const last = h[h.length - 1];
   if (last && last.p === price && now - last.t < 6 * 3600 * 1000) return;
   h.push({ t: now, p: price });
   card.history = h.slice(-HISTORY_MAX);
 }
+// Heure (ms) du dernier relevé de prix d'une carte : 0 = jamais.
+const priceTime = (c) => (c.pt ? c.pt * 1000 : (c.history && c.history.length ? c.history[c.history.length - 1].t : 0));
 
 function mergeCard(map, fresh, now) {
   const old = map.get(fresh.id);
@@ -392,85 +480,119 @@ async function fetchSbcs() {
     return null;
   }
 }
-
 // ---------- modes ----------
+// Catalogue : les pages sont lues en parallèle (une par ouvrier). Le point de reprise (listNext) avance seulement
+// jusqu'à la dernière page lue SANS trou : si une page échoue, la relance repart de cette page.
 async function modeList(data) {
   const map = new Map(data.cards.map((c) => [c.id, c]));
   const now = Date.now();
-  // Reprise : si un passage précédent s'est arrêté, on repart de la page suivante (RESTART=1 pour tout reprendre).
   const restart = process.env.RESTART === '1'; // test : repart de la page 1 sans toucher au point de reprise
-  let start = Number.isInteger(data.listNext) && data.listNext > 0 && !restart ? data.listNext : 1;
-  let total = 0;
-  let finished = false;
-  for (let page = start; page < start + MAX_PAGES; page++) {
+  const start = Number.isInteger(data.listNext) && data.listNext > 0 && !restart ? data.listNext : 1;
+  const pages = Array.from({ length: MAX_PAGES }, (_, i) => start + i);
+  const done = new Set();
+  let endPage = Infinity, total = 0, firstLog = true, stopAll = false, nextOk = start, firstErr = null;
+  const failedPages = [];
+  await forEachPar(pages, async (page) => {
+    if (stopAll || page >= endPage) return;
     console.log(`Catalogue : page ${page} (${page - start + 1}/${MAX_PAGES} de ce passage)`);
     let payload;
     try {
-      payload = await api('list_fc27_players', {
-        platform: 'ps', min_rating: MIN_RATING, sort_by_price: 'desc', page,
-      }, 'list_fc27_players');
+      payload = await api('list_fc27_players', { platform: 'ps', min_rating: MIN_RATING, sort_by_price: 'desc', page }, 'list_fc27_players');
     } catch (e) {
-      if (!total) throw e;
-      // Des pages sont déjà enregistrées : on s'arrête proprement, rien n'est perdu.
-      console.log(`ATTENTION : ${e.message}`);
-      console.log(`Arrêt propre : ${total} cartes enregistrées dans ce passage. Relance le mode « list » pour reprendre à la page ${page}.`);
+      failedPages.push(page);
+      if (!firstErr) firstErr = e;
+      console.log(`Page ${page} : ${redact(e.message)}`);
+      if (!poolSize()) stopAll = true; // plus aucune clé : inutile d'essayer les autres pages
       return;
     }
     const raw = toArray(payload);
-    if (page === start && raw[0] && typeof raw[0] === 'object') {
+    const arr = raw.map(normPlayer).filter(Boolean);
+    if (arr.length && firstLog) {
+      firstLog = false;
       console.log('Champs reçus pour un joueur : ' + Object.keys(raw[0]).join(', '));
       const imgs = imageFields(raw[0]);
       console.log('Champs contenant une adresse d\'image : ' + (imgs.length ? imgs.map(([k, v]) => `${k} = ${v.slice(0, 110)}`).join(' | ') : 'aucun'));
+      console.log('Photo du joueur trouvée : ' + (arr[0].playerImage ? 'oui' : 'non'));
+      console.log('Logos trouvés : pays ' + (arr[0].nationImage ? 'oui' : 'non') + ' | ligue ' + (arr[0].leagueImage ? 'oui' : 'non') + ' | club ' + (arr[0].clubImage ? 'oui' : 'non'));
+      console.log('Image de carte HD trouvée : ' + (arr[0].cardImageLarge ? 'oui' : 'non') + ' | photo HD : ' + (arr[0].playerImageLarge ? 'oui' : 'non'));
     }
-    const arr = raw.map(normPlayer).filter(Boolean);
-    if (page === start && arr[0]) console.log('Photo du joueur trouvée : ' + (arr[0].playerImage ? 'oui' : 'non'));
-    if (page === start && arr[0]) console.log('Logos trouvés : pays ' + (arr[0].nationImage ? 'oui' : 'non') + ' | ligue ' + (arr[0].leagueImage ? 'oui' : 'non') + ' | club ' + (arr[0].clubImage ? 'oui' : 'non'));
-    if (page === start && arr[0]) console.log('Image de carte HD trouvée : ' + (arr[0].cardImageLarge ? 'oui' : 'non') + ' | photo HD : ' + (arr[0].playerImageLarge ? 'oui' : 'non'));
-    if (!arr.length) { console.log('Page vide : fin du catalogue.'); finished = true; break; }
-    for (const c of arr) mergeCard(map, c, now);
+    done.add(page);
+    if (!arr.length) { endPage = Math.min(endPage, page); console.log(`Page ${page} vide : fin du catalogue.`); return; }
+    for (const c of arr) mergeCard(map, c, Date.now());
     total += arr.length;
     data.cards = [...map.values()];
-    data.updatedAt = new Date(now).toISOString();
+    data.updatedAt = new Date().toISOString();
     data.source = 'FUTBIN via parse.bot';
-    if (!restart) data.listNext = page + 1;
+    while (done.has(nextOk)) nextOk++;
+    if (!restart) data.listNext = nextOk;
     await saveData(data); // sauvegarde à chaque page : rien n'est perdu si ça s'arrête
-  }
+  });
+  while (done.has(nextOk)) nextOk++; // une page vide de fin peut arriver après la dernière page pleine
+  const finished = endPage !== Infinity && nextOk > endPage;
   if (finished && !restart) { data.listNext = null; await saveData(data); }
   console.log(`Catalogue : ${total} cartes lues, ${data.cards.length} au total.`);
-  if (!finished && total) console.log('Catalogue pas fini : relance le mode « list » pour continuer à la page suivante.');
+  if (failedPages.length) {
+    if (!total) throw firstErr;
+    console.log(`ATTENTION : ${failedPages.length} page(s) non lue(s) (${failedPages.sort((a, b) => a - b).slice(0, 10).join(', ')}${failedPages.length > 10 ? '…' : ''}). Rien n'est perdu : relance le mode « list » pour reprendre à la page ${nextOk}.`);
+  } else if (!finished && total) console.log(`Catalogue pas fini : relance le mode « list » pour continuer à la page ${nextOk}.`);
   if (!total && !finished) throw new Error('Aucune carte reçue : vérifie la réponse de list_fc27_players.');
 }
 
+// Prix : on demande en priorité les cartes dont le prix est le plus ancien (et un peu plus souvent les plus chères),
+// en plusieurs paquets de 500 envoyés en même temps. Un prix de moins de SNAPSHOT_FRESH_MIN minutes n'est pas redemandé.
 async function modeSnapshot(data) {
   if (!data.cards.length) throw new Error('data.json est vide : lance d\'abord le mode « list ».');
-  const now = Date.now();
-  // On met à jour en priorité les cartes dont le prix est le plus ancien (rotation).
-  const stale = (c) => (c.history && c.history.length ? c.history[c.history.length - 1].t : 0);
-  const chosen = [...data.cards].sort((a, b) => stale(a) - stale(b)).slice(0, Math.min(SNAPSHOT_SIZE, 500));
-  const ids = chosen.map((c) => c.id);
-  console.log(`Prix : ${ids.length} cartes demandées.`);
-  const payload = await api('get_fc27_market_snapshot', { player_ids: ids.join(',') }, 'get_fc27_market_snapshot');
-  const arr = toArray(payload);
+  const t0 = Date.now();
+  const weight = (c) => 1 + Math.min(2, Math.log10(Math.max(Number(c.price) || 0, 1000) / 1000) / 2);
+  const eligible = data.cards
+    .map((c) => { const t = priceTime(c); return { c, t, score: (t ? (t0 - t) / 60000 : 1e6) * weight(c) }; })
+    .filter((x) => !x.t || t0 - x.t >= SNAPSHOT_FRESH_MIN * 60000)
+    .sort((a, b) => b.score - a.score);
+  const skipped = data.cards.length - eligible.length;
+  if (skipped) console.log(`Prix : ${skipped} carte(s) ont un prix de moins de ${SNAPSHOT_FRESH_MIN} min : pas redemandées.`);
   const map = new Map(data.cards.map((c) => [c.id, c]));
-  let updated = 0, nulls = 0;
-  for (const r of arr) {
-    const id = pick(r, ['player_id', 'id', 'playerId']);
-    if (id === undefined) continue;
-    const card = map.get(String(id));
-    if (!card) continue;
-    const price = toPrice(pick(r, ['price', 'ps_price', 'current_price', 'prices']));
-    if (price === null) { nulls++; continue; } // on garde l'ancien prix
-    card.price = price;
-    addHistory(card, price, now);
-    updated++;
+  if (!eligible.length) console.log('Prix : rien à mettre à jour pour le moment (tous les prix sont récents).');
+  else {
+    const parts = Math.max(1, Math.min(SNAPSHOT_PARTS || Math.max(1, poolSize()), Math.ceil(eligible.length / SNAPSHOT_SIZE)));
+    const ids = eligible.slice(0, parts * SNAPSHOT_SIZE).map((x) => x.c.id);
+    const chunks = [];
+    for (let i = 0; i < ids.length; i += SNAPSHOT_SIZE) chunks.push(ids.slice(i, i + SNAPSHOT_SIZE));
+    console.log(`Prix : ${ids.length} cartes à relever sur ${data.cards.length}, en ${chunks.length} paquet(s) envoyé(s) en parallèle.`);
+    let updated = 0, nulls = 0, okChunks = 0, firstErr = null, stopAll = false;
+    await forEachPar(chunks, async (part, k) => {
+      if (stopAll) return;
+      console.log(`Prix : paquet ${k + 1}/${chunks.length}, ${part.length} cartes demandées.`);
+      let arr;
+      try {
+        arr = toArray(await api('get_fc27_market_snapshot', { player_ids: part.join(',') }, 'get_fc27_market_snapshot'));
+        if (!arr.length) throw new Error('Réponse vide de get_fc27_market_snapshot.');
+      } catch (e) {
+        if (!firstErr) firstErr = e;
+        console.log(`Paquet ${k + 1} : ${redact(e.message)}`);
+        if (!poolSize()) stopAll = true;
+        return;
+      }
+      okChunks++;
+      const t = Date.now();
+      for (const r of arr) {
+        const id = pick(r, ['player_id', 'id', 'playerId']);
+        if (id === undefined) continue;
+        const card = map.get(String(id));
+        if (!card) continue;
+        const price = toPrice(pick(r, ['price', 'ps_price', 'current_price', 'prices']));
+        if (price === null) { nulls++; continue; } // on garde l'ancien prix
+        card.price = price;
+        addHistory(card, price, t);
+        updated++;
+      }
+      data.updatedAt = new Date(t).toISOString();
+      data.source = 'FUTBIN via parse.bot';
+      await saveData(data);
+    });
+    console.log(`Prix : ${updated} mis à jour, ${nulls} sans prix (ancien prix gardé). Paquets réussis : ${okChunks}/${chunks.length}.`);
+    if (!okChunks) throw firstErr || new Error('Aucun prix reçu.');
+    if (okChunks < chunks.length) console.log('ATTENTION : certains paquets ont échoué. Les cartes concernées seront reprises en priorité au prochain passage.');
   }
-  console.log(`Prix : ${updated} mis à jour, ${nulls} sans prix (ancien prix gardé).`);
-  if (!arr.length) throw new Error('Réponse vide de get_fc27_market_snapshot.');
-  data.cards = [...map.values()];
-  data.updatedAt = new Date(now).toISOString();
-  data.source = 'FUTBIN via parse.bot';
-  await saveData(data);
-
   const sbcs = await fetchSbcs();
   if (sbcs) {
     data.sbcs = sbcs;
@@ -479,7 +601,6 @@ async function modeSnapshot(data) {
   }
   await runSelection(data, await loadWatch(), 'après la mise à jour complète');
 }
-
 
 // ---------- attributs détaillés (Accélération, Finition, …) ----------
 const SUB_KEYS = ['acceleration','sprintspeed','attposition','finishing','shotpower','longshots','volleys','penalties','vision','crossing','fkaccuracy','shortpassing','longpassing','curve','agility','balance','reactions','ballcontrol','dribbling','composure','interceptions','headingaccuracy','defawareness','standingtackle','slidingtackle','jumping','stamina','strength','aggression'];
@@ -526,7 +647,6 @@ function applyExtras(c, root) {
   if (acc && typeof acc !== 'object') c.acc = String(acc);
   return Object.keys(subs).length;
 }
-
 // ---------- styles de jeu (PlayStyles) ----------
 // Une requête par joueur : coût en crédits inconnu, donc on en demande peu (DETAILS_COUNT) et on affiche ce que ça coûte.
 async function modeDetails(data) {
@@ -537,17 +657,14 @@ async function modeDetails(data) {
   let chosen;
   if (wanted.length) chosen = wanted.map((i) => byId.get(i)).filter(Boolean);
   else chosen = data.cards.filter((c) => !c.ps).sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, count);
-  const names = (process.env.DETAILS_ENDPOINT ? [process.env.DETAILS_ENDPOINT] : ['get_player_details']);
-  let endpoint = null, done = 0;
-  for (const c of chosen) {
-    let payload = null;
-    for (const ep of (endpoint ? [endpoint] : names)) {
-      try { payload = await api(ep, { player_id: c.id, year: 27 }, ep); endpoint = ep; break; }
-      catch (e) { console.log(`${ep} : ${e.message}`); }
-    }
-    if (!payload) continue;
+  const ep = process.env.DETAILS_ENDPOINT || 'get_player_details';
+  let done = 0, first = true;
+  await forEachPar(chosen, async (c) => {
+    let payload;
+    try { payload = await api(ep, { player_id: c.id, year: 27 }, ep); }
+    catch (e) { console.log(`${ep} : ${redact(e.message)}`); return; }
     const root = Array.isArray(payload) ? payload[0] : (payload.data || payload.player || payload);
-    if (done === 0) {
+    if (first) {
       console.log('Champs reçus (détails) : ' + Object.keys(root || {}).join(', '));
       for (const [k, v] of Object.entries(root || {})) {
         if (Array.isArray(v) && v[0] && typeof v[0] === 'object') console.log(`  ${k}[0] : ` + Object.keys(v[0]).join(', '));
@@ -572,11 +689,11 @@ async function modeDetails(data) {
     else if (raw && typeof raw === 'object') for (const grp of ['plus', 'basic', 'locked']) (Array.isArray(raw[grp]) ? raw[grp] : []).forEach((x) => add(x, grp));
     c.ps = ps;
     const nSub = applyExtras(c, root);
-    if (done === 0) console.log(`Attributs détaillés trouvés : ${nSub} sur 29${nSub < 6 ? ' (pas assez : la source ne les donne pas dans cette réponse)' : ''}`);
+    if (first) { first = false; console.log(`Attributs détaillés trouvés : ${nSub} sur 29${nSub < 6 ? ' (pas assez : la source ne les donne pas dans cette réponse)' : ''}`); }
     done++;
     console.log(`${c.name} : ${ps.length} style(s) de jeu (${ps.filter((p) => p.g && !p.x).length} doré(s), ${ps.filter((p) => p.x).length} verrouillé(s)).`);
     await saveData(data);
-  }
+  });
   if (!done) throw new Error('Aucun détail reçu : le nom du point d\'accès est peut-être différent (voir les messages ci-dessus).');
   console.log(`Détails enregistrés pour ${done} joueur(s). Regarde ton solde de crédits sur parse.bot pour connaître le prix d'une requête.`);
 }
@@ -587,24 +704,24 @@ async function modeFiche(data) {
   if (!data.cards.length) throw new Error('data.json est vide : lance d\'abord le mode « list ».');
   const count = Math.max(1, Math.min(Number(process.env.DETAILS_COUNT) || 3, 90));
   const chosen = data.cards.filter((c) => !c.cardName).sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, count);
-  let done = 0;
-  for (const c of chosen) {
+  let done = 0, first = true;
+  await forEachPar(chosen, async (c) => {
     let payload;
     try { payload = await api('get_fc27_player_price', { player_id: c.id }, 'get_fc27_player_price'); }
-    catch (e) { console.log(`${c.name} : ${e.message}`); continue; }
+    catch (e) { console.log(`${c.name} : ${redact(e.message)}`); return; }
     const root = Array.isArray(payload) ? payload[0] : (payload && (payload.data || payload.player) || payload);
-    if (!root || typeof root !== 'object') continue;
-    if (done === 0) console.log('Champs reçus (fiche) : ' + Object.keys(root).join(', '));
+    if (!root || typeof root !== 'object') return;
+    if (first) console.log('Champs reçus (fiche) : ' + Object.keys(root).join(', '));
     const n = pick(root, ['name', 'card_name']);
     if (n) c.cardName = String(n);
     const f = normPlayer({ ...root, id: c.id, player_id: c.id });
     for (const k of ['nationImage', 'clubImage', 'leagueImage']) if (f && f[k]) c[k] = f[k];
     const nSub = applyExtras(c, root);
-    if (done === 0) console.log(`Attributs détaillés trouvés : ${nSub} sur 29`);
+    if (first) { first = false; console.log(`Attributs détaillés trouvés : ${nSub} sur 29`); }
     done++;
     console.log(`${c.name} → carte « ${c.cardName || '?'} » | pays ${c.nationImage ? 'oui' : 'non'} | ligue ${c.leagueImage ? 'oui' : 'non'} | club ${c.clubImage ? 'oui' : 'non'}`);
     await saveData(data);
-  }
+  });
   if (!done) throw new Error('Aucune fiche reçue (voir les messages ci-dessus).');
   console.log(`Fiches enregistrées : ${done}. Regarde ton solde de crédits sur parse.bot pour connaître le prix d'une requête.`);
 }
@@ -670,7 +787,6 @@ async function runSelection(data, w, why) {
   await saveWatch(w);
   console.log(`Sélection (${why}) : ${items.length} cartes à surveiller (0 crédit).`);
 }
-
 async function modeSelect(data) {
   await runSelection(data, await loadWatch(), 'manuelle');
 }
@@ -716,22 +832,27 @@ async function modeWatch(data) {
 // ---------- départ ----------
 async function main() {
   await loadKeyState();
-  if (!KEY) {
-    console.error('Aucune clé : la variable PARSE_API_KEY (ou PARSE_API_KEYS) est vide. Crée le secret PARSE_API_KEY dans Settings → Secrets and variables → Actions.');
+  if (!W.length) {
+    console.error('Aucune clé : la variable PARSE_API_KEYS (ou PARSE_API_KEY) est vide. Crée le secret PARSE_API_KEYS dans Settings → Secrets and variables → Actions.');
     process.exit(1);
+  }
+  if (!alive().length) {
+    console.log('Toutes les clés sont marquées vides pour ce mois-ci : rien n\'est envoyé. Si tu as rechargé des crédits, relance avec « oublier les clés vides » = oui.');
+    return;
   }
   let mode = (process.argv[2] || process.env.MODE || 'auto').trim().toLowerCase();
   if (!['auto', 'list', 'snapshot', 'details', 'fiche', 'select', 'watch'].includes(mode)) mode = 'auto';
   const data = await loadData();
   if (mode === 'auto') mode = data.cards.length ? 'snapshot' : 'list';
   console.log(`Mode : ${mode}`);
+  const t0 = Date.now();
   if (mode === 'list') await modeList(data);
   else if (mode === 'fiche') await modeFiche(data);
   else if (mode === 'details') await modeDetails(data);
   else if (mode === 'select') await modeSelect(data);
   else if (mode === 'watch') await modeWatch(data);
   else await modeSnapshot(data);
-  console.log('Terminé.');
+  console.log(`Terminé en ${Math.round((Date.now() - t0) / 1000)} s.`);
   await saveKeyState();
 }
 
