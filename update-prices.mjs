@@ -37,8 +37,8 @@ const KEY_CREDITS = Number(process.env.KEY_CREDITS) || 0; // crédits de départ
 const HISTORY_MAX = 14;
 const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 150000); // parse.bot peut être lent (1 minute par page)
 const RETRY_MS = Number(process.env.RETRY_MS ?? 30000);      // pause avant un nouvel essai
-const STRIKE_MIN_MS = Number(process.env.STRIKE_MIN_MS ?? 10000);   // pause entre deux refus d'une même clé : au hasard entre ces deux valeurs
-const STRIKE_MAX_MS = Number(process.env.STRIKE_MAX_MS ?? 15000);
+const STRIKE_MIN_MS = Number(process.env.STRIKE_MIN_MS ?? 5000);   // pause entre deux refus d'une même clé : au hasard entre ces deux valeurs
+const STRIKE_MAX_MS = Number(process.env.STRIKE_MAX_MS ?? 10000);
 const STRIKES = Number(process.env.STRIKES ?? 10);           // une clé n'est mise de côté qu'après ce nombre de refus de suite (un seul refus peut être passager)
 const MAX_TRIES = Number(process.env.MAX_TRIES ?? 4);        // essais par requête
 // ---------- clés ----------
