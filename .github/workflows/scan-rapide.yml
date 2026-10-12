@@ -31,6 +31,7 @@ jobs:
           KEY_CREDITS: ${{ vars.KEY_CREDITS }}
           TOTAL_CREDITS: ${{ vars.TOTAL_CREDITS }}
           SNAPSHOT_PARTS: '100'        # autant de paquets de 500 que nécessaire : toutes les cartes
+          SNAPSHOT_SPREAD: '1'         # paquets plus petits : toutes les clés travaillent en même temps (plus de demandes, donc un peu plus de crédits)
           SNAPSHOT_FRESH_MIN: '5'      # un prix relevé il y a moins de 5 min n'est pas redemandé (évite de payer deux fois)
         run: node update-prices.mjs snapshot
 
