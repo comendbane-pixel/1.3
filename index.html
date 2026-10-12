@@ -80,6 +80,7 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 /* Couleur du texte selon la carte : violet/foncé coloré = doré, noir = crème, clair (or, icône) = brun foncé */
 .cardbox.gd .ov{--g:#f4d97e;text-shadow:none}
 .cardbox.cr .ov{--g:#ece7da;text-shadow:none}
+.cardbox.wh .ov{--g:#fff;text-shadow:0 1px 3px rgba(0,0,0,.55)}
 .cardbox.lt .ov{--g:#2e2308;text-shadow:none}
 .ov .r{position:absolute;left:11%;width:18%;text-align:center;top:19%;font-weight:800;font-size:13.5cqw;line-height:1}
 .ov .p{position:absolute;left:11%;width:18%;text-align:center;top:30%;font-weight:700;font-size:8.5cqw;line-height:1}
@@ -467,7 +468,7 @@ button.dm.sel{outline:0!important;filter:drop-shadow(0 0 6px #ff4d00)}
   background-size:300% 300%;mix-blend-mode:color-dodge;opacity:.55;animation:holo 6s linear infinite}
 .cardbox.holo .face,.cardbox.holo .ov{z-index:2}
 .cardbox.fbasic .face{left:55%;width:74%;height:46%;top:17%}
-.cardbox.fspec .face{width:120%;height:82%;top:6%}
+.cardbox.fspec .face{left:47%;width:126%;height:86%;top:3%}
 @keyframes holo{0%{background-position:0% 50%}100%{background-position:100% 50%}}
 [data-anim=reduced] .holo-fx,[data-anim=none] .holo-fx{animation:none;background-position:50% 50%}
 
@@ -846,8 +847,9 @@ function urlTone(u) {
   u = String(u || '').toLowerCase();
   if (/icon|hero/.test(u)) return 'lt';
   if (/(^|[\/_])(gold|silver|bronze|rare|common)([._?]|$)/.test(u)) return 'lt';
+  if (/future_stars/.test(u)) return 'wh';
   if (/team_of_the_week|totw|toty|tots|black|dark/.test(u)) return 'cr';
-  if (/destined|future_stars|ones_to_watch|otw|promo|futties|fof|path_to_glory/.test(u)) return 'gd';
+  if (/destined|ones_to_watch|otw|promo|futties|fof|path_to_glory/.test(u)) return 'gd';
   return '';
 }
 function tone(img) {
