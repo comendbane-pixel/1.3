@@ -447,7 +447,7 @@ function applyExtras(c, root) {
 // Une requête par joueur : coût en crédits inconnu, donc on en demande peu (DETAILS_COUNT) et on affiche ce que ça coûte.
 async function modeDetails(data) {
   if (!data.cards.length) throw new Error('data.json est vide : lance d\'abord le mode « list ».');
-  const count = Math.max(1, Math.min(Number(process.env.DETAILS_COUNT) || 3, 40));
+  const count = Math.max(1, Math.min(Number(process.env.DETAILS_COUNT) || 3, 90));
   const wanted = String(process.env.DETAILS_IDS || '').split(',').map((x) => x.trim()).filter(Boolean);
   const byId = new Map(data.cards.map((c) => [c.id, c]));
   let chosen;
@@ -501,7 +501,7 @@ async function modeDetails(data) {
 // get_fc27_player_price : une requête par joueur, coût inconnu → petit nombre par défaut.
 async function modeFiche(data) {
   if (!data.cards.length) throw new Error('data.json est vide : lance d\'abord le mode « list ».');
-  const count = Math.max(1, Math.min(Number(process.env.DETAILS_COUNT) || 3, 40));
+  const count = Math.max(1, Math.min(Number(process.env.DETAILS_COUNT) || 3, 90));
   const chosen = data.cards.filter((c) => !c.cardName).sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, count);
   let done = 0;
   for (const c of chosen) {
