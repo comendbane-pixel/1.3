@@ -267,7 +267,7 @@ function mergeCard(map, fresh, now) {
     return;
   }
   // On garde les anciennes infos si la nouvelle réponse n'en a pas.
-  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage', 'playerImage', 'cardImageLarge', 'playerImageLarge', 'nationImage', 'clubImage', 'leagueImage', 'skillMoves', 'weakFoot', 'version', 'cardName']) {
+  for (const k of ['name', 'pos', 'club', 'nation', 'league', 'cardImage', 'playerImage', 'cardImageLarge', 'playerImageLarge', 'nationImage', 'clubImage', 'leagueImage', 'skillMoves', 'weakFoot', 'version', 'cardName', 'acc']) {
     if (fresh[k]) old[k] = fresh[k];
   }
   if (fresh.rating) old.rating = fresh.rating;
@@ -397,6 +397,52 @@ async function modeSnapshot(data) {
 }
 
 
+// ---------- attributs détaillés (Accélération, Finition, …) ----------
+const SUB_KEYS = ['acceleration','sprintspeed','attposition','finishing','shotpower','longshots','volleys','penalties','vision','crossing','fkaccuracy','shortpassing','longpassing','curve','agility','balance','reactions','ballcontrol','dribbling','composure','interceptions','headingaccuracy','defawareness','standingtackle','slidingtackle','jumping','stamina','strength','aggression'];
+const SUB_ALIAS = { accel: 'acceleration', sprint: 'sprintspeed', positioning: 'attposition', attackposition: 'attposition', attackpositioning: 'attposition', attpos: 'attposition', finish: 'finishing', shotpow: 'shotpower', longshot: 'longshots', penalty: 'penalties', fkacc: 'fkaccuracy', freekickaccuracy: 'fkaccuracy', freekickacc: 'fkaccuracy', shortpass: 'shortpassing', longpass: 'longpassing', ballcontrol: 'ballcontrol', dribble: 'dribbling', headingacc: 'headingaccuracy', heading: 'headingaccuracy', defensiveawareness: 'defawareness', defaware: 'defawareness', awareness: 'defawareness', standtackle: 'standingtackle', standingtack: 'standingtackle', slidetackle: 'slidingtackle', slidingtack: 'slidingtackle', jump: 'jumping', strenght: 'strength' };
+function subKey(name) {
+  const k = String(name || '').toLowerCase().replace(/[^a-z]/g, '');
+  if (SUB_KEYS.includes(k)) return k;
+  return SUB_ALIAS[k] || '';
+}
+function collectSubs(node, out = {}, depth = 0) {
+  if (!node || typeof node !== 'object' || depth > 4) return out;
+  if (Array.isArray(node)) {
+    for (const it of node) {
+      if (it && typeof it === 'object') {
+        const nm = pick(it, ['name', 'label', 'stat', 'attribute', 'key']);
+        const val = pick(it, ['value', 'val', 'rating', 'score']);
+        const k = subKey(nm);
+        if (k && /^\d+$/.test(String(val))) out[k] = Number(val);
+        else collectSubs(it, out, depth + 1);
+      }
+    }
+    return out;
+  }
+  for (const [key, v] of Object.entries(node)) {
+    if (typeof v === 'number' || (typeof v === 'string' && /^\d{1,3}$/.test(v))) {
+      const k = subKey(key);
+      if (k) out[k] = Number(v);
+    } else if (v && typeof v === 'object') collectSubs(v, out, depth + 1);
+  }
+  return out;
+}
+function applyExtras(c, root) {
+  const subs = collectSubs(root);
+  if (Object.keys(subs).length >= 6) c.sub = subs;
+  const ev = (root && (root.evolutions || root.evos || root.evolution)) || null;
+  if (Array.isArray(ev) && ev.length) {
+    c.evos = ev.filter((e) => e && typeof e === 'object').slice(0, 12).map((e) => ({
+      n: String(pick(e, ['name', 'title', 'evolution', 'evo_name']) ?? ''),
+      e: String(pick(e, ['expires', 'expiry', 'end_date', 'expires_at', 'ends', 'expiration']) ?? ''),
+      m: String(pick(e, ['min_ovr', 'max_ovr', 'requirement', 'requirements', 'eligibility', 'condition']) ?? ''),
+    })).filter((e) => e.n);
+  }
+  const acc = pick(root || {}, ['accelerate', 'accelerate_type', 'acceleRATE', 'accelerate_name']);
+  if (acc && typeof acc !== 'object') c.acc = String(acc);
+  return Object.keys(subs).length;
+}
+
 // ---------- styles de jeu (PlayStyles) ----------
 // Une requête par joueur : coût en crédits inconnu, donc on en demande peu (DETAILS_COUNT) et on affiche ce que ça coûte.
 async function modeDetails(data) {
@@ -407,12 +453,12 @@ async function modeDetails(data) {
   let chosen;
   if (wanted.length) chosen = wanted.map((i) => byId.get(i)).filter(Boolean);
   else chosen = data.cards.filter((c) => !c.ps).sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, count);
-  const names = (process.env.DETAILS_ENDPOINT ? [process.env.DETAILS_ENDPOINT] : ['get_fc27_player_details', 'get_player_details']);
+  const names = (process.env.DETAILS_ENDPOINT ? [process.env.DETAILS_ENDPOINT] : ['get_player_details']);
   let endpoint = null, done = 0;
   for (const c of chosen) {
     let payload = null;
     for (const ep of (endpoint ? [endpoint] : names)) {
-      try { payload = await api(ep, { player_id: c.id }, ep); endpoint = ep; break; }
+      try { payload = await api(ep, { player_id: c.id, year: 27 }, ep); endpoint = ep; break; }
       catch (e) { console.log(`${ep} : ${e.message}`); }
     }
     if (!payload) continue;
@@ -423,20 +469,28 @@ async function modeDetails(data) {
         if (Array.isArray(v) && v[0] && typeof v[0] === 'object') console.log(`  ${k}[0] : ` + Object.keys(v[0]).join(', '));
       }
     }
-    const list = (root && (root.playstyles || root.play_styles || root.playStyles)) || [];
+    const raw = (root && (root.playstyles || root.play_styles || root.playStyles)) || [];
     const ps = [];
-    for (const x of Array.isArray(list) ? list : []) {
-      if (!x || typeof x !== 'object') continue;
+    const add = (x, grp) => {
+      if (!x || typeof x !== 'object') return;
       const logo = pick(x, ['logo', 'image', 'icon', 'image_url']);
       const name = pick(x, ['name', 'title', 'label']);
-      if (!logo && !name) continue;
+      if (!logo && !name) return;
       const l = logo ? String(logo) : '';
-      const gold = x.plus === true || x.is_plus === true || x.type === 'plus' || /\/plus\//i.test(l) || /\+\s*$/.test(String(name || ''));
-      ps.push({ n: name ? String(name) : '', l, g: gold });
-    }
+      const gold = grp === 'plus' || (!grp && (x.plus === true || x.is_plus === true || x.type === 'plus' || /\/plus\//i.test(l)));
+      const item = { n: name ? String(name) : '', l, g: gold };
+      const k = pick(x, ['category', 'type_category', 'group']);
+      if (k) item.k = String(k).toLowerCase();
+      if (grp === 'locked') item.x = true;
+      ps.push(item);
+    };
+    if (Array.isArray(raw)) raw.forEach((x) => add(x, ''));
+    else if (raw && typeof raw === 'object') for (const grp of ['plus', 'basic', 'locked']) (Array.isArray(raw[grp]) ? raw[grp] : []).forEach((x) => add(x, grp));
     c.ps = ps;
+    const nSub = applyExtras(c, root);
+    if (done === 0) console.log(`Attributs détaillés trouvés : ${nSub} sur 29${nSub < 6 ? ' (pas assez : la source ne les donne pas dans cette réponse)' : ''}`);
     done++;
-    console.log(`${c.name} : ${ps.length} style(s) de jeu (${ps.filter((p) => p.g).length} doré(s)).`);
+    console.log(`${c.name} : ${ps.length} style(s) de jeu (${ps.filter((p) => p.g && !p.x).length} doré(s), ${ps.filter((p) => p.x).length} verrouillé(s)).`);
     await saveData(data);
   }
   if (!done) throw new Error('Aucun détail reçu : le nom du point d\'accès est peut-être différent (voir les messages ci-dessus).');
@@ -461,6 +515,8 @@ async function modeFiche(data) {
     if (n) c.cardName = String(n);
     const f = normPlayer({ ...root, id: c.id, player_id: c.id });
     for (const k of ['nationImage', 'clubImage', 'leagueImage']) if (f && f[k]) c[k] = f[k];
+    const nSub = applyExtras(c, root);
+    if (done === 0) console.log(`Attributs détaillés trouvés : ${nSub} sur 29`);
     done++;
     console.log(`${c.name} → carte « ${c.cardName || '?'} » | pays ${c.nationImage ? 'oui' : 'non'} | ligue ${c.leagueImage ? 'oui' : 'non'} | club ${c.clubImage ? 'oui' : 'non'}`);
     await saveData(data);
