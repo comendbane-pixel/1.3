@@ -85,6 +85,7 @@ jobs:
           PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
           API_BASE: ${{ vars.API_BASE }}
           KEY_CREDITS: ${{ vars.KEY_CREDITS }}
+          TOTAL_CREDITS: ${{ vars.TOTAL_CREDITS }}
           MODE: ${{ github.event.inputs.mode || 'auto' }}
           MAX_PAGES: ${{ github.event.inputs.pages }}
           MIN_RATING: ${{ github.event.inputs.min_rating }}
