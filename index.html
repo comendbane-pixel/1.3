@@ -457,6 +457,14 @@ button.dm.sel{outline:0!important;filter:drop-shadow(0 0 6px #ff4d00)}
 .stab button.on{background:var(--surface);color:var(--text)}
 .tile{position:relative}
 .vtag{position:absolute;top:2px;left:2px;z-index:4;background:linear-gradient(135deg,#b46bff,#4cc9f0);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:2px 5px;border-radius:5px;pointer-events:none}
+
+/* Effet holographique (dessiné par l'appli : reflets arc-en-ciel qui bougent légèrement) */
+.holo-fx{position:absolute;inset:0;pointer-events:none;z-index:1;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  background:linear-gradient(115deg,rgba(255,0,150,.0) 15%,rgba(255,60,200,.55) 30%,rgba(60,200,255,.55) 45%,rgba(120,255,160,.5) 58%,rgba(255,230,90,.5) 70%,rgba(255,0,150,0) 85%);
+  background-size:300% 300%;mix-blend-mode:color-dodge;opacity:.55;animation:holo 6s linear infinite}
+.cardbox.holo .face,.cardbox.holo .ov{z-index:2}
+@keyframes holo{0%{background-position:0% 50%}100%{background-position:100% 50%}}
+[data-anim=reduced] .holo-fx,[data-anim=none] .holo-fx{animation:none;background-position:50% 50%}
 </style>
 </head>
 <body>
@@ -747,7 +755,8 @@ function cardImg(c, size) {
     first = cand[0]; alts = cand.slice(1).join(' ');
   }
   const alt = (alts ? ' data-alts="' + esc(alts) + '"' : '') + ' data-all="' + esc(first + (alts ? ' ' + alts : '')) + '"';
-  return '<span class="cardbox ' + size + '"><img class="bg" src="' + esc(first) + '"' + alt + ' alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" crossorigin="anonymous" data-r="' + esc(c.rating || '?') + '">' +
+  const fx = c.variant === 'holo' ? '<span class="holo-fx" aria-hidden="true" style="-webkit-mask-image:url(&quot;' + esc(first) + '&quot;);mask-image:url(&quot;' + esc(first) + '&quot;)"></span>' : '';
+  return '<span class="cardbox ' + size + (fx ? ' holo' : '') + '"><img class="bg" src="' + esc(first) + '"' + alt + ' alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" crossorigin="anonymous" data-r="' + esc(c.rating || '?') + '">' + fx +
     (f ? '<img class="face" src="' + esc(f) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-face="1">' : '') + (size === 'sm' ? '' : ovHtml(c)) + '</span>';
 }
 // Netteté : le fond de la source est minuscule (64 px). On l'agrandit en plusieurs étapes avec lissage,
