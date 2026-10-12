@@ -1292,35 +1292,40 @@ function invMetrics(c) {
   return m;
 }
 const confOf = (n) => (n >= 10 ? 'haute' : n >= 4 ? 'moyenne' : 'faible');
-// --- Revente rapide : cartes nettement sous leur prix « normal » (médiane des relevés)
+// --- Revente rapide : cartes dont le prix est EN TRAIN DE MONTER (on achète pendant la hausse, on revend vite)
+// L'IA lit les derniers relevés : la hausse doit être régulière (pas un seul saut), puis elle estime la suite et la chance de gagner après la taxe de 5 %.
+function invMomentum(c) {
+  const sr = c._series; if (!sr || sr.length < 4) return null;
+  const p = sr.slice(-5).map((q) => q.p), r = [];
+  for (let i = 1; i < p.length; i++) r.push(p[i - 1] > 0 ? p[i] / p[i - 1] - 1 : 0);
+  const rise = p[0] > 0 ? p[p.length - 1] / p[0] - 1 : 0;                       // hausse sur les derniers relevés
+  const ups = r.filter((x) => x > 0).length;
+  if (rise < 0.02 || rise > 0.30 || r[r.length - 1] <= 0 || ups < Math.max(2, r.length - 1)) return null;   // pas une vraie hausse régulière
+  const mu = r.reduce((a, x) => a + x, 0) / r.length;
+  const sd = Math.max(0.03, Math.sqrt(r.reduce((a, x) => a + (x - mu) * (x - mu), 0) / r.length) * 1.5);
+  const mean = Math.min(0.15, rise * 0.5);                                         // on suppose seulement la moitié de la hausse récente en plus
+  const prob = Math.max(1, Math.min(95, Math.round((1 - phi((0.0527 - mean) / sd)) * 100)));
+  return { rise, ups, steps: r.length, mean, sd, prob, steps_pct: r };
+}
 function invRapide(cfg) {
   const out = []; INV_SKIP = 0;
   for (const c of CARDS) {
     if (c.price == null || c.price < 500 || c._series.length < 4) continue;
     if (cfg.bud > 0 && c.price > cfg.bud) continue;
-    const m = invMetrics(c);
-    if (m.disc < 0.04) continue;                                   // pas assez sous la normale
+    const m = invMetrics(c), mo = invMomentum(c);
+    if (!mo) continue;                                                           // elle ne monte pas : pas pour la revente rapide
+    const sell = Math.round(c.price * (1 + mo.mean)), net = sell * (1 - TAX) - c.price, netPct = net / c.price;
+    if (net <= 0 || mo.prob < MIN_PROB) { INV_SKIP++; continue; }                // l'IA n'est pas assez sûre : pas de conseil
     const why = [], warn = [];
-    const sell = Math.round(m.med * 0.98), net = sell * (1 - TAX) - c.price, netPct = net / c.price;
-    if (net <= 0 || netPct < 0.03) continue;                       // gain net trop petit : on ne propose pas
-    let sc = 40 * Math.min(1, m.disc / 0.15);
-    why.push('Son prix (' + fmt(c.price) + ') est ' + (m.disc * 100).toFixed(0) + ' % sous son prix habituel (' + fmt(m.med) + ').');
-    const lowPos = 1 - Math.min(1, Math.max(0, m.range)); sc += 25 * lowPos;
-    if (m.range <= 0.25) why.push('Il est dans le bas de sa fourchette récente (' + fmt(c._min) + ' – ' + fmt(c._max) + ').');
-    const l = m.last == null ? 0 : m.last;
-    if (l <= -0.06) { sc += 3; warn.push('Il chute encore (' + pct(l) + ') : attends un peu avant d\'acheter.'); }
-    else if (l < 0) { sc += 12; why.push('Il baisse légèrement (' + pct(l) + ').'); }
-    else { sc += 20; why.push('Il se stabilise ou remonte (' + pct(l) + ').'); }
-    sc += 15 * (1 - Math.min(1, m.cv / 0.2));
+    why.push('Son prix monte : ' + pct(mo.rise) + ' sur les ' + (mo.steps + 1) + ' derniers relevés, en hausse ' + mo.ups + ' fois sur ' + mo.steps + '.');
+    why.push('L\'IA estime à ' + mo.prob + ' % la chance qu\'elle continue assez pour gagner après la taxe de 5 %.');
+    if (m.range != null && m.range >= 0.9) warn.push('Elle est tout en haut de sa fourchette récente (' + fmt(c._min) + ' – ' + fmt(c._max) + ') : risque de redescendre.');
     if (m.cv > 0.15) warn.push('Son prix est très irrégulier : risqué.');
-    if (c.price < 2000) warn.push('Carte bon marché : la marge est petite en valeur.');
-    const ol = invOutlook(c, m, 0, 0);
-    if (ol.prob < MIN_PROB) { INV_SKIP++; continue; }               // l'IA n'est pas assez sûre : pas de conseil
-    why.push('L\'IA estime à ' + ol.prob + ' % la chance que le prix remonte assez pour gagner après la taxe de 5 %.');
-    out.push({ c, m, prob: ol.prob, sc: Math.round(Math.min(100, sc)), why, warn, buy: c.price, sell, net, netPct, conf: confOf(m.n), is: itemScore(c) });
+    warn.push('Tu achètes en pleine hausse : si le prix se retourne, revends sans attendre.');
+    out.push({ c, m, prob: mo.prob, sc: mo.prob, why, warn, buy: c.price, sell, net, netPct, conf: confOf(m.n), is: itemScore(c) });
   }
-  const w = { haute: 1, moyenne: 0.9, faible: 0.7 };
-  out.sort((a, b) => (b.sc * 0.4 + b.prob * 0.6) * w[b.conf] - (a.sc * 0.4 + a.prob * 0.6) * w[a.conf]);
+  const w = { haute: 1, moyenne: 0.95, faible: 0.85 };
+  out.sort((a, b) => b.prob * w[b.conf] - a.prob * w[a.conf]);
   return out;
 }
 // --- Long terme : meilleur rapport points SBC / prix (cartes de base)
@@ -1374,7 +1379,7 @@ function invCard(x, i, mode) {
   const c = x.c, money = (v) => fmt(v) + '<span class="coin"></span>';
   const data = { haute: 'fiables', moyenne: 'moyennes', faible: 'limitées' }[x.conf];
   const todo = mode === 'rapide'
-    ? 'Achète-la maintenant, puis remets-la en vente vers <b>' + money(x.sell) + '</b> quand le prix est remonté (quelques heures à 1-2 jours).'
+    ? 'Elle monte en ce moment : achète-la maintenant, puis remets-la en vente vers <b>' + money(x.sell) + '</b> quand elle a continué de monter (quelques heures).'
     : 'Achète-la et garde-la jusqu\'au prochain SBC, puis revends-la vers <b>' + money(x.sell) + '</b>.';
   return '<div class="box invc"><div class="invh"><span class="invn">' + (i + 1) + '</span><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') + '</button>' +
     '<div class="invm"><div class="nm"><b>' + esc(c.name) + '</b> <span class="rt">' + esc(c.rating) + '</span></div><div class="small muted">' + esc(c.pos || '') + ' · ' + esc(c.club || '') + '</div></div>' +
@@ -1418,7 +1423,12 @@ function scanWatch() {
 }
 async function scanLaunch() {
   if (SCAN_BUSY || scanLeft() > 0) return;
-  if (!ghToken()) { toast('Active d\'abord le bouton dans Réglages'); return; }
+  if (!ghToken()) {
+    toast('Colle d\'abord ta clé GitHub ici (une seule fois)');
+    const tb = document.querySelector('#tabs button[data-tab="6"]'); if (tb) tb.click();
+    setTimeout(() => { const f = document.getElementById('ghTok'); if (f) { f.scrollIntoView({ block: 'center' }); f.focus(); } }, 150);
+    return;
+  }
   SCAN_BUSY = true; scanSay('Lancement du scan…');
   const repo = scanRepo();
   try {
@@ -1470,27 +1480,12 @@ function renderInvest() {
     const left = scanLeft(), tok = !!ghToken();
     h += '<div class="box"><b>Scanner maintenant</b><div class="small muted" style="margin:6px 0">Relève le prix de <b>toutes les cartes</b> d\'un coup (environ 190 crédits). Ça prend quelques minutes.</div>' +
       (!tok
-        ? '<div class="note" style="margin:0 0 8px">Pour que ce bouton lance le scan tout seul, active-le une fois dans <b>Réglages → Bouton de scan automatique</b> (2 minutes).</div>' +
-          '<button class="btn primary" disabled style="opacity:.5">Scanner maintenant</button> <a class="small" target="_blank" rel="noopener" href="https://github.com/' + esc(scanRepo()) + '/actions/workflows/scan-rapide.yml">ou le lancer à la main sur GitHub</a>'
+        ? '<div class="note" style="margin:0 0 8px">Première fois : clique sur le bouton, il t\'emmène dans <b>Réglages</b> pour coller ta clé GitHub (une seule fois, 2 minutes).</div>' +
+          '<button class="btn primary" id="scanBtn" data-act="scannow">Scanner maintenant</button>'
         : left > 0
           ? '<button class="btn primary" id="scanBtn" disabled style="opacity:.5;cursor:not-allowed">Prochain scan possible dans ' + scanTxt() + '</button><div class="small muted" style="margin-top:6px">Pause de 5 minutes après chaque scan, pour ne pas dépenser des crédits pour rien.</div>'
           : '<button class="btn primary" id="scanBtn" data-act="scannow">Scanner maintenant</button>') +
       '<div class="small" id="scanMsg" style="margin-top:8px">' + esc(SCAN_MSG) + '</div></div>';
-  }
-  if (cfg.mode === 'rapide') {
-    const wi = WATCH && Array.isArray(WATCH.items) ? WATCH.items.filter((i) => {
-      const c = i && MAP.get(String(i.id)); if (!c || !(i.buy > 0) || !(i.sell * (1 - TAX) > i.buy)) return false;   // gain nul après taxe : on ne montre pas
-      if (!c._series || c._series.length < 4) return false;
-      return invOutlook(c, invMetrics(c), 0, 0).prob >= MIN_PROB;                                                      // pas assez sûr : on ne montre pas
-    }) : [];
-    h += '<div class="box"><b>Cartes surveillées par le robot</b>';
-    if (!wi.length) h += '<div class="small muted" style="margin-top:6px">Rien à surveiller pour l\'instant : aucune carte n\'atteint les ' + MIN_PROB + ' % de chance de gain après taxe (il faut aussi au moins 4 relevés par carte).</div>';
-    else {
-      const tS = WATCH.selectedAt ? Date.parse(WATCH.selectedAt) : NaN, tC = WATCH.checkedAt ? Date.parse(WATCH.checkedAt) : NaN;
-      h += '<div class="small muted" style="margin:6px 0">Choisies par l\'IA ' + (isFinite(tS) ? agoText(tS) : '') + '. Dernier contrôle de leurs prix : ' + (isFinite(tC) ? agoText(tC) : 'pas encore') + '. L\'IA refait son choix toutes les heures.</div>';
-      h += wi.slice(0, 20).map((i) => { const c = MAP.get(String(i.id)); return '<div class="small">• <b>' + esc(c.name) + '</b> (' + esc(String(c.rating)) + ') : acheter vers ' + fmt(i.buy) + ', revendre vers ' + fmt(i.sell) + ' <span class="muted">— ' + esc(i.why || '') + '</span></div>'; }).join('');
-    }
-    h += '</div>';
   }
   h += '<div class="box invf" id="invForm"><div class="invrow">';
   if (cfg.mode === 'long') {
@@ -1498,7 +1493,7 @@ function renderInvest() {
   }
   h += '<label>Budget max par carte<input id="invB" inputmode="numeric" placeholder="Illimité" value="' + (cfg.bud ? cfg.bud : '') + '"></label></div>';
   h += '<div class="small muted" style="margin-top:8px">' + (cfg.mode === 'rapide'
-    ? 'Je cherche les cartes <b>nettement sous leur prix habituel</b> : tu achètes bas, tu revends dès que le prix revient à la normale (quelques heures à 1-2 jours).'
+    ? 'Je cherche les cartes dont le prix <b>est en train de monter</b> de façon régulière : tu achètes pendant la hausse et tu revends vite. C\'est plus risqué : si le prix se retourne, revends sans attendre.'
     : 'Je cherche les cartes avec le <b>meilleur rapport points SBC / prix</b>. Les SBC simplifiés demandent des cartes en masse : celles qui rapportent le plus de points par pièce voient leur demande monter. La <b>hausse probable et la chance de gain sont calculées par l\'IA</b> à partir des vraies courbes, de la volatilité et des SBC annoncés (estimations, pas des certitudes).') + '</div></div>';
   if (cfg.mode === 'long') {
     h += '<h2>Ce qui arrive</h2>';
@@ -1517,7 +1512,7 @@ function renderInvest() {
   if (!res.length) h += '<div class="box"><div class="big" style="font-weight:700">Aucun conseil pour l\'instant</div><p class="muted">' + (INV_SKIP
     ? 'L\'IA a regardé ' + INV_SKIP + ' carte' + (INV_SKIP > 1 ? 's' : '') + ' mais n\'est pas sûre à ' + MIN_PROB + ' % ou plus de te faire gagner des crédits après la taxe : elle préfère ne rien conseiller. '
     : (cfg.mode === 'rapide'
-      ? 'Aucune carte n\'est nettement sous son prix habituel avec assez de relevés (il en faut 4 ou plus). '
+      ? 'Aucune carte n\'est en hausse régulière avec assez de relevés (il en faut 4 ou plus). '
       : 'Aucune carte de base ne correspond. Essaie « Toutes les notes » ou retire le budget max. ')) +
     (cfg.mode === 'rapide' ? 'Relance « snapshot » plusieurs fois, puis reviens ici.' : '') + '</p></div>';
   else {
