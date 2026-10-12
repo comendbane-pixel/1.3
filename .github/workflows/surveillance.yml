@@ -38,6 +38,7 @@ jobs:
           PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
           API_BASE: ${{ vars.API_BASE }}
           KEY_CREDITS: ${{ vars.KEY_CREDITS }}
+          TOTAL_CREDITS: ${{ vars.TOTAL_CREDITS }}
           WATCH_COUNT: ${{ github.event.inputs.count }}
           WATCH_MINUTES: 50   # GitHub peut avoir quelques minutes de retard : on garde de la marge pour ne pas sauter une heure
         run: node update-prices.mjs watch
