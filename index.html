@@ -176,11 +176,11 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 
 /* ---------- barre du bas ---------- */
 nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-nav .wrap{position:relative;display:grid;grid-template-columns:repeat(5,1fr);height:var(--nav-h)}
+nav .wrap{position:relative;display:grid;grid-template-columns:repeat(6,1fr);height:var(--nav-h)}
 nav button{border:0;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted);font-size:11px;font-weight:600;position:relative}
 nav button[aria-selected=true]{color:var(--accent)}
 nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-#ind{position:absolute;top:0;left:0;width:20%;height:3px;display:flex;justify-content:center;transform:translateX(calc(var(--i,0)*100%));transition:transform var(--tind) var(--ease);pointer-events:none}
+#ind{position:absolute;top:0;left:0;width:16.6667%;height:3px;display:flex;justify-content:center;transform:translateX(calc(var(--i,0)*100%));transition:transform var(--tind) var(--ease);pointer-events:none}
 #ind::after{content:"";width:34px;height:3px;border-radius:3px;background:var(--accent)}
 .dot{position:absolute;top:8px;left:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--down);display:none}
 .dot.on{display:block}
@@ -510,6 +510,29 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 .ov .p{font-family:'Barlow Condensed','Arial Narrow',sans-serif;font-weight:800;letter-spacing:.03em}
 .ov .s i,.ov .s b{font-family:'Barlow Condensed','Arial Narrow',sans-serif;font-weight:800}
 .grid .ov .n{font-size:12.5cqw}
+
+/* ---------- Achat-revente ---------- */
+.invrow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.invf label,.invl{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);font-weight:600;min-width:0}
+.invl{margin-top:10px}
+.invf select,.invf input{width:100%;min-width:0;border:1px solid var(--line);background:var(--surface2);border-radius:10px;padding:9px 10px;color:var(--text);font-weight:600}
+@media(max-width:640px){.invrow{grid-template-columns:1fr}}
+.invc{display:flex;flex-direction:column;gap:8px}
+.invh{display:flex;align-items:center;gap:10px;min-width:0}
+.invh .open{width:58px;flex:none;padding:0}
+.invh .cardbox.sm{width:54px}
+.invm .coin,.invsp .coin{display:inline-block;vertical-align:-3px;width:15px;height:15px;margin:0 2px}
+.invn{font-weight:900;font-size:18px;color:var(--muted);width:20px;text-align:center;flex:none}
+.invm{min-width:0;flex:1}
+.invm .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.invs{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.score{font-size:26px;font-weight:900;line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.score small{font-size:11px;color:var(--muted);font-weight:700}
+.invsp{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.isp{width:120px;height:34px;flex:none}
+.invw{margin:0;padding-left:18px;font-size:13px;display:flex;flex-direction:column;gap:3px}
+.invw li.w{color:var(--warn)}
+@media(max-width:430px){nav button{font-size:10px}}
 </style>
 </head>
 <body>
@@ -562,6 +585,7 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
     </div>
   </section>
 
+  <section class="page" id="pInv" aria-label="Achat-revente"></section>
   <section class="page" id="p1" aria-label="Conseils"></section>
   <section class="page" id="p2" aria-label="SBC"></section>
   <section class="page" id="p3" aria-label="Portefeuille"></section>
@@ -571,10 +595,11 @@ input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 
 <nav aria-label="Navigation"><div class="wrap" role="tablist" id="tabs">
   <span id="ind"></span>
   <button role="tab" data-tab="0" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg>Marché</button>
-  <button role="tab" data-tab="1" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>Conseils</button>
-  <button role="tab" data-tab="2" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><path d="M17 13v8M13 17h8"/></svg>SBC</button>
-  <button role="tab" data-tab="3" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg>Portefeuille<i class="dot" id="dot"></i></button>
-  <button role="tab" data-tab="4" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Réglages</button>
+  <button role="tab" data-tab="1" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 16l5-5 3 3 7-8"/><path d="M15 6h4v4"/><path d="M4 20h16"/></svg>Investir</button>
+  <button role="tab" data-tab="2" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>Conseils</button>
+  <button role="tab" data-tab="3" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><path d="M17 13v8M13 17h8"/></svg>SBC</button>
+  <button role="tab" data-tab="4" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg>Portefeuille<i class="dot" id="dot"></i></button>
+  <button role="tab" data-tab="5" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Réglages</button>
 </div></nav>
 
 <div class="sheet" id="sheet" hidden><div class="panel" id="panel" role="dialog" aria-modal="true" aria-label="Fiche joueur"></div></div>
@@ -614,7 +639,7 @@ const store = {
   del(k) { try { if (storageOK) localStorage.removeItem(k); } catch (e) { storageOK = false; } delete mem[k]; }
 };
 const prefersReduced = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
-const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'source', sim: true, favs: [], alerts: [], pf: [] });
+const defaults = () => ({ v: 1, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'source', sim: true, favs: [], alerts: [], pf: [], inv: { t: 85, sz: 'gros', bud: 0 } });
 
 function sanitize(o) {
   const d = defaults();
@@ -623,6 +648,7 @@ function sanitize(o) {
   if (typeof o.sim === 'boolean') d.sim = o.sim;
   if (['full', 'reduced', 'none'].includes(o.anim)) d.anim = o.anim;
   if (['drawn', 'source'].includes(o.card)) d.card = o.card;
+  if (o.inv && typeof o.inv === 'object') { const t = Math.round(Number(o.inv.t)); if (t >= 75 && t <= 95) d.inv.t = t; if (['petit', 'moyen', 'gros'].includes(o.inv.sz)) d.inv.sz = o.inv.sz; const b = Number(o.inv.bud); if (isFinite(b) && b >= 0) d.inv.bud = Math.floor(b); }
   if (Array.isArray(o.favs)) d.favs = [...new Set(o.favs.map(String))];
   if (Array.isArray(o.alerts)) d.alerts = o.alerts.filter((a) => a && a.cid != null && (a.dir === '<=' || a.dir === '>=') && isFinite(a.price))
     .map((a) => ({ id: String(a.id || uid()), cid: String(a.cid), dir: a.dir, price: Number(a.price), trig: !!a.trig, seen: !!a.seen, name: String(a.name || '') }));
@@ -1113,6 +1139,144 @@ function renderSbc() {
 }
 
 /* =====================================================================
+   Onglet Achat-revente : analyse automatique par règles
+   (ce n'est PAS une IA qui prédit l'avenir : elle lit les relevés de prix
+   réellement enregistrés, jamais de courbe simulée)
+   ===================================================================== */
+const INV_UP = { petit: 0.04, moyen: 0.08, gros: 0.14 };   // hausse espérée (HYPOTHÈSE affichée à l'écran)
+const isFodder = (c) => /(^|[\/_])(gold|silver|bronze|rare|common)\.png/i.test(String(c.cardImage || '').split('?')[0]);
+function invMetrics(c) {
+  const sr = c._series, n = sr.length;
+  const m = { n, range: null, disc: null, slope: null, cv: null, last: c._chg };
+  if (n >= 2) {
+    const mn = c._min, mx = c._max;
+    m.range = mx > mn ? (c.price - mn) / (mx - mn) : 0.5;
+    m.disc = c._avg ? (c._avg - c.price) / c._avg : 0;
+    let sx = 0, sy = 0, sxy = 0, sxx = 0;
+    sr.forEach((q, i) => { sx += i; sy += q.p; sxy += i * q.p; sxx += i * i; });
+    const den = n * sxx - sx * sx;
+    m.slope = den ? ((n * sxy - sx * sy) / den) / (c._avg || 1) : 0;           // % de l'avg par relevé
+    let sd = 0; sr.forEach((q) => { sd += (q.p - c._avg) * (q.p - c._avg); });
+    m.cv = Math.sqrt(sd / n) / (c._avg || 1);
+  }
+  return m;
+}
+function invAnalyse(cfg) {
+  const out = [];
+  for (const c of CARDS) {
+    if (c.price == null || c.price < 200) continue;
+    if (!isFodder(c)) continue;                                    // les cartes spéciales ne servent pas de « chair à SBC »
+    const dr = Math.abs(c.rating - cfg.t);
+    if (c.rating < cfg.t - 1 || c.rating > cfg.t + 1) continue;
+    if (cfg.bud > 0 && c.price > cfg.bud) continue;
+    const m = invMetrics(c), why = [], warn = [];
+    let sc = 0;
+    sc += dr === 0 ? 30 : 20;                                      // 1) la note est celle qui sera demandée
+    why.push(dr === 0 ? 'Sa note (' + c.rating + ') est exactement celle visée par le SBC.' : 'Sa note (' + c.rating + ') est proche de celle visée.');
+    const up = INV_UP[cfg.sz];
+    const base = Math.max(c._avg || c.price, c.price);
+    const sell = base * (1 + up), net = sell * (1 - TAX) - c.price, netPct = net / c.price;
+    let conf;
+    if (m.n >= 4) {
+      const lowPos = 1 - Math.min(1, Math.max(0, m.range));
+      sc += 30 * lowPos;                                           // 2) prix bas dans sa fourchette = bon moment pour acheter
+      if (m.range <= 0.25) why.push('Son prix est dans le bas de sa fourchette récente (' + fmt(c._min) + ' – ' + fmt(c._max) + ').');
+      else if (m.range >= 0.75) warn.push('Son prix est déjà dans le haut de sa fourchette : le meilleur moment est peut-être passé.');
+      if (m.disc > 0.03) why.push('Il est ' + (m.disc * 100).toFixed(0) + ' % sous sa moyenne récente (' + fmt(c._avg) + ').');
+      const l = m.last == null ? 0 : m.last;                       // 3) dynamique
+      if (l > 0.08) { sc += 4; warn.push('Il a déjà monté de ' + pct(l).replace('+', '') + ' au dernier relevé : la hausse a peut-être commencé.'); }
+      else if (l >= 0) { sc += 20; why.push('Son prix est stable ou commence à remonter (' + pct(l) + ').'); }
+      else if (l > -0.05) { sc += 12; why.push('Son prix baisse légèrement (' + pct(l) + ') : il peut encore descendre un peu.'); }
+      else { sc += 5; warn.push('Son prix chute (' + pct(l) + ') : attendre peut être plus malin.'); }
+      sc += 10 * (1 - Math.min(1, m.cv / 0.2));                    // 4) stabilité
+      if (m.cv > 0.15) warn.push('Son prix est très irrégulier, donc risqué.');
+      conf = m.n >= 10 ? 'haute' : 'moyenne';
+    } else {
+      sc += 25;                                                    // faute de courbe : score neutre, plafonné plus bas
+      warn.push('Pas assez de relevés (' + m.n + ') pour lire une vraie courbe : analyse partielle.');
+      conf = 'faible';
+    }
+    sc += 10 * Math.min(1, Math.max(0, netPct / 0.1));             // 5) gain net possible
+    if (net <= 0) warn.push('Avec la taxe de 5 %, le gain net serait nul ou négatif dans ce scénario.');
+    out.push({ c, m, sc: Math.round(Math.max(0, Math.min(100, sc))), why, warn, sell, net, netPct, conf });
+  }
+  const w = { haute: 1, moyenne: 0.95, faible: 0.75 };
+  out.sort((a, b) => b.sc * w[b.conf] - a.sc * w[a.conf]);
+  return out;
+}
+function invSpark(c) {
+  const sr = c._series; if (sr.length < 2) return '<span class="small muted">pas de courbe</span>';
+  const W = 120, H = 34, lo = c._min, hi = c._max, sp = hi > lo ? hi - lo : 1;
+  const pts = sr.slice(-40).map((q, i, a) => [(i / Math.max(1, a.length - 1)) * (W - 4) + 2, H - 3 - ((q.p - lo) / sp) * (H - 6)]);
+  const d = pts.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
+  const up = sr[sr.length - 1].p >= sr[0].p;
+  return '<svg class="isp" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Courbe de prix réelle"><path d="' + d + '" fill="none" stroke="' + (up ? 'var(--up)' : 'var(--down)') + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="' + pts[pts.length - 1][0].toFixed(1) + '" cy="' + pts[pts.length - 1][1].toFixed(1) + '" r="2.6" fill="' + (up ? 'var(--up)' : 'var(--down)') + '"/></svg>';
+}
+let INV_LAST = [];
+function renderInvest() {
+  const cfg = S.inv, { cur, up } = buildSbcs();
+  const sbcs = cur.concat(up).filter((s) => s.reqs.length);
+  const rs = []; for (let r = 80; r <= 92; r++) rs.push(r);
+  let h = '<h2>Achat-revente avant un gros SBC</h2>' +
+    '<div class="note"><b>Analyse automatique, pas une boule de cristal.</b> Elle lit les prix réellement relevés par le robot (jamais de courbe simulée) et classe les cartes les plus utiles à un SBC. ' +
+    'Un prix peut aussi baisser : ce sont des estimations, pas des conseils financiers. Les prix ont un à deux jours de retard.</div>';
+  h += '<div class="box invf" id="invForm"><div class="invrow"><label>Note la plus demandée par le SBC<select id="invT">' + rs.map((r) => '<option value="' + r + '"' + (r === cfg.t ? ' selected' : '') + '>' + r + '</option>').join('') + '</select></label>' +
+    '<label>Taille du SBC<select id="invSz"><option value="petit"' + (cfg.sz === 'petit' ? ' selected' : '') + '>Petit (hausse espérée +4 %)</option><option value="moyen"' + (cfg.sz === 'moyen' ? ' selected' : '') + '>Moyen (+8 %)</option><option value="gros"' + (cfg.sz === 'gros' ? ' selected' : '') + '>Gros (+14 %)</option></select></label>' +
+    '<label>Budget max par carte<input id="invB" inputmode="numeric" placeholder="Illimité" value="' + (cfg.bud ? cfg.bud : '') + '"></label></div>';
+  if (sbcs.length) h += '<label class="invl">Ou pars d\'un SBC connu<select id="invS"><option value="">— choisir —</option>' + sbcs.map((s, i) => '<option value="' + i + '">' + esc(s.name) + '</option>').join('') + '</select></label>';
+  h += '<div class="small muted" style="margin-top:6px">Les « hausses espérées » (+4 / +8 / +14 %) sont des <b>hypothèses</b> de ma part, pas des données : modifie la taille si tu penses autre chose.</div></div>';
+  if (!CARDS.length) { $('#pInv').innerHTML = h + '<div class="empty box"><div class="big">En attente des premiers prix</div><div class="muted">L\'analyse apparaîtra quand data.json contiendra des cartes.</div></div>'; return; }
+  const res = invAnalyse(cfg); INV_LAST = res;
+  const full = CARDS.filter((c) => c._series.length >= 4).length;
+  h += '<div class="small muted" style="margin:6px 2px">' + full + ' carte' + (full > 1 ? 's ont' : ' a') + ' une courbe exploitable (4 relevés ou plus) sur ' + CARDS.length + '. ' +
+    (full < 20 ? '<b>Lance « snapshot » plusieurs fois par jour</b> (Actions → Mise à jour des prix) pour que l\'analyse devienne vraiment fiable.' : '') + '</div>';
+  if (!res.length) h += '<div class="box"><div class="big" style="font-weight:700">Aucune carte ne correspond</div><p class="muted">Essaie une autre note, ou retire le budget max. Seules les cartes or, argent et bronze de base servent de « chair à SBC » : les cartes spéciales sont exclues.</p></div>';
+  else {
+    h += '<h2>Les meilleures cartes à acheter</h2>';
+    h += res.slice(0, 10).map((x, i) => {
+      const c = x.c, cl = x.conf === 'haute' ? 'hi' : x.conf === 'moyenne' ? 'mid' : 'lo';
+      return '<div class="box invc"><div class="invh"><span class="invn">' + (i + 1) + '</span><button class="open" style="padding:0" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') + '</button>' +
+        '<div class="invm"><div class="nm"><b>' + esc(c.name) + '</b> <span class="rt">' + esc(c.rating) + '</span></div><div class="small muted">' + esc(c.pos || '') + ' · ' + esc(c.club || '') + '</div>' +
+        '<div class="small">Prix <b>' + fmt(c.price) + '</b><span class="coin"></span> · moyenne ' + fmt(c._avg) + '</div></div>' +
+        '<div class="invs"><div class="score">' + x.sc + '<small>/100</small></div><span class="badge ' + cl + '">Confiance ' + x.conf + '</span></div></div>' +
+        '<div class="invsp">' + invSpark(c) + '<div class="small">Scénario : revente vers <b>' + fmt(x.sell) + '</b><span class="coin"></span><br>Gain net (taxe 5 % déduite) : <b class="' + (x.net > 0 ? 'up' : 'dn') + '">' + (x.net > 0 ? '+' : '') + fmt(x.net) + ' (' + pct(x.netPct) + ')</b></div></div>' +
+        '<ul class="invw">' + x.why.map((t) => '<li>' + esc(t) + '</li>').join('') + x.warn.map((t) => '<li class="w">' + esc(t) + '</li>').join('') + '</ul></div>';
+    }).join('');
+    h += '<div class="box"><button class="btn" data-act="invcopy">Copier le résumé pour demander un avis à Claude</button><div class="small muted" id="invCp" style="margin-top:6px">Tu colles le texte dans une discussion avec Claude pour une analyse plus poussée.</div></div>';
+  }
+  $('#pInv').innerHTML = h;
+}
+function invSummary() {
+  const cfg = S.inv, d = DATA.updatedAt ? new Date(DATA.updatedAt) : null;
+  let t = 'Je veux investir avant un SBC (note la plus demandée : ' + cfg.t + ', taille : ' + cfg.sz + (cfg.bud ? ', budget max par carte : ' + fmt(cfg.bud) : '') + ').\n' +
+    'Prix relevés ' + (d ? 'le ' + d.toLocaleString('fr-FR') : '') + ' (pas en temps réel). Voici les candidats avec leurs relevés réels :\n\n';
+  INV_LAST.slice(0, 10).forEach((x, i) => {
+    t += (i + 1) + '. ' + x.c.name + ' (' + x.c.rating + ', ' + x.c.pos + ') prix ' + fmt(x.c.price) + ' | min ' + fmt(x.c._min) + ' | max ' + fmt(x.c._max) + ' | moy ' + fmt(x.c._avg) + ' | relevés : ' +
+      x.c._series.slice(-12).map((q) => q.p).join(', ') + ' | score appli ' + x.sc + '/100 (confiance ' + x.conf + ')\n';
+  });
+  return t + '\nDis-moi lesquelles te semblent les plus intéressantes, pourquoi, et ce qui est risqué. Ne suppose aucun prix absent de ces données.';
+}
+document.addEventListener('change', (e) => {
+  const t = e.target; if (!t || !t.id || t.id.indexOf('inv') !== 0) return;
+  if (t.id === 'invT') S.inv.t = Number(t.value);
+  else if (t.id === 'invSz') S.inv.sz = t.value;
+  else if (t.id === 'invB') { const v = num(t.value); S.inv.bud = v && v > 0 ? Math.floor(v) : 0; }
+  else if (t.id === 'invS') {
+    const { cur, up } = buildSbcs(), all = cur.concat(up).filter((s) => s.reqs.length), s2 = all[Number(t.value)];
+    if (!s2) return;
+    const mx = Math.max(...s2.reqs.map((r) => r.minRating)); if (mx >= 75 && mx <= 95) S.inv.t = mx;
+  } else return;
+  save(); renderInvest();
+});
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-act=invcopy]'); if (!b) return;
+  const txt = invSummary(), box = $('#invCp');
+  const ok = () => { if (box) box.textContent = 'Résumé copié. Colle-le dans une discussion avec Claude.'; };
+  const ko = () => { if (box) box.innerHTML = 'Copie automatique impossible. Sélectionne ce texte :<pre>' + esc(txt) + '</pre>'; };
+  try { navigator.clipboard.writeText(txt).then(ok, ko); } catch (err) { ko(); }
+});
+
+/* =====================================================================
    Onglet Conseils
    ===================================================================== */
 function advice(s, req) {
@@ -1524,7 +1688,7 @@ let toastT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3500); }
 
 let TAB = 0;
-const RENDER = [renderMarket, renderTips, renderSbc, renderPortfolio, renderSettings];
+const RENDER = [renderMarket, renderInvest, renderTips, renderSbc, renderPortfolio, renderSettings];
 function renderActive() { if (TAB !== 0) RENDER[TAB](); }
 function showTab(i) {
   const prev = TAB; TAB = i;
@@ -1555,7 +1719,7 @@ document.addEventListener('click', (e) => {
       if (FAV.has(id)) FAV.delete(id); else FAV.add(id);
       S.favs = [...FAV]; save();
       if (!$('#sheet').hidden) renderSheet();
-      renderMarket(); if (TAB === 3) renderPortfolio();
+      renderMarket(); if (TAB === 4) renderPortfolio();
       break;
     }
     case 'pos': M.pos = M.pos === el.dataset.v ? '' : el.dataset.v; M.page = 1; $('#fPos').value = M.pos; buildPosFilter(); renderMarket(); break;
@@ -1571,7 +1735,7 @@ document.addEventListener('click', (e) => {
       save(); if (!checkAlerts()) toast('Alerte créée'); renderSheet();
       break;
     }
-    case 'delalert': S.alerts = S.alerts.filter((a) => a.id !== id); save(); updateDot(); if (!$('#sheet').hidden) renderSheet(); if (TAB === 3) renderPortfolio(); break;
+    case 'delalert': S.alerts = S.alerts.filter((a) => a.id !== id); save(); updateDot(); if (!$('#sheet').hidden) renderSheet(); if (TAB === 4) renderPortfolio(); break;
     case 'rearm': { const a = S.alerts.find((x) => x.id === id); if (a) { a.trig = false; a.seen = true; save(); updateDot(); renderPortfolio(); } break; }
     case 'addpos': {
       const buy = num($('#pfBuy').value), q = Math.floor(num($('#pfQty').value) || 0);
