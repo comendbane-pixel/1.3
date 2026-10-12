@@ -9,6 +9,7 @@
 import { readFile, writeFile, rename } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 const DATA_FILE = path.join(DIR, 'data.json');
@@ -30,21 +31,33 @@ let authOK = false; // devient vrai dès qu'une requête a réussi
 // Le robot utilise la clé n°1 jusqu'à ce qu'elle n'ait plus de crédits, puis passe à la suivante.
 // Seul le NUMÉRO de la clé en cours est enregistré (fichier keys-state.json), jamais la clé elle-même.
 const cleanKey = (k) => String(k || '').replace(/^[\s"'`]+|[\s"'`]+$/g, '').replace(/\s+/g, '');
+// Accepte : l'adresse API complète, l'adresse de la PAGE parse.bot (…/scrapers/ID), l'adresse sans https://, ou juste l'ID du scraper.
+const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
+function normBase(b) {
+  b = String(b || '').replace(/\/+$/, '');
+  if (!b) return '';
+  const m = new RegExp(UUID, 'i').exec(b);
+  if (m && (/^[0-9a-f-]{36}$/i.test(b) || /parse\.bot\/scrapers?\//i.test(b))) return 'https://api.parse.bot/scraper/' + m[0];
+  if (/^https?:\/\//i.test(b)) return b;
+  if (/^api\.parse\.bot\//i.test(b)) return 'https://' + b;
+  return '';
+}
 // Chaque entrée peut être « CLÉ » (adresse = API_BASE) ou « CLÉ|ADRESSE_DU_SCRAPER » (compte différent, scraper différent).
 const ENTRIES = (() => {
   const seen = new Set(), out = [];
   const toks = String(process.env.PARSE_API_KEYS || '').split(/[\s,;]+/).concat(String(process.env.PARSE_API_KEY || ''));
   for (const t of toks) {
     const [k0, b0] = String(t).split('|');
-    const k = cleanKey(k0), b = cleanKey(b0).replace(/\/+$/, '');
+    const k = cleanKey(k0), b = normBase(cleanKey(b0));
     if (!k || seen.has(k + '|' + b)) continue;
-    seen.add(k + '|' + b); out.push({ k, b: /^https:\/\//i.test(b) ? b : '' });
+    seen.add(k + '|' + b); out.push({ k, b });
   }
   return out;
 })();
 const KEYS = ENTRIES.map((e) => e.k);
 let CUR_BASE = BASE;
 const STATE_FILE = path.join(DIR, 'keys-state.json');
+const FP = createHash('sha256').update(ENTRIES.map((e) => e.k + '|' + e.b).join('\n')).digest('hex').slice(0, 12);
 let keyIdx = 0, keyIdxStart = 0;
 let KEY = '';
 const CREDIT_RE = /credit|quota|insufficient|exhaust|balance|limit reached|payment|plan limit/i;
@@ -53,17 +66,22 @@ async function loadKeyState() {
   const month = new Date().toISOString().slice(0, 7);
   try {
     const st = JSON.parse(await readFile(STATE_FILE, 'utf8'));
-    if (st.month === month && Number.isInteger(st.index) && st.index >= 0 && st.index < KEYS.length) keyIdx = st.index;
+    // On ne reprend la position mémorisée que si la liste de clés est la même qu'au dernier passage.
+    if (st.fp === FP && st.month === month && Number.isInteger(st.index) && st.index >= 0 && st.index < KEYS.length) keyIdx = st.index;
   } catch { /* premier passage */ }
   keyIdxStart = keyIdx;
   KEY = KEYS[keyIdx] || '';
   CUR_BASE = (ENTRIES[keyIdx] && ENTRIES[keyIdx].b) || BASE;
   console.log(`Clés disponibles : ${KEYS.length}. On commence avec la clé n°${keyIdx + 1}.`);
+  const short = (u) => u.replace(/^https?:\/\//, '').replace(/([0-9a-f]{8})[0-9a-f-]{28}/gi, '$1…');
+  ENTRIES.forEach((e, i) => console.log(`  clé n°${i + 1} → ${e.b ? 'scraper ' + short(e.b) : 'adresse par défaut ' + short(BASE) + ' (aucune adresse écrite après la clé)'}`));
   console.log(`Scraper utilisé : ${CUR_BASE.replace(/^https?:\/\//, '').replace(/([0-9a-f]{8})[0-9a-f-]{28}/gi, '$1…')}`);
 }
 async function saveKeyState() {
-  if (KEYS.length < 2 || keyIdx === keyIdxStart) return;
-  await writeFile(STATE_FILE, JSON.stringify({ month: new Date().toISOString().slice(0, 7), index: keyIdx, total: KEYS.length }) + '\n', 'utf8');
+  if (KEYS.length < 2) return;
+  if (!authOK) keyIdx = keyIdxStart; // aucune clé n'a marché dans ce passage : on ne mémorise rien
+  if (keyIdx === keyIdxStart) return;
+  await writeFile(STATE_FILE, JSON.stringify({ month: new Date().toISOString().slice(0, 7), index: keyIdx, total: KEYS.length, fp: FP }) + '\n', 'utf8');
 }
 function nextKey(why) {
   if (keyIdx + 1 >= KEYS.length) return false;
