@@ -27,6 +27,10 @@ const SNAPSHOT_SIZE = Math.max(1, Math.min(Number(process.env.SNAPSHOT_SIZE) || 
 const SNAPSHOT_PARTS = Math.max(0, Math.floor(Number(process.env.SNAPSHOT_PARTS) || 0));    // paquets en même temps (0 = autant que d'ouvriers)
 const SNAPSHOT_SPREAD = process.env.SNAPSHOT_SPREAD === '1';                               // 1 = paquets plus petits, pour que TOUTES les clés travaillent en même temps (plus de demandes : plus de crédits)
 const SNAPSHOT_MIN_CHUNK = Math.max(1, Number(process.env.SNAPSHOT_MIN_CHUNK) || 100);     // taille minimale d'un paquet quand SNAPSHOT_SPREAD = 1
+const SNAPSHOT_SMART = process.env.SNAPSHOT_SMART === '1';                                 // 1 = mode économie : les cartes « froides » (prix immobile) sont relevées moins souvent
+const COLD_HOURS = Number(process.env.COLD_HOURS ?? 12);                                    // une carte froide n'est redemandée qu'après ce nombre d'heures
+const COLD_QUIET_HOURS = Number(process.env.COLD_QUIET_HOURS ?? 72);                        // « froide » = prix inchangé depuis ce nombre d'heures
+const COLD_MIN_PRICE = Number(process.env.COLD_MIN_PRICE ?? 200);                           // en dessous (ou sans prix) : froide aussi
 const SNAPSHOT_FRESH_MIN = Number(process.env.SNAPSHOT_FRESH_MIN ?? 30);                    // un prix plus récent que ça n'est pas redemandé
 const PARALLEL = process.env.PARALLEL !== '0';                                              // PARALLEL=0 : un seul ouvrier à la fois
 const MAX_WORKERS = Math.max(1, Number(process.env.MAX_WORKERS) || 50);
@@ -600,16 +604,30 @@ async function modeList(data) {
 
 // Prix : on demande en priorité les cartes dont le prix est le plus ancien (et un peu plus souvent les plus chères),
 // en plusieurs paquets de 500 envoyés en même temps. Un prix de moins de SNAPSHOT_FRESH_MIN minutes n'est pas redemandé.
+// Carte « froide » : son prix n'a pas bougé depuis longtemps (ou elle ne vaut presque rien). Elle ne peut pas être « en hausse » : inutile de payer pour la relire à chaque scan.
+function isCold(c, now) {
+  const price = Number(c.price);
+  if (!(price >= COLD_MIN_PRICE)) return true;
+  const h = Array.isArray(c.history) ? c.history : [];
+  if (h.length < 3) return false;                                   // pas assez de recul : on la surveille normalement
+  const since = now - COLD_QUIET_HOURS * 3600e3;
+  const recent = h.filter((q) => q.t >= since);
+  if (recent.length < 2 || h[0].t > since) return false;            // historique trop court pour juger
+  return recent.every((q) => q.p === recent[0].p);
+}
 async function modeSnapshot(data) {
   if (!data.cards.length) throw new Error('data.json est vide : lance d\'abord le mode « list ».');
   const t0 = Date.now();
   const weight = (c) => 1 + Math.min(2, Math.log10(Math.max(Number(c.price) || 0, 1000) / 1000) / 2);
+  let coldSkipped = 0;
   const eligible = data.cards
     .map((c) => { const t = priceTime(c); return { c, t, score: (t ? (t0 - t) / 60000 : 1e6) * weight(c) }; })
     .filter((x) => !x.t || t0 - x.t >= SNAPSHOT_FRESH_MIN * 60000)
+    .filter((x) => { if (!SNAPSHOT_SMART || !x.t) return true; if (!isCold(x.c, t0)) return true; if (t0 - x.t >= COLD_HOURS * 3600e3) return true; coldSkipped++; return false; })
     .sort((a, b) => b.score - a.score);
-  const skipped = data.cards.length - eligible.length;
+  const skipped = data.cards.length - eligible.length - coldSkipped;
   if (skipped) console.log(`Prix : ${skipped} carte(s) ont un prix de moins de ${SNAPSHOT_FRESH_MIN} min : pas redemandées.`);
+  if (coldSkipped) console.log(`Économie : ${coldSkipped} carte(s) « froides » (prix immobile depuis ${COLD_QUIET_HOURS} h ou carte presque sans valeur) ne sont relues que toutes les ${COLD_HOURS} h : crédits gardés.`);
   const map = new Map(data.cards.map((c) => [c.id, c]));
   if (!eligible.length) console.log('Prix : rien à mettre à jour pour le moment (tous les prix sont récents).');
   else {
