@@ -1869,21 +1869,30 @@ function closeSheet() {
    ===================================================================== */
 // Crédits des clés : dépenses estimées par le robot (ce mois-ci) et solde réel seulement si parse.bot le donne. Jamais la clé elle-même.
 function ksHtml() {
-  if (!KS || !Array.isArray(KS.spent) || !KS.spent.length) return '';
+  const head = '<br><br><b>Crédits des clés parse.bot</b>';
+  const noData = !KS || !Array.isArray(KS.spent) || !KS.spent.length;
+  if (noData) return head + '<br>Pas encore de relevé : le robot écrit les crédits à chaque passage. Lance « Mise à jour des prix » sur GitHub (onglet Actions), puis recharge cette page (Ctrl+F5).';
   const dead = Array.isArray(KS.dead) ? KS.dead : [];
+  const num0 = (v) => { const n = Number(v); return isFinite(n) && n > 0 ? n : 0; };
+  let known = 0, hasAll = true;
   const rows = KS.spent.map((sp, i) => {
     const left = KS.left && KS.left[i] != null ? Number(KS.left[i]) : null;
-    const bud = KS.budget && Number(KS.budget[i]) > 0 ? Number(KS.budget[i]) : 0; // total de départ, si tu l'as indiqué au robot
-    const txt = left != null && isFinite(left) ? 'il reste <b>' + fmt(left) + '</b> crédits'
-      : bud ? 'il reste environ <b>' + fmt(Math.max(0, bud - (Number(sp) || 0))) + '</b> crédits <span class="muted">(' + fmt(sp) + ' dépensés sur ' + fmt(bud) + ', estimation)</span>'
-      : 'environ <b>' + fmt(sp) + '</b> crédits dépensés (estimation)';
+    const bud = KS.budget ? num0(KS.budget[i]) : 0; // total de départ de cette clé, si indiqué au robot
+    let txt;
+    if (left != null && isFinite(left)) { txt = 'il reste <b>' + fmt(left) + '</b> crédits'; known += left; }
+    else if (bud) { const r = Math.max(0, bud - (Number(sp) || 0)); txt = 'il reste environ <b>' + fmt(r) + '</b> crédits <span class="muted">(' + fmt(sp) + ' dépensés sur ' + fmt(bud) + ', estimation)</span>'; known += r; }
+    else { txt = 'environ <b>' + fmt(sp) + '</b> crédits dépensés (estimation)'; hasAll = false; }
     return '<div>Clé n°' + (i + 1) + ' : ' + txt + (dead.includes(i) ? ' · <b style="color:var(--down)">vide</b>' : '') + '</div>';
   }).join('');
   const tot = KS.spent.reduce((a, b) => a + (Number(b) || 0), 0), at = KS.at ? new Date(KS.at) : null;
-  return '<br><br><b>Crédits des clés</b> · ' + esc(KS.month || '') + (at && !isNaN(at) ? ' · relevé du robot le ' + fmtDT(at) : '') + '<br>' + rows +
-    '<div>Total dépensé : <b>' + fmt(tot) + '</b> crédits (estimation)</div>' +
-    (KS.budget && KS.budget.some((b) => Number(b) > 0) && KS.budget.every((b) => Number(b) > 0) ? '<div>Total restant : environ <b>' + fmt(KS.budget.reduce((a, b, i) => a + Math.max(0, (KS.left && KS.left[i] != null ? Number(KS.left[i]) : Number(b) - (Number(KS.spent[i]) || 0))), 0)) + '</b> crédits (estimation)</div>' : '') +
-    '<div style="margin-top:4px">Le robot compte ses propres requêtes (3 crédits par page, 10 par paquet de prix) : ce n\'est pas le solde officiel. Vérifie le solde exact sur parse.bot.</div>';
+  const tb = num0(KS.totalBudget);
+  let rest = '';
+  if (hasAll) rest = '<div>Reste sur l\'ensemble des clés : <b>environ ' + fmt(known) + '</b> crédits (estimation)</div>';
+  else if (tb) rest = '<div>Reste sur l\'ensemble des clés : <b>environ ' + fmt(Math.max(0, tb - tot)) + '</b> crédits <span class="muted">(' + fmt(tb) + ' au départ − ' + fmt(tot) + ' dépensés, estimation)</span></div>';
+  else rest = '<div class="muted">Pour voir le reste sur l\'ensemble des clés, indique au robot ton solde actuel (variable TOTAL_CREDITS sur GitHub).</div>';
+  return head + ' · ' + esc(KS.month || '') + (at && !isNaN(at) ? ' · relevé du robot le ' + fmtDT(at) : '') + '<br>' + rows +
+    '<div>Total dépensé ce mois-ci : <b>' + fmt(tot) + '</b> crédits (estimation)</div>' + rest +
+    '<div style="margin-top:4px">Le robot compte ses propres requêtes (3 crédits par page, 10 par paquet de prix) : ce n\'est pas le solde officiel, et il ne compte pas ce qui a été dépensé avant son premier passage. Vérifie le solde exact sur parse.bot.</div>';
 }
 function renderSettings() {
   const d = DATA.updatedAt ? new Date(DATA.updatedAt) : null;

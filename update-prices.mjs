@@ -31,6 +31,8 @@ const MAX_WORKERS = Math.max(1, Number(process.env.MAX_WORKERS) || 50);
 const STAGGER_MS = Number(process.env.STAGGER_MS ?? 500);                                   // départ décalé des ouvriers (évite 20 requêtes à la même milliseconde)
 const COST = { list_fc27_players: 3, get_fc27_market_snapshot: 10, get_fc27_sbcs_list: 1 }; // crédits par appel : ESTIMATIONS (jamais vérifiées)
 const COST_OTHER = Number(process.env.COST_OTHER ?? 3);
+const TOTAL_CREDITS = Number(process.env.TOTAL_CREDITS) || 0; // crédits qu'il reste au total sur l'ensemble des clés AU DÉBUT du mois / du comptage (facultatif)
+const DEAD_HOURS = Number(process.env.DEAD_HOURS ?? 6);      // une clé marquée vide est ignorée pendant ce nombre d'heures, puis réessayée (un appel refusé ne coûte rien)
 const KEY_CREDITS = Number(process.env.KEY_CREDITS) || 0; // crédits de départ communs à toutes les clés sans total propre (facultatif)
 const HISTORY_MAX = 14;
 const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 150000); // parse.bot peut être lent (1 minute par page)
@@ -117,10 +119,10 @@ function release(w) {
   const r = waiters.shift();
   if (r) r();
 }
-function markDead(w, why, credit) {
+function markDead(w, why, credit, detail = '') {
   if (w.dead) return;
-  w.dead = true; w.why = why; w.credit = !!credit;
-  console.log(`Clé n°${w.i + 1} : ${why}. ${alive().length} clé(s) encore utilisable(s) sur ${KEYS.length}.`);
+  w.dead = true; w.why = why; w.credit = !!credit; w.deadAt = Date.now(); w.detail = detail;
+  console.log(`Clé n°${w.i + 1} : ${why}${detail ? ' — réponse de parse.bot : ' + detail : ''}. ${alive().length} clé(s) encore utilisable(s) sur ${KEYS.length}.`);
   const ws = waiters; waiters = [];
   ws.forEach((r) => r()); // tout le monde se réveille et refait son choix
 }
@@ -134,12 +136,20 @@ async function loadKeyState() {
   if (st && st.fp === FP && st.month === month) {
     if (Array.isArray(st.spent)) st.spent.forEach((v, i) => { if (W[i] && Number.isFinite(v)) W[i].spent = v; });
     if (process.env.RESET_KEYS !== '1' && Array.isArray(st.dead)) {
-      for (const i of st.dead) if (Number.isInteger(i) && W[i]) { W[i].dead = true; W[i].keep = true; W[i].credit = true; W[i].why = 'vide (mémorisée ce mois-ci)'; }
+      const dAt = Array.isArray(st.deadAt) ? st.deadAt : [], rs = Array.isArray(st.reasons) ? st.reasons : [], retried = [];
+      for (const i of st.dead) if (Number.isInteger(i) && W[i]) {
+        const age = Date.now() - (Number(dAt[i]) || 0);
+        if (age < DEAD_HOURS * 3600e3) {
+          W[i].dead = true; W[i].keep = true; W[i].credit = true; W[i].deadAt = Number(dAt[i]); W[i].detail = rs[i] || '';
+          W[i].why = `vide (mémorisée il y a ${Math.max(1, Math.round(age / 60000))} min)`;
+        } else retried.push(i + 1);
+      }
+      if (retried.length) console.log(`Clé(s) ${retried.join(', ')} : marquée(s) vide(s) il y a plus de ${DEAD_HOURS} h (ou sans date) : on les réessaie.`);
     }
   }
   const n = alive().length;
-  console.log(`Clés disponibles : ${KEYS.length}.${n < KEYS.length ? ` Dont ${KEYS.length - n} vide(s) mémorisée(s) ce mois-ci : ignorée(s).` : ''}`);
-  W.forEach((w) => console.log(`  clé n°${w.i + 1} → ${ENTRIES[w.i].b ? 'scraper ' + shortUrl(w.b) : 'adresse par défaut ' + shortUrl(BASE) + ' (aucune adresse écrite après la clé)'}${w.dead ? ' [' + w.why + ']' : ''}`));
+  console.log(`Clés disponibles : ${KEYS.length}.${n < KEYS.length ? ` Dont ${KEYS.length - n} vide(s) mémorisée(s) récemment : ignorée(s).` : ''}`);
+  W.forEach((w) => console.log(`  clé n°${w.i + 1} → ${ENTRIES[w.i].b ? 'scraper ' + shortUrl(w.b) : 'adresse par défaut ' + shortUrl(BASE) + ' (aucune adresse écrite après la clé)'}${w.dead ? ' [' + w.why + (w.detail ? ' — ' + w.detail : '') + ']' : ''}`));
   if (PARALLEL) console.log(`Travail en parallèle : ${poolSize()} ouvrier(s), une clé chacun, pause de ${Math.round(PAUSE_MS / 1000)} s entre deux requêtes d'une même clé.`);
   else console.log('Travail en parallèle désactivé (PARALLEL=0) : un seul ouvrier à la fois, les autres clés prennent le relais si elle est vide.');
 }
@@ -155,8 +165,10 @@ async function saveKeyState() {
   if (!dead.length && !prev && !spent.some((v) => v > 0)) return;
   const first = W.findIndex((w) => !w.dead);
   const budget = W.map((w) => w.budget);
-  const out = { month, index: first < 0 ? KEYS.length : first, total: KEYS.length, fp: FP, dead, spent, left, budget, at: new Date().toISOString() };
-  const same = prev && prev.fp === FP && prev.month === month && JSON.stringify(prev.dead || []) === JSON.stringify(dead) && JSON.stringify(prev.spent || []) === JSON.stringify(spent) && JSON.stringify(prev.left || []) === JSON.stringify(left) && JSON.stringify(prev.budget || []) === JSON.stringify(budget);
+  const deadAt = W.map((w) => (dead.includes(w.i) && w.deadAt ? w.deadAt : null));
+  const reasons = W.map((w) => (dead.includes(w.i) ? (w.detail || null) : null));
+  const out = { month, index: first < 0 ? KEYS.length : first, total: KEYS.length, fp: FP, dead, spent, left, budget, totalBudget: TOTAL_CREDITS || null, deadAt, reasons, at: new Date().toISOString() };
+  const same = prev && prev.fp === FP && prev.month === month && JSON.stringify(prev.dead || []) === JSON.stringify(dead) && JSON.stringify(prev.spent || []) === JSON.stringify(spent) && JSON.stringify(prev.left || []) === JSON.stringify(left) && JSON.stringify(prev.budget || []) === JSON.stringify(budget) && (prev.totalBudget || null) === (TOTAL_CREDITS || null) && JSON.stringify(prev.deadAt || []) === JSON.stringify(deadAt);
   if (same) return;
   await writeFile(STATE_FILE, JSON.stringify(out) + '\n', 'utf8');
 }
@@ -343,7 +355,7 @@ async function callOn(w, endpoint, params, label) {
     if (res.status === 404) {
       const body404 = redact((await res.clone().text().catch(() => '')).slice(0, 200));
       if (/scraper/i.test(body404) && /not found/i.test(body404)) {
-        markDead(w, 'ne voit pas ce scraper (404)', false);
+        markDead(w, 'ne voit pas ce scraper (404)', false, `HTTP 404 ${body404}`);
         throw new KeyDead();
       }
     }
@@ -351,8 +363,9 @@ async function callOn(w, endpoint, params, label) {
       const peek = await res.clone().text().catch(() => '');
       const creditLike = res.status === 402 || CREDIT_STRICT.test(peek) || (res.status !== 429 && CREDIT_LOOSE.test(peek));
       const fastBad = (res.status === 401 || res.status === 403) && (/invalid api key/i.test(peek) || (!w.ok && Date.now() - t0 < 60000));
-      if (creditLike) { markDead(w, 'plus de crédits', true); throw new KeyDead(); }
-      if (fastBad) { markDead(w, 'refusée', false); throw new KeyDead(); }
+      const snip = redact(peek.slice(0, 160).replace(/\s+/g, ' '));
+      if (creditLike) { markDead(w, 'plus de crédits', true, `HTTP ${res.status} ${snip}`); throw new KeyDead(); }
+      if (fastBad) { markDead(w, 'refusée', false, `HTTP ${res.status} ${snip}`); throw new KeyDead(); }
     }
     if (res.status === 401 || res.status === 403) {
       // parse.bot explique souvent la raison dans sa réponse : on l'affiche (sans jamais afficher la clé).
@@ -870,7 +883,7 @@ async function main() {
     process.exit(1);
   }
   if (!alive().length) {
-    console.log('Toutes les clés sont marquées vides pour ce mois-ci : rien n\'est envoyé. Si tu as rechargé des crédits, relance avec « oublier les clés vides » = oui.');
+    console.log('Toutes les clés ont été marquées vides il y a moins de ' + DEAD_HOURS + ' h : rien n\'est envoyé. Elles seront réessayées toutes seules ensuite. Si tu as rechargé des crédits, relance avec « oublier les clés vides » = oui.');
     return;
   }
   let mode = (process.argv[2] || process.env.MODE || 'auto').trim().toLowerCase();
