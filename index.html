@@ -81,8 +81,8 @@ pre{background:var(--surface2);border-radius:10px;padding:10px;overflow:auto;fon
 .cardbox.gd .ov{--g:#f4d97e;text-shadow:none}
 .cardbox.cr .ov{--g:#ece7da;text-shadow:none}
 .cardbox.lt .ov{--g:#2e2308;text-shadow:none}
-.ov .r{position:absolute;left:11%;width:18%;text-align:center;top:21%;font-weight:800;font-size:13.5cqw;line-height:1}
-.ov .p{position:absolute;left:11%;width:18%;text-align:center;top:32.5%;font-weight:700;font-size:8.5cqw;line-height:1}
+.ov .r{position:absolute;left:11%;width:18%;text-align:center;top:19%;font-weight:800;font-size:13.5cqw;line-height:1}
+.ov .p{position:absolute;left:11%;width:18%;text-align:center;top:30%;font-weight:700;font-size:8.5cqw;line-height:1}
 .ov .n{position:absolute;left:5%;right:5%;top:61.5%;text-align:center;font-weight:800;font-size:9cqw;letter-spacing:.07em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ov .s{position:absolute;top:71%;left:12.5%;right:12.5%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
 .ov .s i{display:block;font-style:normal;font-size:5.6cqw;font-weight:700;line-height:.95}
@@ -467,9 +467,38 @@ button.dm.sel{outline:0!important;filter:drop-shadow(0 0 6px #ff4d00)}
   background-size:300% 300%;mix-blend-mode:color-dodge;opacity:.55;animation:holo 6s linear infinite}
 .cardbox.holo .face,.cardbox.holo .ov{z-index:2}
 .cardbox.fbasic .face{left:55%;width:74%;height:46%;top:17%}
-.cardbox.fspec .face{width:112%;height:76%;top:15%}
+.cardbox.fspec .face{width:120%;height:82%;top:6%}
 @keyframes holo{0%{background-position:0% 50%}100%{background-position:100% 50%}}
 [data-anim=reduced] .holo-fx,[data-anim=none] .holo-fx{animation:none;background-position:50% 50%}
+
+/* ---------- finition générale ---------- */
+body{background:radial-gradient(1200px 520px at 12% -8%,color-mix(in srgb,var(--accent) 11%,transparent),transparent 62%),radial-gradient(900px 480px at 100% 0,color-mix(in srgb,var(--accent) 6%,transparent),transparent 60%),var(--bg);background-attachment:fixed;-webkit-font-smoothing:antialiased}
+.top{background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);border-bottom:0;box-shadow:0 1px 0 var(--line),0 8px 24px -16px rgba(0,0,0,.6)}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,var(--accent),transparent 55%);opacity:.7}
+.brand{letter-spacing:.9px}
+.brand::before{box-shadow:0 0 12px color-mix(in srgb,var(--accent) 70%,transparent)}
+nav{background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border-top:1px solid var(--line);box-shadow:0 -10px 30px -18px rgba(0,0,0,.7)}
+nav button{transition:color .18s,transform .18s}
+nav button:active{transform:scale(.92)}
+nav button[aria-selected=true]{text-shadow:0 0 14px color-mix(in srgb,var(--accent) 55%,transparent)}
+h1{letter-spacing:-.4px}
+.box{background:linear-gradient(180deg,color-mix(in srgb,var(--surface2) 55%,var(--surface)),var(--surface));border-radius:16px;box-shadow:0 1px 0 rgba(255,255,255,.04) inset,0 10px 28px -20px rgba(0,0,0,.65)}
+.btn,.chip,.pbtns button{transition:background .16s,border-color .16s,transform .12s,box-shadow .16s,color .16s}
+.btn:hover,.chip:hover,.pbtns button:hover{border-color:color-mix(in srgb,var(--accent) 60%,var(--line))}
+.btn:active,.chip:active,.pbtns button:active{transform:scale(.96)}
+.btn.primary,.chip[aria-pressed=true],.pbtns button[aria-pressed=true]{box-shadow:0 6px 18px -8px color-mix(in srgb,var(--accent) 80%,transparent)}
+input,select{transition:border-color .16s,box-shadow .16s}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.mpill{box-shadow:0 4px 12px -6px rgba(0,0,0,.8);transition:border-color .18s,box-shadow .18s}
+.tile:hover .mpill,.tile:focus-within .mpill{border-color:var(--accent);box-shadow:0 6px 16px -6px color-mix(in srgb,var(--accent) 70%,transparent)}
+.star{transition:transform .15s,color .15s}
+.star:hover{transform:scale(1.18)}
+@keyframes tin{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+[data-anim=full] .grid .tile{animation:tin .38s var(--ease) both}
+[data-anim=full] .grid .tile:nth-child(6n+2){animation-delay:.03s}[data-anim=full] .grid .tile:nth-child(6n+3){animation-delay:.06s}[data-anim=full] .grid .tile:nth-child(6n+4){animation-delay:.09s}[data-anim=full] .grid .tile:nth-child(6n+5){animation-delay:.12s}[data-anim=full] .grid .tile:nth-child(6n){animation-delay:.15s}
+.vtag{box-shadow:0 3px 10px -3px rgba(124,92,255,.7)}
+::selection{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+*{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 </style>
 </head>
 <body>
