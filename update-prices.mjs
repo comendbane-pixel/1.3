@@ -37,11 +37,12 @@ const PARALLEL = process.env.PARALLEL !== '0';                                  
 const MAX_WORKERS = Math.max(1, Number(process.env.MAX_WORKERS) || 50);
 const STAGGER_MS = Number(process.env.STAGGER_MS ?? 500);                                   // départ décalé des ouvriers (évite 20 requêtes à la même milliseconde)
 const COST = { list_fc27_players: 3, get_fc27_market_snapshot: 10, get_fc27_sbcs_list: 1 }; // crédits par appel : ESTIMATIONS (jamais vérifiées)
+const costReal = {}; // coûts réels mesurés par endpoint
 const COST_OTHER = Number(process.env.COST_OTHER ?? 3);
 const TOTAL_CREDITS = Number(process.env.TOTAL_CREDITS) || 0; // crédits qu'il reste au total sur l'ensemble des clés AU DÉBUT du mois / du comptage (facultatif)
 const DEAD_HOURS = Number(process.env.DEAD_HOURS ?? 6);      // une clé marquée vide est ignorée pendant ce nombre d'heures, puis réessayée (un appel refusé ne coûte rien)
 const KEY_CREDITS = Number(process.env.KEY_CREDITS) || 0; // crédits de départ communs à toutes les clés sans total propre (facultatif)
-const HISTORY_MAX = 14;
+const HISTORY_MAX = Number(process.env.HISTORY_MAX) || 60; // points d'historique gardés par carte (l'historique complet « daily » en apporte jusqu'à ce nombre)
 const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 150000); // parse.bot peut être lent (1 minute par page)
 const RETRY_MS = Number(process.env.RETRY_MS ?? 30000);      // pause avant un nouvel essai
 const STRIKE_MIN_MS = Number(process.env.STRIKE_MIN_MS ?? 100);   // pause entre deux refus d'une même clé : au hasard entre ces deux valeurs
@@ -82,6 +83,7 @@ const STATE_FILE = path.join(DIR, 'keys-state.json');
 const FP = createHash('sha256').update(ENTRIES.map((e) => e.k + '|' + e.b).join('\n')).digest('hex').slice(0, 12);
 // Mots qui disent clairement « plus de crédits ». « limit reached » peut n'être qu'un trop-plein de requêtes : on ne le prend pas pour une clé vide si le code est 429.
 const CREDIT_STRICT = /credit|quota|insufficient|exhaust|balance|payment/i;
+const DEFINITIVE_STRIKES = Number(process.env.DEFINITIVE_STRIKES ?? 3);
 const CREDIT_LOOSE = /limit reached|plan limit/i;
 const redact = (t) => KEYS.concat(ENTRIES.map((e) => e.b).filter(Boolean)).reduce((a, k) => a.split(k).join('***'), String(t));
 const shortUrl = (u) => String(u).replace(/^https?:\/\//, '').replace(/([0-9a-f]{8})[0-9a-f-]{28}/gi, '$1…');
@@ -323,6 +325,7 @@ function readBalance(w, headers) {
   try {
     for (const [k, v] of headers.entries()) {
       if (!/credit|balance|quota/i.test(k) || /rate/i.test(k)) continue; // « x-ratelimit-remaining » compte des requêtes, pas des crédits
+      if (!/remain|left|balance|available/i.test(k)) continue; // « x-credits-charged » = coût de l'appel, pas un solde
       if (!balanceHdrLogged) { balanceHdrLogged = true; console.log(`Solde lu dans l'en-tête de réponse « ${k} » (exemple clé n°${w.i + 1} : ${String(v).slice(0, 40)}).`); }
       const n = Number(String(v).replace(/[^\d.]/g, ''));
       if (/remain|left|balance|available/i.test(k) && Number.isFinite(n)) w.left = n;
@@ -345,11 +348,13 @@ async function callOn(w, endpoint, params, label) {
   };
 
   // Un refus isolé n'est pas une panne : on ne met la clé de côté qu'après STRIKES refus de suite.
-  const strike = async (why, credit, detail) => {
+  const strike = async (why, credit, detail, definitive) => {
     w.strikes = (w.strikes ?? 0) + 1;
-    if (w.strikes >= STRIKES) { w.strikes = 0; markDead(w, why, credit, detail); throw new KeyDead(); }
+    // Refus « définitif » (clé invalide, solde < prix d'un appel) : 3 essais suffisent, inutile d'en faire 15.
+    const maxS = definitive ? Math.min(STRIKES, DEFINITIVE_STRIKES) : STRIKES;
+    if (w.strikes >= maxS) { w.strikes = 0; markDead(w, why, credit, detail); throw new KeyDead(); }
     const pause = STRIKE_MIN_MS + Math.random() * Math.max(0, STRIKE_MAX_MS - STRIKE_MIN_MS);
-    console.log(`${label} (clé n°${w.i + 1}) : refus ${w.strikes}/${STRIKES} (${why}) — ${detail}. On attend ${(pause / 1000).toFixed(1)} s et on réessaie avant de la mettre de côté.`);
+    console.log(`${label} (clé n°${w.i + 1}) : refus ${w.strikes}/${maxS} (${why}) — ${detail}. On attend ${(pause / 1000).toFixed(1)} s et on réessaie avant de la mettre de côté.`);
     await sleep(pause);
     w.last = Date.now();
   };
@@ -383,8 +388,13 @@ async function callOn(w, endpoint, params, label) {
       const creditLike = res.status === 402 || CREDIT_STRICT.test(peek) || (res.status !== 429 && CREDIT_LOOSE.test(peek));
       const fastBad = (res.status === 401 || res.status === 403) && (/invalid api key/i.test(peek) || (!w.ok && Date.now() - t0 < 60000));
       const snip = redact(peek.slice(0, 160).replace(/\s+/g, ' '));
-      if (creditLike) { await strike('plus de crédits', true, `HTTP ${res.status} ${snip}`); attempt--; continue; }
-      if (fastBad) { await strike('refusée', false, `HTTP ${res.status} ${snip}`); attempt--; continue; }
+      if (creditLike) {
+        const m = /needs\s+(\d+)\s+credits?.*?balance is\s+(\d+)/i.exec(peek);
+        const short = !!m && Number(m[2]) < Number(m[1]);
+        if (m) w.left = Number(m[2]);
+        await strike('plus de crédits', true, `HTTP ${res.status} ${snip}`, short); attempt--; continue;
+      }
+      if (fastBad) { await strike('refusée', false, `HTTP ${res.status} ${snip}`, /invalid api key/i.test(peek)); attempt--; continue; }
     }
     if (res.status === 401 || res.status === 403) {
       // parse.bot explique souvent la raison dans sa réponse : on l'affiche (sans jamais afficher la clé).
@@ -418,6 +428,8 @@ async function callOn(w, endpoint, params, label) {
       throw new Error(`${label} : erreur HTTP ${res.status} ${txt}`);
     }
     w.ok = true; anyOK = true; w.strikes = 0;
+    const charged = Number(res.headers.get('x-credits-charged'));
+    if (Number.isFinite(charged) && charged > 0) { COST[endpoint] = charged; costReal[endpoint] = charged; } // coût RÉEL lu chez parse.bot
     w.spent += COST[endpoint] ?? COST_OTHER;
     readBalance(w, res.headers);
     return res.json();
@@ -911,6 +923,83 @@ async function modeWatch(data) {
   await runSelection(data, w, 'après mise à jour des prix');
 }
 
+
+// ---------- historique complet des prix (depuis la sortie de chaque carte) ----------
+// get_player_price_history : UNE requête par carte (graphique « daily »). Coût mesuré en vrai (en-tête x-credits-charged) et plafonné par HIST_MAX_CREDITS.
+function toMs(v) {
+  if (v === null || v === undefined || v === '') return null;
+  if (typeof v === 'number' || /^\d+(\.\d+)?$/.test(String(v))) { const n = Number(v); return n > 1e12 ? n : n > 1e9 ? n * 1000 : null; }
+  const d = Date.parse(String(v)); return Number.isFinite(d) ? d : null;
+}
+function parseHistory(payload) {
+  const root = (payload && typeof payload === 'object' && !Array.isArray(payload) && payload.data !== undefined) ? payload.data : payload;
+  let arr = null;
+  if (Array.isArray(root)) arr = root;
+  else if (root && typeof root === 'object') {
+    for (const k of ['prices', 'history', 'price_history', 'graph', 'data', 'points', 'results']) {
+      if (Array.isArray(root[k])) { arr = root[k]; break; }
+      if (root[k] && typeof root[k] === 'object') { const sub = parseHistory(root[k]); if (sub.length) return sub; }
+    }
+    if (!arr) { // objet « date → prix »
+      const ent = Object.entries(root).filter(([k]) => toMs(k) !== null);
+      if (ent.length) arr = ent.map(([k, v]) => [k, v]);
+    }
+  }
+  const out = [];
+  for (const x of arr || []) {
+    let t = null, pr = null;
+    if (Array.isArray(x)) { t = toMs(x[0]); pr = toPrice(x[1]); }
+    else if (x && typeof x === 'object') {
+      for (const k of ['t', 'time', 'timestamp', 'date', 'day', 'x', 'ts']) if (t === null && x[k] !== undefined) t = toMs(x[k]);
+      pr = toPrice(pick(x, ['p', 'price', 'ps_price', 'value', 'y', 'ps', 'close', 'avg']));
+    }
+    if (t !== null && pr !== null && pr > 0) out.push({ t, p: pr });
+  }
+  out.sort((a, b) => a.t - b.t);
+  return out;
+}
+async function modeHistory(data) {
+  if (!data.cards.length) throw new Error('data.json est vide : lance d\'abord le mode « list ».');
+  const count = Math.max(1, Number(process.env.HIST_COUNT) || 200);
+  const minPrice = Number(process.env.HIST_MIN_PRICE ?? 1000);
+  const maxCredits = Number(process.env.HIST_MAX_CREDITS ?? 2000);
+  const redo = process.env.HIST_REDO === '1';
+  const type = process.env.HIST_TYPE || 'daily_graph';
+  const chosen = data.cards.filter((c) => (redo || !c.hd) && Number(c.price) >= minPrice)
+    .sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, count);
+  const left = data.cards.filter((c) => !c.hd).length;
+  console.log(`Historique complet : ${chosen.length} carte(s) à récupérer (prix ≥ ${minPrice}, les plus chères d'abord). Il en restera ${Math.max(0, left - chosen.length)} sans historique complet. Plafond : ${maxCredits} crédits.`);
+  let done = 0, empty = 0, spent = 0, first = true, stop = false;
+  await forEachPar(chosen, async (c) => {
+    if (stop) return;
+    let payload;
+    try { payload = await api('get_player_price_history', { player_id: c.id, year: '27', graph_type: type }, 'get_player_price_history'); }
+    catch (e) { console.log(`${c.name} : ${redact(e.message)}`); return; }
+    const cost = costReal.get_player_price_history ?? COST.get_player_price_history ?? COST_OTHER;
+    spent += cost;
+    if (first) {
+      first = false;
+      const r0 = payload && typeof payload === 'object' ? (payload.data !== undefined ? payload.data : payload) : payload;
+      console.log('Forme de la réponse : ' + (Array.isArray(r0) ? `liste de ${r0.length}` : Object.keys(r0 || {}).join(', ')));
+      console.log(costReal.get_player_price_history ? `Coût RÉEL d'une carte : ${cost} crédits → ${chosen.length} cartes ≈ ${chosen.length * cost} crédits.` : `Coût d'une carte : pas indiqué par parse.bot, estimation ${cost} crédits.`);
+    }
+    if (spent >= maxCredits) { stop = true; console.log(`Plafond de ${maxCredits} crédits atteint : arrêt (les cartes déjà faites sont enregistrées).`); }
+    const pts = parseHistory(payload);
+    if (!pts.length) { empty++; if (empty <= 3) console.log(`${c.name} : aucun point d'historique lu dans la réponse.`); c.hd = Math.floor(Date.now() / 1000); return; }
+    // fusion : points anciens (journaliers) + points déjà relevés par le robot, sans doublon de jour, les plus récents gardés
+    const day = (t) => Math.floor(t / 86400000);
+    const have = new Map();
+    for (const x of pts) have.set(day(x.t), x);
+    for (const x of (Array.isArray(c.history) ? c.history : [])) { if (!have.has(day(x.t)) || x.t > have.get(day(x.t)).t) have.set(day(x.t), x); }
+    c.history = [...have.values()].sort((a, b) => a.t - b.t).slice(-HISTORY_MAX);
+    c.hd = Math.floor(Date.now() / 1000);
+    done++;
+    if (done % 25 === 0) { console.log(`… ${done} carte(s) faites (≈ ${spent} crédits).`); await saveData(data); }
+  });
+  await saveData(data);
+  console.log(`Historique enregistré pour ${done} carte(s) (${empty} sans point). Crédits utilisés ≈ ${spent}. Cartes encore sans historique complet : ${data.cards.filter((c) => !c.hd).length}.`);
+}
+
 // ---------- départ ----------
 async function main() {
   await loadKeyState();
@@ -923,7 +1012,7 @@ async function main() {
     return;
   }
   let mode = (process.argv[2] || process.env.MODE || 'auto').trim().toLowerCase();
-  if (!['auto', 'list', 'snapshot', 'details', 'fiche', 'select', 'watch'].includes(mode)) mode = 'auto';
+  if (!['auto', 'list', 'snapshot', 'details', 'fiche', 'select', 'watch', 'history'].includes(mode)) mode = 'auto';
   const data = await loadData();
   if (mode === 'auto') mode = data.cards.length ? 'snapshot' : 'list';
   console.log(`Mode : ${mode}`);
@@ -933,6 +1022,7 @@ async function main() {
   else if (mode === 'details') await modeDetails(data);
   else if (mode === 'select') await modeSelect(data);
   else if (mode === 'watch') await modeWatch(data);
+  else if (mode === 'history') await modeHistory(data);
   else await modeSnapshot(data);
   console.log(`Terminé en ${Math.round((Date.now() - t0) / 1000)} s.`);
   await saveKeyState();
