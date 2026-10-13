@@ -1,0 +1,62 @@
+name: Historique complet des prix
+
+# Récupère l'historique des prix (depuis la sortie de chaque carte) : UNE requête par carte, les plus chères d'abord.
+# À lancer à la main : Actions -> « Historique complet des prix » -> Run workflow.
+# Les cartes déjà faites ne sont jamais refaites : relance autant de fois que tu veux pour continuer.
+on:
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "Combien de cartes cette fois (les plus chères d'abord)"
+        default: '200'
+      min_price:
+        description: "Prix minimum d'une carte (en dessous, on ne s'en occupe pas)"
+        default: '1000'
+      max_credits:
+        description: "Plafond de crédits pour ce lancement (le robot s'arrête quand il est atteint)"
+        default: '2000'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-prices
+  cancel-in-progress: false
+
+jobs:
+  history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Récupérer l'historique des prix
+        env:
+          PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
+          PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
+          HIST_COUNT: ${{ github.event.inputs.count }}
+          HIST_MIN_PRICE: ${{ github.event.inputs.min_price }}
+          HIST_MAX_CREDITS: ${{ github.event.inputs.max_credits }}
+        run: node update-prices.mjs history
+
+      - name: Enregistrer data.json
+        if: ${{ always() }}
+        run: |
+          git config user.name "price-bot"
+          git config user.email "price-bot@users.noreply.github.com"
+          for f in data.json keys-state.json; do [ -f "$f" ] && git add "$f"; done
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau à enregistrer."
+          else
+            git commit -m "Historique des prix"
+            for i in 1 2 3 4 5; do
+              git fetch origin "${GITHUB_REF_NAME}"
+              git rebase -X theirs "origin/${GITHUB_REF_NAME}" || { git rebase --abort; git reset --soft "origin/${GITHUB_REF_NAME}"; git commit -m "Historique des prix (reprise après conflit)" || true; }
+              git push origin "HEAD:${GITHUB_REF_NAME}" && break
+              sleep $((i*3))
+            done
+          fi
