@@ -947,8 +947,8 @@ function cardImg(c, size) {
   const f = safeUrl(c.playerImage);
   // Grande carte : on essaie des versions plus grandes du même fond (plus nettes), puis l'original en dernier recours.
   let first = u, alts = '';
-  if (size !== 'sm') {
-    const q = u.split('?')[0];
+  {
+    const q = u.split('?')[0]; // HD partout, aussi sur les petites cartes des listes
     const hd = q.replace(/^https:\/\/cdn\d*\.futbin\.com/, 'https://cdn.futbin.com').replace('/cards/tiny/', '/cards/hd/');
     const cand = [hd, q.replace('/cards/tiny/', '/cards/large/'), q.replace('/cards/tiny/', '/cards/big/'), q, u].filter((x, i, a2) => a2.indexOf(x) === i);
     first = cand[0]; alts = cand.slice(1).join(' ');
