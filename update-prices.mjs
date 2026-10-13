@@ -25,6 +25,7 @@ const MIN_RATING = Number(process.env.MIN_RATING) || 80;
 const SORT_DIR = process.env.SORT === 'asc' ? 'asc' : 'desc'; // sens du tri par prix du catalogue ; « asc » sert de 2e passage de contrôle
 const SNAPSHOT_SIZE = Math.max(1, Math.min(Number(process.env.SNAPSHOT_SIZE) || 500, 500)); // cartes par requête (500 maximum)
 const SNAPSHOT_PARTS = Math.max(0, Math.floor(Number(process.env.SNAPSHOT_PARTS) || 0));    // paquets en même temps (0 = autant que d'ouvriers)
+const MAX_FAILS = Math.max(1, Number(process.env.MAX_FAILS) || 30);                         // mode list : arrêt après ce nombre de pages en erreur (évite de boucler sur des milliers de pages inexistantes)
 const SNAPSHOT_SPREAD = process.env.SNAPSHOT_SPREAD === '1';                               // 1 = paquets plus petits, pour que TOUTES les clés travaillent en même temps (plus de demandes : plus de crédits)
 const SNAPSHOT_MIN_CHUNK = Math.max(1, Number(process.env.SNAPSHOT_MIN_CHUNK) || 100);     // taille minimale d'un paquet quand SNAPSHOT_SPREAD = 1
 const SNAPSHOT_SMART = process.env.SNAPSHOT_SMART === '1';                                 // 1 = mode économie : les cartes « froides » (prix immobile) sont relevées moins souvent
@@ -565,6 +566,7 @@ async function modeList(data) {
       if (!firstErr) firstErr = e;
       console.log(`Page ${page} : ${redact(e.message)}`);
       if (!poolSize()) stopAll = true; // plus aucune clé : inutile d'essayer les autres pages
+      if (failedPages.length >= MAX_FAILS && !stopAll) { stopAll = true; console.log(`${failedPages.length} pages en erreur : arrêt du passage (si le catalogue est fini, c'est normal).`); }
       return;
     }
     const raw = toArray(payload);
