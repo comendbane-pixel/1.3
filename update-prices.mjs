@@ -21,7 +21,8 @@ const BASE = (process.env.API_BASE ||
   'https://api.parse.bot/scraper/f56a52f1-08bd-4926-8246-945dc47bce4e').replace(/\/+$/, '');
 const PAUSE_MS = Number(process.env.PAUSE_MS ?? 13000); // pause entre deux requêtes DE LA MÊME clé (5 requêtes/minute max par clé)
 const MAX_PAGES = Number(process.env.MAX_PAGES) || 25;  // 25 pages x 3 crédits = 75 crédits
-const MIN_RATING = Number(process.env.MIN_RATING) || 80;
+// Note minimale des cartes (mode list). parse.bot n'accepte que 40 à 99 : une valeur plus basse devient 40 (= toutes les cartes), plus haute 99. Vide = 80.
+const MIN_RATING = Math.min(99, Math.max(40, Math.round(Number(process.env.MIN_RATING) || 80)));
 const SORT_DIR = process.env.SORT === 'asc' ? 'asc' : 'desc'; // sens du tri par prix du catalogue ; « asc » sert de 2e passage de contrôle
 const SNAPSHOT_SIZE = Math.max(1, Math.min(Number(process.env.SNAPSHOT_SIZE) || 500, 500)); // cartes par requête (500 maximum)
 const SNAPSHOT_PARTS = Math.max(0, Math.floor(Number(process.env.SNAPSHOT_PARTS) || 0));    // paquets en même temps (0 = autant que d'ouvriers)
