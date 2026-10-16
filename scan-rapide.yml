@@ -1,0 +1,81 @@
+name: Scanner maintenant (revente rapide)
+
+# Un seul bouton : relève le prix de TOUTES les cartes d'un coup.
+# Coût : environ 10 crédits par paquet de 500 cartes (≈ 180 crédits pour 8 757 cartes, ≈ 460 pour 22 800).
+# Souvent moins : le mode économie ne relit les cartes au prix immobile que toutes les 12 h.
+# + environ 12 crédits une fois par jour au maximum pour chercher les nouvelles cartes.
+# Lancé depuis le bouton « Scanner maintenant » de l'onglet Investir, ou depuis Actions -> Run workflow.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-prices
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Chercher les nouvelles cartes (une fois par jour au maximum, environ 12 crédits)
+        continue-on-error: true
+        env:
+          PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
+          PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
+          API_BASE: ${{ vars.API_BASE }}
+          KEY_CREDITS: ${{ vars.KEY_CREDITS }}
+          TOTAL_CREDITS: ${{ vars.TOTAL_CREDITS }}
+          MAX_PAGES: '2'               # 2 pages de chaque côté du classement par prix (60 cartes) : les nouvelles cartes chères ou très bon marché
+          MIN_RATING: '45'
+          RESTART: '1'                 # repart de la page 1 sans toucher au point de reprise du catalogue complet
+        run: |
+          NOW=$(date +%s)
+          LAST=$(cat probe-at.txt 2>/dev/null || echo 0)
+          if [ $((NOW - LAST)) -gt 72000 ]; then
+            SORT=desc node update-prices.mjs list
+            SORT=asc node update-prices.mjs list
+            echo "$NOW" > probe-at.txt
+          else
+            echo "Nouvelles cartes : déjà cherchées il y a moins de 20 h, rien à payer."
+          fi
+
+      - name: Relever le prix de toutes les cartes
+        env:
+          PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
+          PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
+          API_BASE: ${{ vars.API_BASE }}
+          KEY_CREDITS: ${{ vars.KEY_CREDITS }}
+          TOTAL_CREDITS: ${{ vars.TOTAL_CREDITS }}
+          SNAPSHOT_PARTS: '100'        # autant de paquets de 500 que nécessaire : toutes les cartes
+          SNAPSHOT_SMART: '1'          # mode économie : les cartes dont le prix ne bouge plus ne sont relues que toutes les 12 h
+          SNAPSHOT_SPREAD: '1'         # paquets plus petits : toutes les clés travaillent en même temps (plus de demandes, donc un peu plus de crédits)
+          SNAPSHOT_FRESH_MIN: '5'      # un prix relevé il y a moins de 5 min n'est pas redemandé (évite de payer deux fois)
+        run: node update-prices.mjs snapshot
+
+      - name: Enregistrer data.json
+        if: ${{ always() }}
+        run: |
+          git config user.name "price-bot"
+          git config user.email "price-bot@users.noreply.github.com"
+          for f in data.json watch.json keys-state.json probe-at.txt; do [ -f "$f" ] && git add "$f"; done
+          if git diff --cached --quiet; then
+            echo "Rien de nouveau à enregistrer."
+          else
+            git commit -m "Scan rapide des prix"
+            # Si quelqu'un a modifié le dépôt pendant le scan : on garde NOS données fraîches (-X theirs = notre commit pendant un rebase) et on réessaie.
+            for i in 1 2 3 4 5; do
+              git fetch origin "${GITHUB_REF_NAME}"
+              git rebase -X theirs "origin/${GITHUB_REF_NAME}" || { git rebase --abort; git reset --soft "origin/${GITHUB_REF_NAME}"; git commit -m "Scan des prix (reprise après conflit)" || true; }
+              git push origin "HEAD:${GITHUB_REF_NAME}" && break
+              sleep $((i*3))
+            done
+          fi

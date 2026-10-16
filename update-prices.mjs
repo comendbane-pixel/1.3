@@ -961,8 +961,9 @@ function parseHistory(payload) {
 async function modeHistory(data) {
   if (!data.cards.length) throw new Error('data.json est vide : lance d\'abord le mode « list ».');
   const count = Math.max(1, Number(process.env.HIST_COUNT) || 200);
-  const minPrice = Number(process.env.HIST_MIN_PRICE ?? 1000);
-  const maxCredits = Number(process.env.HIST_MAX_CREDITS ?? 2000);
+  // Une case laissée vide dans le formulaire GitHub arrive comme "" : on prend alors la valeur par défaut (sinon "" deviendrait 0 et le robot s'arrêterait tout de suite).
+  const minPrice = Number(process.env.HIST_MIN_PRICE || 1000);
+  const maxCredits = Number(process.env.HIST_MAX_CREDITS || 2000);
   const redo = process.env.HIST_REDO === '1';
   const type = process.env.HIST_TYPE || 'daily_graph';
   const chosen = data.cards.filter((c) => (redo || !c.hd) && Number(c.price) >= minPrice)

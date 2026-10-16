@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Mode (auto = le robot choisit)'
+        description: 'Mode (auto = le robot choisit). select = choisir 20 cartes à surveiller (0 crédit). watch = relever le prix de ces 20 cartes. history = historique complet des cartes les plus chères.'
         required: true
         default: 'auto'
         type: choice
@@ -16,16 +16,45 @@ on:
           - snapshot
           - details
           - fiche
+          - select
+          - watch
+          - history
       pages:
-        description: 'Nombre de pages (mode list). Vide = 25. Mets 1 pour un test à 3 crédits.'
+        description: 'Nombre de pages (mode list). Vide = 25. Mets 350 pour tout le catalogue d un coup (3 crédits par page). Mets 1 pour un test.'
+        required: false
+        default: ''
+        type: string
+      min_rating:
+        description: 'Mode list : note minimale des cartes (vide = 80). Mets 45 pour avoir TOUTES les cartes.'
         required: false
         default: ''
         type: string
       details_count:
-        description: 'Modes details et fiche : combien de joueurs (les plus chers d abord). Vide = 3.'
+        description: 'Modes details et fiche : combien de joueurs (vide = 3). Mode history : combien de cartes (vide = 200). Les plus chers d abord.'
         required: false
         default: ''
         type: string
+      sort:
+        description: 'Mode list : sens du tri. desc = normal. asc = 2e passage de contrôle pour rattraper les cartes ratées (le robot repart alors de la page 1).'
+        required: true
+        default: 'desc'
+        type: choice
+        options:
+          - 'desc'
+          - 'asc'
+      parts:
+        description: 'Mode snapshot : combien de paquets de 500 cartes en même temps. Vide = autant que de clés (le plus rapide).'
+        required: false
+        default: ''
+        type: string
+      reset_keys:
+        description: 'Oublier les clés marquées vides ce mois-ci (à mettre sur oui si tu as rechargé des crédits)'
+        required: true
+        default: 'non'
+        type: choice
+        options:
+          - 'non'
+          - 'oui'
       restart:
         description: 'Repartir de la page 1 (test, ne change pas le point de reprise)'
         required: true
@@ -45,7 +74,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 340
     steps:
       - uses: actions/checkout@v4
 
@@ -56,9 +85,20 @@ jobs:
       - name: Récupérer les prix
         env:
           PARSE_API_KEY: ${{ secrets.PARSE_API_KEY }}
+          PARSE_API_KEYS: ${{ secrets.PARSE_API_KEYS }}
+          API_BASE: ${{ vars.API_BASE }}
+          KEY_CREDITS: ${{ vars.KEY_CREDITS }}
+          TOTAL_CREDITS: ${{ vars.TOTAL_CREDITS }}
           MODE: ${{ github.event.inputs.mode || 'auto' }}
           MAX_PAGES: ${{ github.event.inputs.pages }}
+          MIN_RATING: ${{ github.event.inputs.min_rating }}
           DETAILS_COUNT: ${{ github.event.inputs.details_count }}
+          HIST_COUNT: ${{ github.event.inputs.details_count }}
+          HIST_MIN_PRICE: '1000'       # mode history : cartes de 1 000 pièces et plus (pour d'autres réglages, utilise « Historique complet des prix »)
+          HIST_MAX_CREDITS: '2000'     # mode history : le robot s'arrête à 2 000 crédits
+          SORT: ${{ github.event.inputs.sort }}
+          SNAPSHOT_PARTS: ${{ github.event.inputs.parts }}
+          RESET_KEYS: ${{ github.event.inputs.reset_keys == 'oui' && '1' || '' }}
           RESTART: ${{ github.event.inputs.restart == 'oui' && '1' || '' }}
         run: node update-prices.mjs "$MODE"
 
@@ -67,11 +107,16 @@ jobs:
         run: |
           git config user.name "price-bot"
           git config user.email "price-bot@users.noreply.github.com"
-          git add data.json
+          for f in data.json watch.json keys-state.json; do [ -f "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then
             echo "Rien de nouveau à enregistrer."
           else
             git commit -m "Mise à jour des prix"
-            git pull --rebase origin "${GITHUB_REF_NAME}" || true
-            git push
+            # Si quelqu'un a modifié le dépôt pendant le scan : on garde NOS données fraîches (-X theirs = notre commit pendant un rebase) et on réessaie.
+            for i in 1 2 3 4 5; do
+              git fetch origin "${GITHUB_REF_NAME}"
+              git rebase -X theirs "origin/${GITHUB_REF_NAME}" || { git rebase --abort; git reset --soft "origin/${GITHUB_REF_NAME}"; git commit -m "Scan des prix (reprise après conflit)" || true; }
+              git push origin "HEAD:${GITHUB_REF_NAME}" && break
+              sleep $((i*3))
+            done
           fi
