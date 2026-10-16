@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'Mode (auto = le robot choisit)'
+        description: 'Mode (auto = le robot choisit). select = choisir 20 cartes à surveiller (0 crédit). watch = relever le prix de ces 20 cartes. history = historique complet des cartes les plus chères.'
         required: true
         default: 'auto'
         type: choice
@@ -16,18 +16,21 @@ on:
           - snapshot
           - details
           - fiche
+          - select
+          - watch
+          - history
       pages:
         description: 'Nombre de pages (mode list). Vide = 25. Mets 350 pour tout le catalogue d un coup (3 crédits par page). Mets 1 pour un test.'
         required: false
         default: ''
         type: string
       min_rating:
-        description: 'Mode list : note minimale des cartes (vide = 80). Mets 45 pour avoir TOUTES les cartes.'
+        description: 'Mode list : note minimale des cartes (vide = 80). Mets 40 pour avoir TOUTES les cartes (40 est le minimum accepté).'
         required: false
         default: ''
         type: string
       details_count:
-        description: 'Modes details et fiche : combien de joueurs (les plus chers d abord). Vide = 3.'
+        description: 'Modes details et fiche : combien de joueurs (vide = 3). Mode history : combien de cartes (vide = 200). Les plus chers d abord.'
         required: false
         default: ''
         type: string
@@ -90,6 +93,9 @@ jobs:
           MAX_PAGES: ${{ github.event.inputs.pages }}
           MIN_RATING: ${{ github.event.inputs.min_rating }}
           DETAILS_COUNT: ${{ github.event.inputs.details_count }}
+          HIST_COUNT: ${{ github.event.inputs.details_count }}
+          HIST_MIN_PRICE: '1000'       # mode history : cartes de 1 000 pièces et plus (pour d'autres réglages, utilise « Historique complet des prix »)
+          HIST_MAX_CREDITS: '2000'     # mode history : le robot s'arrête à 2 000 crédits
           SORT: ${{ github.event.inputs.sort }}
           SNAPSHOT_PARTS: ${{ github.event.inputs.parts }}
           RESET_KEYS: ${{ github.event.inputs.reset_keys == 'oui' && '1' || '' }}
