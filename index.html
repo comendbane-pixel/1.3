@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0c11" id="metaTheme">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Barlow+Condensed:wght@600;700;800&family=Creepster&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Barlow+Condensed:wght@600;700;800&family=Creepster&family=Nunito:wght@500;700;800;900&display=swap">
 <title>FC27 Companion</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -639,10 +639,11 @@ main{position:relative;z-index:1}
 .offline[hidden]{display:none}
 .pumpkin{display:none;border:0;background:none;padding:0;margin-right:8px;width:26px;height:26px;flex:none}
 .pumpkin svg{width:100%;height:100%;display:block}
-nav .wrap{grid-template-columns:repeat(5,1fr)}
-#ind{width:20%}
+nav .wrap{grid-template-columns:repeat(6,1fr)}
+#ind{width:16.6667%}
 nav button{font-size:11.5px}
-@media(max-width:430px){nav button{font-size:11px;letter-spacing:0}nav svg{width:23px;height:23px}}
+@media(max-width:430px){nav button{font-size:10.5px;letter-spacing:-.1px}nav svg{width:22px;height:22px}}
+@media(max-width:360px){nav button{font-size:9.5px}}
 .dot.nw{background:var(--accent);left:calc(50% + 10px)}
 .dot.cnt{width:auto;min-width:17px;height:17px;top:5px;padding:0 4px;border-radius:9px;color:#fff;font-size:10.5px;font-style:normal;font-weight:800;line-height:17px;text-align:center}
 .btn,.chip,.pgb,.field{min-height:42px}
@@ -842,6 +843,216 @@ html[data-hw=on] .box,html[data-hw=on] .card2{box-shadow:0 1px 0 rgba(255,255,25
 @keyframes booup{to{transform:translateY(-110vh) rotate(12deg);opacity:0}}
 [data-anim=reduced] .hw-bat,[data-anim=reduced] .hw-ghost,[data-anim=reduced] .hw-spider,[data-anim=reduced] .hw-stars{animation:none}
 [data-anim=reduced] .hw-bat{display:none}
+
+/* =====================================================================
+   VERSION 4 : Découvrir, jeux, profil, beauté
+   ===================================================================== */
+.dsub{margin:4px 0 12px}
+.rkchips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+.rkchips::-webkit-scrollbar{display:none}
+.rkchips button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:18px;padding:7px 12px;font-size:13px;font-weight:700;white-space:nowrap}
+.rkchips button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+.rk .rkn{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;background:var(--surface2);color:var(--muted)}
+.rk .rkn.m0{background:linear-gradient(135deg,#ffe58a,#d9a620);color:#3b2a00}
+.rk .rkn.m1{background:linear-gradient(135deg,#f1f3f7,#aab3bf);color:#222}
+.rk .rkn.m2{background:linear-gradient(135deg,#f1cba3,#b97a45);color:#2c1704}
+.rk .rkv{color:var(--accent)!important;font-weight:700}
+.hb{display:flex;flex-direction:column;gap:6px}
+.hbr{display:grid;grid-template-columns:minmax(70px,30%) 1fr auto;gap:8px;align-items:center;font-size:13px;border-radius:8px}
+.hbr[role=button]{cursor:pointer}
+.hbr[role=button]:hover{background:var(--surface2)}
+.hbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-weight:600}
+.hbt{height:12px;background:var(--surface2);border-radius:6px;overflow:hidden}
+.hbt i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 55%,transparent),var(--accent));animation:grow .7s var(--ease) both}
+.hbt i.pos{background:var(--up)}.hbt i.neg{background:var(--down)}
+.hbv{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+@keyframes grow{from{width:0!important}}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:8px 0}
+.kpis>div{background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 14%,var(--surface)),var(--surface));border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center;min-width:0}
+.kpis b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.kpis i{display:block;font-style:normal;font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dgrid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:760px){.dgrid{grid-template-columns:1fr 1fr}}
+.dcard{margin:0;position:relative;overflow:hidden}
+.dcard.gold{border-color:#d9a620;background:linear-gradient(160deg,rgba(240,180,41,.18),var(--surface) 60%)}
+.dcard.gem{border-color:#4cc9f0;background:linear-gradient(160deg,rgba(76,201,240,.16),var(--surface) 60%)}
+.dct{font-weight:800;font-size:15px;margin-bottom:8px}
+.dcb{display:flex;gap:12px;align-items:center}
+.dcb>.open{width:118px;flex:none;padding:0}
+.dci{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.dci>b{font-size:17px}
+.dcp{display:flex;align-items:center;gap:6px;font-weight:800;font-size:20px;color:var(--warn)}
+.qrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.qopt{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface2);border-radius:12px;padding:8px;text-align:left;color:var(--text)}
+.qopt .cardbox.sm,.qopt .fc.sm{width:42px}
+.qopt.ok{border-color:var(--up);box-shadow:0 0 0 2px color-mix(in srgb,var(--up) 40%,transparent)}
+.qopt.ko{border-color:var(--down);opacity:.8}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.gtile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;border:1px solid var(--line);border-radius:16px;padding:14px;color:var(--text);background:radial-gradient(120% 90% at 0% 0%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 60%),var(--surface);transition:transform .15s var(--ease),box-shadow .15s}
+.gtile:hover{transform:translateY(-3px);box-shadow:0 12px 26px -14px color-mix(in srgb,var(--accent) 70%,transparent)}
+.gtile .ic{font-size:28px}
+.gtile b{font-size:15.5px}
+.gtile span{font-size:12.5px;color:var(--muted)}
+.gtile em{font-style:normal;font-size:12px;font-weight:700;color:var(--accent);margin-top:auto}
+.gbox{min-height:280px}
+.gtop{display:flex;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:10px}
+.gtimer{font-size:22px;color:var(--accent);font-variant-numeric:tabular-nums}
+.gvs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}
+.gc{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;border:1px solid var(--line);border-radius:14px;padding:10px 6px;background:var(--surface2);color:var(--text);min-width:0}
+.gc .cardbox.md,.gc .fc.md{max-width:120px}
+.gc b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gprice{font-weight:900;font-size:18px;color:var(--warn);display:flex;align-items:center;gap:5px}
+.vs{font-weight:900;font-size:18px;color:var(--accent)}
+.gq{text-align:center;font-size:15px;margin:12px 0 6px}
+.gbtns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
+.gend{text-align:center;margin-top:12px;font-size:16px;animation:pop .35s var(--ease)}
+@keyframes pop{from{transform:scale(.9);opacity:0}}
+.gnc{display:flex;gap:12px;align-items:center}
+.gsil{position:relative;width:86px;height:104px;flex:none;border-radius:12px;background:linear-gradient(160deg,var(--surface2),var(--line));display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.gsil svg{width:70%;height:80%;fill:currentColor;opacity:.5}
+.gsil span{position:absolute;font-size:30px;font-weight:900;color:var(--accent)}
+.gname{font-size:17px}
+.grange{width:100%;accent-color:var(--accent);height:30px}
+.gopts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.gopts .btn{white-space:normal}
+.okb{border-color:var(--up)!important;background:color-mix(in srgb,var(--up) 22%,var(--surface))!important}
+.kob{border-color:var(--down)!important;background:color-mix(in srgb,var(--down) 18%,var(--surface))!important}
+.gpickc{cursor:pointer}
+.okc{border-color:var(--up);box-shadow:0 0 0 2px color-mix(in srgb,var(--up) 45%,transparent)}
+.koc{opacity:.7}
+.mgrid2{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(min-width:640px){.mgrid2{grid-template-columns:repeat(6,1fr)}}
+.mt{position:relative;aspect-ratio:3/4;border:0;border-radius:12px;background:none;perspective:600px;padding:0}
+.mt .mb,.mt .mf{position:absolute;inset:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;transition:transform .35s var(--ease)}
+.mt .mb{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 40%,#000));font-size:26px}
+.mt .mf{background:var(--surface2);border:1px solid var(--line);transform:rotateY(180deg);padding:4px;text-align:center}
+.mt .mf b{font-size:22px;color:var(--warn)}
+.mt .mf span{font-size:11px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mt.on .mb{transform:rotateY(180deg)}.mt.on .mf{transform:none}
+.mt.done .mf{border-color:var(--up);box-shadow:0 0 0 2px color-mix(in srgb,var(--up) 40%,transparent)}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:12px}
+.pk{position:relative;aspect-ratio:3/4.2;perspective:700px}
+.pk .pkb,.pk .pkf{position:absolute;inset:0;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;backface-visibility:hidden;transition:transform .5s var(--ease)}
+.pk .pkb{background:linear-gradient(135deg,#f0b429,#a86b00);font-size:34px}
+.pk .pkf{background:var(--surface2);border:1px solid var(--line);transform:rotateY(180deg);padding:6px;text-align:center}
+.pk .pkf .open{width:52px;padding:0}
+.pk .pkf b{font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pk .pkf span{font-size:12px;color:var(--warn);font-weight:800}
+.pk.on .pkb{transform:rotateY(180deg)}.pk.on .pkf{transform:none}
+.pk.on.wow .pkf{border-color:#ffd166;box-shadow:0 0 18px rgba(255,209,102,.6)}
+.prof{display:flex;gap:14px;align-items:center;margin:6px 0 10px}
+.pav{width:64px;height:64px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:34px;background:radial-gradient(circle at 30% 30%,color-mix(in srgb,var(--accent) 60%,#fff),var(--accent));box-shadow:0 8px 22px -8px color-mix(in srgb,var(--accent) 80%,transparent)}
+.prof>div:last-child{flex:1;min-width:0}
+.achg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.ach{display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--surface);filter:grayscale(1);opacity:.55}
+.ach.on{filter:none;opacity:1;border-color:color-mix(in srgb,var(--accent) 60%,var(--line));background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 16%,var(--surface)),var(--surface))}
+.ach .ic{font-size:26px}.ach b{font-size:14px}.ach span{font-size:12px;color:var(--muted)}
+.ach em{font-style:normal;font-size:11.5px;font-weight:700;color:var(--accent);margin-top:auto}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:150;overflow:hidden}
+.confetti i{position:absolute;top:-14px;width:9px;height:14px;border-radius:2px;animation:conf linear forwards}
+@keyframes conf{to{transform:translate(var(--x),105vh) rotate(var(--r));opacity:.9}}
+.radar{width:100%;max-width:260px;height:auto;display:block;margin:0 auto}
+.rdb{display:grid;grid-template-columns:1fr;gap:6px;align-items:center;padding:12px 14px 0;text-align:center}
+@media(min-width:620px){.rdb{grid-template-columns:260px 1fr;text-align:left}}
+.tilt{border:0;background:none;padding:0;transition:transform .2s var(--ease);transform-style:preserve-3d;cursor:zoom-in;width:min(230px,62vw)}
+.tilt .cardbox.lg,.tilt .fc.lg{width:100%!important}
+.zoom{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;animation:fade .2s}
+.zin{width:min(380px,82vw);text-align:center}
+.zin .cardbox.lg,.zin .fc.lg{width:100%!important;animation:pop .3s var(--ease)}
+.chopt{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-top:8px}
+.chopt .btn{min-height:34px;padding:4px 10px;font-size:12.5px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.tbl table{border-collapse:collapse;width:100%;font-size:13px}
+.tbl th,.tbl td{padding:7px 8px;border-top:1px solid var(--line);text-align:left;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tbl thead th{position:sticky;top:0;background:var(--surface2);border-top:0;font-size:12px;color:var(--muted)}
+.tbl th button{border:0;background:none;font-weight:700;color:var(--muted);padding:0;font-size:12px}
+.tbl th button.on{color:var(--accent)}
+.tbl tbody tr:hover{background:var(--surface2)}
+.tp{color:var(--warn);font-weight:700}
+.sbox .sbx{position:absolute;top:50%;transform:translateY(-50%);border:0;background:var(--surface2);border-radius:50%;width:30px;height:30px;color:var(--muted);font-size:13px;right:8px}
+.sbox .sbx.mic{right:44px}
+.sbox .sbx[hidden]{display:none}
+.sbox #q{padding-right:84px}
+.svd{display:inline-flex;border:1px solid var(--accent);border-radius:14px;overflow:hidden}
+.svd button{border:0;background:color-mix(in srgb,var(--accent) 12%,transparent);padding:5px 9px;font-size:12.5px;font-weight:700;color:var(--text)}
+.svd button+button{border-left:1px solid var(--accent);color:var(--muted)}
+.qpos{display:flex;gap:6px;overflow-x:auto;margin:0 0 8px;scrollbar-width:none}
+.qpos::-webkit-scrollbar{display:none}
+.qpos button{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:18px;padding:7px 14px;font-size:13px;font-weight:700}
+.qpos button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+@media(min-width:900px){.qpos{display:none}}
+.msp{width:60px;height:22px;flex:none}
+@media(max-width:380px){.msp{display:none}}
+.pgg{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-left:6px}
+.pgg input{width:56px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 6px;text-align:center}
+.capb{position:absolute;top:-2px;left:4px;z-index:3;width:18px;height:18px;border-radius:50%;background:#ffd75e;color:#3b2a00;font-size:11px;font-weight:900;line-height:18px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.sqs{position:relative}
+.donut{display:flex;gap:14px;align-items:center}
+.donut svg{width:120px;height:120px;flex:none}
+.dl{display:flex;align-items:center;gap:6px;font-size:13px}
+.dl i{width:10px;height:10px;border-radius:3px;flex:none}
+.dl b{margin-left:auto;padding-left:8px}
+.rbadge{display:inline-block;min-width:34px;text-align:center;border-radius:8px;background:linear-gradient(135deg,#ffe58a,#d9a620);color:#3b2a00;padding:2px 6px}
+.drawn path{stroke-dasharray:1200;stroke-dashoffset:1200;animation:draw 1.2s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+/* --- beauté --- */
+.tile::after{content:"";position:absolute;inset:0 0 auto 0;height:70%;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.18) 45%,transparent 60%);background-size:250% 100%;background-position:120% 0;opacity:0;transition:opacity .2s}
+.tile:hover::after{opacity:1;animation:shine 1s var(--ease)}
+@keyframes shine{from{background-position:120% 0}to{background-position:-60% 0}}
+.tile.r90 .open>.cardbox,.tile.r90 .open>.fc{filter:drop-shadow(0 0 10px rgba(255,209,102,.45))}
+.tile.r86 .open>.cardbox,.tile.r86 .open>.fc{filter:drop-shadow(0 0 6px rgba(76,201,240,.28))}
+.mpill.pu{border-color:color-mix(in srgb,var(--up) 60%,var(--line))}
+.mpill.pd{border-color:color-mix(in srgb,var(--down) 60%,var(--line))}
+nav button[aria-selected=true]::before{content:"";position:absolute;inset:6px 10% 6px;border-radius:14px;background:color-mix(in srgb,var(--accent) 14%,transparent);z-index:-1}
+nav button{isolation:isolate}
+nav button[aria-selected=true] svg{animation:navpop .35s var(--ease)}
+@keyframes navpop{40%{transform:translateY(-3px) scale(1.12)}}
+.btn{position:relative;overflow:hidden}
+.rp{position:absolute;border-radius:50%;pointer-events:none;background:currentColor;opacity:.22;transform:scale(0);animation:rp .5s ease-out forwards}
+@keyframes rp{to{transform:scale(1);opacity:0}}
+.toast{animation:tst .3s var(--ease);box-shadow:0 14px 34px -12px rgba(0,0,0,.6)}
+@keyframes tst{from{transform:translate(-50%,16px);opacity:0}}
+h2:not(.hwt){display:flex;align-items:center;gap:8px}
+h2:not(.hwt)::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.sb i,.at .bar i{animation:grow .8s var(--ease) both}
+.chart path[stroke-width="2.4"]{stroke-dasharray:3000;stroke-dashoffset:3000;animation:draw 1.1s var(--ease) forwards}
+@media(hover:hover){.box,.card2{transition:transform .18s var(--ease),box-shadow .18s}.mgrid .mtile:hover,.achg .ach.on:hover{transform:translateY(-2px)}}
+.mtile{transition:transform .15s var(--ease),border-color .15s}
+.mtile:hover{border-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+html{scroll-behavior:smooth}
+input[type=range]{accent-color:var(--accent)}
+.brand::before{background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#fff));animation:brandpulse 3s ease-in-out infinite}
+@keyframes brandpulse{50%{box-shadow:0 0 18px color-mix(in srgb,var(--accent) 80%,transparent)}}
+.empty .big::before{content:"⚽";display:block;font-size:40px;margin-bottom:6px;animation:bounce 1.6s ease-in-out infinite}
+@keyframes bounce{50%{transform:translateY(-8px)}}
+/* ambiances */
+html[data-skin=oled][data-theme=dark]{--bg:#000;--surface:#0a0a0a;--surface2:#141414;--line:#222}
+html[data-skin=navy][data-theme=dark]{--bg:#0a1020;--surface:#111a2e;--surface2:#18233b;--line:#24304a;--accent:#5aa9ff;--accent-text:#04101f}
+html[data-skin=navy][data-theme=light]{--bg:#eef3fb;--surface:#fff;--surface2:#e1e9f6;--line:#cdd8ea;--accent:#1f5fd1}
+html[data-skin=pitch][data-theme=dark]{--bg:#07130c;--surface:#0e1f15;--surface2:#15291c;--line:#1f3a29;--accent:#5fe08e;--accent-text:#03140a}
+html[data-skin=pitch][data-theme=light]{--bg:#eef7f0;--surface:#fff;--surface2:#dcefe2;--line:#c4e0cd;--accent:#178a46}
+/* confort */
+html[data-compact=on] .box{padding:9px;margin:7px 0}
+html[data-compact=on] .grid{gap:10px 4px}
+html[data-compact=on] h2{margin:10px 2px 6px}
+html[data-compact=on] .lrow{padding:4px 6px}
+html[data-rt=on] .top,html[data-rt=on] nav,html[data-rt=on] .pgtop{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--surface)}
+html[data-rt=on] .box{background:var(--surface)}
+html[data-gstats=on] .grid .ov .s{display:grid;top:73%}
+html[data-gstats=on] .grid .fc-s{display:grid}
+html[data-cb=on]{--up:#3b8bff!important;--down:#ff9d1a!important}
+/* impression d'une fiche */
+@media print{nav,.top,#hwLayer,.pgtop,.acts,.chopt,.totop,#toast,.box:has(#alPrice),.box:has(#pfBuy){display:none!important}body,.sheet,.panel{position:static!important;background:#fff!important;color:#000!important}.sheet[hidden]{display:none!important}main{display:none}.card2,.box{break-inside:avoid;box-shadow:none!important}}
+
+.lowg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lowg .cardbox.sm,.lowg .fc.sm{width:48px}
+.hello{font-size:13px;margin:0 2px 10px;line-height:1.45}
+.avs{display:flex;flex-wrap:wrap;gap:4px}
+.avs button{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:20px}
+.avs button[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 40%,transparent)}
+html[data-font=round] body{font-family:'Nunito',system-ui,sans-serif}
+html[data-font=cond] body{font-family:'Barlow Condensed',system-ui,sans-serif;font-size:16px}
 </style>
 </head>
 <body>
@@ -876,10 +1087,12 @@ html[data-hw=on] .box,html[data-hw=on] .card2{box-shadow:0 1px 0 rgba(255,255,25
       <div class="crumbs"><span>FC27 Companion</span> › <b>Joueurs FC 27</b></div>
       <h1 class="mk-title">Joueurs EA FC 27</h1>
       <p class="mk-sub">Toutes les cartes avec note, prix et variation. Touche une carte pour voir sa fiche. Les filtres sont dans « Filtres et tri ».</p>
+      <div id="hello" class="hello"></div>
       <div id="moodBox"></div>
       <div id="recentBox"></div>
       <div class="mk">
       <div class="mk-main">
+      <div id="qpos" class="qpos" role="group" aria-label="Postes rapides"></div>
       <div id="activeF"></div>
       <div id="list"></div>
       <div class="pager" id="pager"></div>
@@ -889,11 +1102,12 @@ html[data-hw=on] .box,html[data-hw=on] .card2{box-shadow:0 1px 0 rgba(255,255,25
           <summary>Filtres et tri</summary>
           <div class="flt-in">
             <div class="srow"><button class="chip" id="fFav" aria-pressed="false">★ Favoris</button><span class="small muted" id="count"></span></div>
-            <div class="sbox"><input class="field full" id="q" type="search" placeholder="Rechercher un joueur, un club…  (touche /)" autocomplete="off" aria-label="Rechercher" aria-autocomplete="list" aria-controls="sugg"><div class="sugg" id="sugg" role="listbox" hidden></div></div>
-            <div class="fq"><button type="button" class="btn" data-act="fclear">Effacer les filtres</button><button type="button" class="btn" data-act="rnd" title="Ouvrir une carte au hasard">🎲 Au hasard</button><button type="button" class="btn" data-act="mkshare" title="Copier le lien de cette recherche">🔗 Partager</button><button type="button" class="btn" data-act="mkcsv" title="Télécharger la liste pour Excel">⬇ Excel</button></div>
+            <div class="sbox"><input class="field full" id="q" type="search" placeholder="Rechercher un joueur, un club…  (touche /)" autocomplete="off" aria-label="Rechercher" aria-autocomplete="list" aria-controls="sugg"><button type="button" class="sbx" id="qClear" data-act="qclear" aria-label="Effacer la recherche" hidden>✕</button><button type="button" class="sbx mic" id="qMic" data-act="qmic" aria-label="Recherche vocale" hidden>🎤</button><div class="sugg" id="sugg" role="listbox" hidden></div></div>
+            <div class="fq"><button type="button" class="btn" data-act="fclear">Effacer les filtres</button><button type="button" class="btn" data-act="rnd" title="Ouvrir une carte au hasard">🎲 Au hasard</button><button type="button" class="btn" data-act="mkshare" title="Copier le lien de cette recherche">🔗 Partager</button><button type="button" class="btn" data-act="mkcsv" title="Télécharger la liste pour Excel">⬇ Excel</button><button type="button" class="btn" data-act="mksave" title="Garder cette recherche">⭐ Enregistrer</button><button type="button" class="btn" data-act="mkcopy" title="Copier les noms et les prix">📋 Copier</button></div>
+            <div id="savedS"></div>
             <div class="fsec"><div class="fh">Affichage</div>
               <div class="two">
-                <div class="seg" role="group" aria-label="Affichage"><button type="button" data-act="view" data-v="grid" id="vGrid">▦ Cartes</button><button type="button" data-act="view" data-v="list" id="vList">☰ Liste</button></div>
+                <div class="seg" role="group" aria-label="Affichage"><button type="button" data-act="view" data-v="grid" id="vGrid">▦ Cartes</button><button type="button" data-act="view" data-v="list" id="vList">☰ Liste</button><button type="button" data-act="view" data-v="table" id="vTable">▤ Tableau</button></div>
                 <label class="lab">Par page<select class="field" id="fPsz" aria-label="Cartes par page"><option value="30">30</option><option value="60">60</option><option value="120">120</option></select></label>
               </div>
             </div>
@@ -905,7 +1119,8 @@ html[data-hw=on] .box,html[data-hw=on] .card2{box-shadow:0 1px 0 rgba(255,255,25
               <option value="d1-desc">Hausse sur 24 h</option><option value="d1-asc">Baisse sur 24 h</option>
               <option value="d7-desc">Hausse sur 7 jours</option><option value="d7-asc">Baisse sur 7 jours</option>
               <option value="new-desc">Nouvelles cartes d'abord</option><option value="cpp-asc">Moins chère par point SBC</option>
-              <option value="stat-desc">Meilleure statistique choisie</option><option value="name-asc">Nom A → Z</option>
+              <option value="d30-desc">Hausse sur 30 jours</option><option value="d30-asc">Baisse sur 30 jours</option>
+              <option value="stat-desc">Meilleure statistique choisie</option><option value="name-asc">Nom A → Z</option><option value="name-desc">Nom Z → A</option>
             </select></label>
             <div class="fsec"><div class="fh">Note / Prix</div>
               <div class="two">
@@ -937,6 +1152,9 @@ html[data-hw=on] .box,html[data-hw=on] .card2{box-shadow:0 1px 0 rgba(255,255,25
               </div>
               <label class="ck"><input type="checkbox" id="fPriced"> Seulement les cartes avec un prix</label>
               <label class="ck"><input type="checkbox" id="fPsp"> Seulement avec un style de jeu + (doré)</label>
+              <label class="ck"><input type="checkbox" id="fInSq"> Seulement les joueurs de mon équipe</label>
+              <label class="ck"><input type="checkbox" id="fNoted"> Seulement les joueurs avec ma note perso</label>
+              <label class="ck"><input type="checkbox" id="fNew"> Seulement les nouvelles cartes (moins de 48 h)</label>
             </div>
             <select id="fPos" aria-label="Poste" hidden></select>
           </div>
@@ -955,13 +1173,16 @@ html[data-hw=on] .box,html[data-hw=on] .card2{box-shadow:0 1px 0 rgba(255,255,25
   <section class="page" id="pMore" aria-label="Plus"></section>
   <section class="page" id="pHelp" aria-label="Aide"></section>
   <section class="page" id="pCmp" aria-label="Comparer"></section>
+  <section class="page" id="pDisc" aria-label="Découvrir"></section>
+  <section class="page" id="pProf" aria-label="Mon profil"></section>
 </main>
 
-<!-- Barre du bas : 5 onglets seulement (texte lisible). SBC, Conseils et Réglages sont dans « Plus ». -->
+<!-- Barre du bas : 6 onglets (texte lisible). SBC, Conseils, Réglages, Profil et Aide sont dans « Plus ». -->
 <nav aria-label="Navigation"><div class="wrap" role="tablist" id="tabs">
   <span id="ind"></span>
   <button role="tab" data-tab="0" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg>Marché</button>
   <button role="tab" data-tab="1" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 16l5-5 3 3 7-8"/><path d="M15 6h4v4"/><path d="M4 20h16"/></svg>Investir</button>
+  <button role="tab" data-tab="10" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Découvrir</button>
   <button role="tab" data-tab="5" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16M3 12h18"/><circle cx="12" cy="12" r="2.5"/></svg>Équipe</button>
   <button role="tab" data-tab="4" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg>Portefeuille<i class="dot" id="dot"></i></button>
   <button role="tab" data-tab="7" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Plus<i class="dot nw" id="dotMore"></i></button>
@@ -1032,8 +1253,11 @@ const FORMS = {
 const defaults = () => ({ v: 2, theme: 'dark', anim: prefersReduced ? 'reduced' : 'full', card: 'source', sim: false, favs: [], alerts: [], pf: [], inv: { mode: 'rapide', t: 0, sz: 'gros', bud: 0, tot: 0, risk: '', n: 0 }, sq: { f: '433', s: Array(18).fill(null) },
   // --- ajouts version 3 (Halloween + simplicité) ---
   hw: 'auto', fs: 'n', acc: 'def', hc: false, view: 'grid', psz: 60, csz: 'n', tk: true, snd: false, vib: true, notif: false,
-  mf: {}, sales: [], track: [], goal: 0, seenP: {}, tut: false, news: '', done: [], cmp: [], recent: [], sqb: [null, null, null], sqi: 0, mysbc: [] });
-const NEWS_VER = '3';   // version des nouveautés (page « Nouveautés »)
+  mf: {}, sales: [], track: [], goal: 0, seenP: {}, tut: false, news: '', done: [], cmp: [], recent: [], sqb: [null, null, null], sqi: 0, mysbc: [],
+  // --- ajouts version 4 (Découvrir, jeux, profil, beauté) ---
+  disc: 'day', games: { hl: 0, hlc: 0, gn: 0, gp: 0, pack: 0, mem: 0, duel: 0, jp: 0, low: 0, played: 0 }, pulls: [], notes: {}, rs: [], saved: [], ach: {}, sqn: ['Équipe 1', 'Équipe 2', 'Équipe 3'], cap: [-1, -1, -1],
+  home: 0, compact: false, fx: true, skin: 'def', rt: false, gstats: false, viewed: 0, alog: [], dots: true, cb: false, nick: '', av: '⚽', font: 'sys' });
+const NEWS_VER = '4';   // version des nouveautés (page « Nouveautés »)
 
 function sanitize(o) {
   const d = defaults();
@@ -1057,11 +1281,11 @@ function sanitize(o) {
   if (['n', 'l', 'xl'].includes(o.fs)) d.fs = o.fs;
   if (['def', 'blue', 'orange', 'violet', 'pink'].includes(o.acc)) d.acc = o.acc;
   if (typeof o.hc === 'boolean') d.hc = o.hc;
-  if (['grid', 'list'].includes(o.view)) d.view = o.view;
+  if (['grid', 'list', 'table'].includes(o.view)) d.view = o.view;
   if ([30, 60, 120].includes(Number(o.psz))) d.psz = Number(o.psz);
   if (['n', 'l'].includes(o.csz)) d.csz = o.csz;
   ['tk', 'snd', 'vib', 'notif', 'tut'].forEach((k) => { if (typeof o[k] === 'boolean') d[k] = o[k]; });
-  if (o.mf && typeof o.mf === 'object' && !Array.isArray(o.mf)) { const m = {}; for (const k of ['q', 'pos', 'sort', 'club', 'league', 'nation', 'type', 'st', 'acc', 'dir']) if (typeof o.mf[k] === 'string') m[k] = o.mf[k].slice(0, 80); for (const k of ['minR', 'maxR', 'maxP', 'minP', 'sm', 'wf', 'stv']) { const n = Number(o.mf[k]); if (isFinite(n) && n >= 0) m[k] = n; } for (const k of ['fav', 'priced', 'psplus']) if (typeof o.mf[k] === 'boolean') m[k] = o.mf[k]; d.mf = m; }
+  if (o.mf && typeof o.mf === 'object' && !Array.isArray(o.mf)) { const m = {}; for (const k of ['q', 'pos', 'sort', 'club', 'league', 'nation', 'type', 'st', 'acc', 'dir']) if (typeof o.mf[k] === 'string') m[k] = o.mf[k].slice(0, 80); for (const k of ['minR', 'maxR', 'maxP', 'minP', 'sm', 'wf', 'stv']) { const n = Number(o.mf[k]); if (isFinite(n) && n >= 0) m[k] = n; } for (const k of ['fav', 'priced', 'psplus', 'insq', 'noted', 'onlynew']) if (typeof o.mf[k] === 'boolean') m[k] = o.mf[k]; d.mf = m; }
   if (Array.isArray(o.sales)) d.sales = o.sales.filter((x) => x && x.id != null && isFinite(x.buy) && isFinite(x.sell) && Number(x.qty) >= 1).slice(-500)
     .map((x) => ({ id: String(x.id), name: String(x.name || ''), buy: Number(x.buy), sell: Number(x.sell), qty: Math.floor(Number(x.qty)), t: Number(x.t) || Date.now(), t0: Number(x.t0) || 0 }));
   if (Array.isArray(o.track)) d.track = o.track.filter((x) => x && x.id != null && Number(x.buy) > 0 && Number(x.sell) > 0 && Number(x.t) > 0).slice(-300)
@@ -1074,6 +1298,22 @@ function sanitize(o) {
   if (Array.isArray(o.recent)) d.recent = [...new Set(o.recent.map(String))].slice(0, 12);
   if (Array.isArray(o.sqb)) d.sqb = [0, 1, 2].map((i) => { const q = o.sqb[i]; return q && typeof q === 'object' && FORMS[q.f] && Array.isArray(q.s) ? { f: q.f, s: Array.from({ length: 18 }, (_, k) => (q.s[k] == null ? null : String(q.s[k]))) } : null; });
   { const i = Math.round(Number(o.sqi)); if (i >= 0 && i <= 2) d.sqi = i; }
+  // --- version 4 ---
+  if (['rank', 'stats', 'day', 'games'].includes(o.disc)) d.disc = o.disc;
+  if (o.games && typeof o.games === 'object') for (const k of Object.keys(d.games)) { const n = Number(o.games[k]); if (isFinite(n) && n >= 0) d.games[k] = Math.round(n); }
+  if (Array.isArray(o.pulls)) d.pulls = o.pulls.map(String).slice(-60);
+  if (o.notes && typeof o.notes === 'object') for (const [k, v] of Object.entries(o.notes).slice(0, 500)) if (typeof v === 'string' && v.trim()) d.notes[String(k)] = v.slice(0, 500);
+  if (Array.isArray(o.rs)) d.rs = o.rs.filter((x) => typeof x === 'string' && x.trim()).map((x) => x.slice(0, 40)).slice(0, 8);
+  if (Array.isArray(o.saved)) d.saved = o.saved.filter((x) => x && typeof x.n === 'string' && x.mf && typeof x.mf === 'object').slice(0, 20).map((x) => ({ n: x.n.slice(0, 40), mf: x.mf }));
+  if (o.ach && typeof o.ach === 'object') for (const [k, v] of Object.entries(o.ach).slice(0, 60)) if (Number(v) > 0) d.ach[String(k)] = Number(v);
+  if (Array.isArray(o.sqn)) d.sqn = [0, 1, 2].map((i) => (typeof o.sqn[i] === 'string' && o.sqn[i].trim() ? o.sqn[i].slice(0, 30) : 'Équipe ' + (i + 1)));
+  if (Array.isArray(o.cap)) d.cap = [0, 1, 2].map((i) => { const n = Math.round(Number(o.cap[i])); return n >= 0 && n <= 10 ? n : -1; });
+  { const h = Math.round(Number(o.home)); if ([0, 1, 4, 5, 10].includes(h)) d.home = h; }
+  if (typeof o.nick === 'string') d.nick = o.nick.slice(0, 24); if (typeof o.av === 'string' && o.av.length <= 8) d.av = o.av; if (['sys', 'round', 'cond'].includes(o.font)) d.font = o.font;
+  ['compact', 'fx', 'rt', 'gstats', 'dots', 'cb'].forEach((k) => { if (typeof o[k] === 'boolean') d[k] = o[k]; });
+  if (['def', 'oled', 'navy', 'pitch'].includes(o.skin)) d.skin = o.skin;
+  { const n = Math.round(Number(o.viewed)); if (n >= 0) d.viewed = n; }
+  if (Array.isArray(o.alog)) d.alog = o.alog.filter((x) => x && typeof x.txt === 'string').slice(-30).map((x) => ({ txt: x.txt.slice(0, 160), t: Number(x.t) || Date.now() }));
   if (Array.isArray(o.mysbc)) d.mysbc = o.mysbc.filter((x) => x && x.name).slice(0, 40).map((x) => ({ name: String(x.name).slice(0, 80), expectedDate: String(x.expectedDate || '').slice(0, 25), requirements: cleanReqs(x.requirements), note: String(x.note || '').slice(0, 200), official: false, mine: true }));
   return d;
 }
@@ -1434,7 +1674,7 @@ setInterval(() => { try { renderHeader(); } catch (e) { /* rien */ } }, 60e3);  
 /* =====================================================================
    Onglet Marché
    ===================================================================== */
-const M0 = { q: '', pos: '', minR: 0, maxR: 0, maxP: '', minP: '', sort: 'price-desc', fav: false, page: 1, ps: '', club: '', league: '', nation: '', type: '', sm: 0, wf: 0, st: '', stv: 0, acc: '', dir: '', priced: false, psplus: false };
+const M0 = { q: '', pos: '', minR: 0, maxR: 0, maxP: '', minP: '', sort: 'price-desc', fav: false, page: 1, ps: '', club: '', league: '', nation: '', type: '', sm: 0, wf: 0, st: '', stv: 0, acc: '', dir: '', priced: false, psplus: false, insq: false, noted: false, onlynew: false };
 const M = Object.assign({}, M0);
 // Les filtres sont gardés d'une visite à l'autre (sur cet appareil)
 (function () { const f = S.mf || {}; for (const k of Object.keys(M0)) if (k in f && typeof f[k] === typeof M0[k]) M[k] = f[k]; if (f.maxP > 0) M.maxP = f.maxP; if (f.minP > 0) M.minP = f.minP; })();
@@ -1474,7 +1714,7 @@ function lev1(a, b) {   // distance d'édition, arrêtée dès qu'elle dépasse 
   return prev[b.length];
 }
 function fuzzyHit(c, words) { const nw = c._nn.split(/[\s.'-]+/).filter(Boolean); return words.every((w) => nw.some((x) => x.startsWith(w) || (w.length >= 4 && lev1(w, x.slice(0, w.length + 1)) <= (w.length >= 7 ? 2 : 1)))); }
-let FUZZY = false;
+let FUZZY = false, SQSET = new Set();
 function filtered() {
   const q = norm(M.q).trim();
   const max = M.maxP === '' ? null : Number(M.maxP), min = M.minP === '' ? null : Number(M.minP);
@@ -1498,9 +1738,13 @@ function filtered() {
     if (M.st && M.stv && !(Number(c.stats[M.st]) >= M.stv)) return false;
     if (M.priced && c.price == null) return false;
     if (M.psplus && !(c.ps || []).some((x) => x.g && !x.x)) return false;
+    if (M.insq && !SQSET.has(c.id)) return false;
+    if (M.noted && !S.notes[c.id]) return false;
+    if (M.onlynew && !(c._first > 0 && Date.now() - c._first < 48 * 36e5)) return false;
     if (M.dir) { const v = c._d1 != null ? c._d1 : c._chg; if (v == null) return false; if (M.dir === 'up' && !(v > 0.0005)) return false; if (M.dir === 'down' && !(v < -0.0005)) return false; if (M.dir === 'flat' && Math.abs(v) > 0.0005) return false; }
     return true;
   };
+  SQSET = new Set(S.sq.s.filter(Boolean).concat(...(S.sqb || []).filter(Boolean).map((x) => x.s.filter(Boolean))));
   let a = CARDS.filter((c) => (!q || c._n.includes(q)) && pass(c));
   FUZZY = false;
   if (q && !a.length && q.length >= 3) { const words = q.split(/\s+/).filter(Boolean); a = CARDS.filter((c) => pass(c) && fuzzyHit(c, words)); FUZZY = a.length > 0; }
@@ -1515,10 +1759,11 @@ function filtered() {
   else if (k === 'chg') a.sort(nl((c) => c._chg, sg));
   else if (k === 'd1') a.sort(nl((c) => c._d1, sg));
   else if (k === 'd7') a.sort(nl((c) => c._d7, sg));
+  else if (k === 'd30') a.sort(nl((c) => c._d30, sg));
   else if (k === 'new') a.sort((x, y) => (y._first || 0) - (x._first || 0));
   else if (k === 'cpp') a.sort(nl((c) => { if (c.price == null) return null; const is = itemScore(c); return is && is.pts ? c.price / is.pts : null; }, 1));
   else if (k === 'stat') { const st = M.st || 'PAC'; a.sort(nl((c) => (c.stats[st] != null && c.stats[st] !== '' ? Number(c.stats[st]) : null), -1)); }
-  else a.sort((x, y) => x.name.localeCompare(y.name, 'fr'));
+  else a.sort((x, y) => sg * x.name.localeCompare(y.name, 'fr'));
   return a;
 }
 
@@ -1532,8 +1777,9 @@ function rowHtml(c) {
   const fav = FAV.has(c.id);
   const p1 = (c._pos && c._pos[0]) || String(c.pos || '').split(',')[0].trim();
   const normal = /(^|[\/_])(gold|silver|bronze|rare|common)\.png/i.test(String(c.cardImage || '').split('?')[0]);
-  return '<div class="tile ' + (normal ? 'nm' : 'sp') + '"><button class="open" data-act="open" data-id="' + esc(c.id) + '" aria-label="' + esc(c.name) + '">' + cardImg(c, 'md') +
-    (c.variant === 'holo' ? '<span class="vtag">HOLO</span>' : '') + (isNew(c) ? '<span class="newb">NOUVEAU</span>' : '') + '<div class="mpill">' + (p1 ? '<span class="pb">' + esc(p1) + '</span>' : '') + '<span>' + esc(c.rating) + '</span>' +
+  const tr = c._d1 != null ? c._d1 : c._chg;
+  return '<div class="tile ' + (normal ? 'nm' : 'sp') + (c.rating >= 90 ? ' r90' : c.rating >= 86 ? ' r86' : '') + '"><button class="open" data-act="open" data-id="' + esc(c.id) + '" aria-label="' + esc(c.name) + '">' + cardImg(c, 'md') +
+    (c.variant === 'holo' ? '<span class="vtag">HOLO</span>' : '') + (isNew(c) ? '<span class="newb">NOUVEAU</span>' : '') + '<div class="mpill' + (tr > 0.0005 ? ' pu' : tr < -0.0005 ? ' pd' : '') + '">' + (p1 ? '<span class="pb">' + esc(p1) + '</span>' : '') + '<span>' + esc(c.rating) + '</span>' +
     (c.price != null ? '<span class="coin"></span><span class="pn">' + short(c.price) + '</span>' : '<span class="ex">—</span>') + '</div>' + chgHtml(c) + '</button>' +
     '<button class="star" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '" aria-label="' + (fav ? 'Retirer des favoris' : 'Ajouter aux favoris') + ' : ' + esc(c.name) + '">' + (fav ? '★' : '☆') + '</button></div>';
 }
@@ -1545,17 +1791,23 @@ function hl(text, q) {   // met en surbrillance le texte cherché
   const raw = String(text);
   return esc(raw.slice(0, i)) + '<mark>' + esc(raw.slice(i, i + q.length)) + '</mark>' + esc(raw.slice(i + q.length));
 }
+function miniSpark(c) {
+  const sr = c._series.slice(-20); if (sr.length < 3) return '';
+  const lo = Math.min(...sr.map((q) => q.p)), hi = Math.max(...sr.map((q) => q.p)), sp = hi - lo || 1;
+  const d = sr.map((q, i) => (i ? 'L' : 'M') + (i / (sr.length - 1) * 56 + 2).toFixed(1) + ' ' + (20 - (q.p - lo) / sp * 16).toFixed(1)).join(' ');
+  return '<svg class="msp" viewBox="0 0 60 22" aria-hidden="true"><path d="' + d + '" fill="none" stroke="' + (sr[sr.length - 1].p >= sr[0].p ? 'var(--up)' : 'var(--down)') + '" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+}
 function listRowHtml(c, q) {
   const fav = FAV.has(c.id), d = c._d1 != null ? c._d1 : c._chg;
   const ch = d == null ? '<span class="fl">–</span>' : Math.abs(d) < 0.0005 ? '<span class="fl">■ stable</span>' : '<span class="' + (d > 0 ? 'up' : 'dn') + '">' + (d > 0 ? '▲ ' : '▼ ') + pct(d) + '</span>';
   return '<div class="lrow"><button class="open" data-act="open" data-id="' + esc(c.id) + '" aria-label="' + esc(c.name) + '">' + cardImg(c, 'sm') +
     '<span class="lt"><b>' + hl(c.name, q) + ' <span class="rt" style="display:inline;color:var(--muted)">' + esc(c.rating) + '</span>' + (isNew(c) ? '<span class="newb inl">NOUVEAU</span>' : '') + (c.variant === 'holo' ? '<span class="newb inl" style="background:#9b6bff;color:#fff">HOLO</span>' : '') + '</b>' +
     '<span>' + esc([(c._pos || [])[0], c.club, c.nation].filter(Boolean).join(' · ')) + '</span><span>' + (c._seen ? 'prix ' + agoText(c._seen) : 'âge du prix inconnu') + '</span></span>' +
-    '<span class="lp"><b>' + (c.price != null ? '<span class="coin"></span>' + short(c.price) : '—') + '</b><span class="small">' + ch + (c._d1 != null ? ' <span class="muted">24 h</span>' : '') + '</span></span></button>' +
+    miniSpark(c) + '<span class="lp"><b>' + (c.price != null ? '<span class="coin"></span>' + short(c.price) : '—') + '</b><span class="small">' + ch + (c._d1 != null ? ' <span class="muted">24 h</span>' : '') + '</span></span></button>' +
     '<button class="star" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '" aria-label="' + (fav ? 'Retirer des favoris' : 'Ajouter aux favoris') + ' : ' + esc(c.name) + '">' + (fav ? '★' : '☆') + '</button></div>';
 }
 // Petites étiquettes des filtres actifs, au-dessus de la liste : on en retire un d'un seul toucher
-const SORTN = { 'price-desc': 'Prix ↓', 'price-asc': 'Prix ↑', 'rating-desc': 'Note ↓', 'rating-asc': 'Note ↑', 'chg-desc': 'Hausses', 'chg-asc': 'Baisses', 'd1-desc': 'Hausse 24 h', 'd1-asc': 'Baisse 24 h', 'd7-desc': 'Hausse 7 j', 'd7-asc': 'Baisse 7 j', 'new-desc': 'Nouvelles', 'cpp-asc': 'Prix par point SBC', 'stat-desc': 'Meilleure stat', 'name-asc': 'Nom A → Z' };
+const SORTN = { 'd30-desc': 'Hausse 30 j', 'd30-asc': 'Baisse 30 j', 'name-desc': 'Nom Z → A', 'price-desc': 'Prix ↓', 'price-asc': 'Prix ↑', 'rating-desc': 'Note ↓', 'rating-asc': 'Note ↑', 'chg-desc': 'Hausses', 'chg-asc': 'Baisses', 'd1-desc': 'Hausse 24 h', 'd1-asc': 'Baisse 24 h', 'd7-desc': 'Hausse 7 j', 'd7-asc': 'Baisse 7 j', 'new-desc': 'Nouvelles', 'cpp-asc': 'Prix par point SBC', 'stat-desc': 'Meilleure stat', 'name-asc': 'Nom A → Z' };
 function activeChips() {
   const a = [], add = (k, t) => a.push('<button type="button" class="af" data-act="unf" data-k="' + k + '" aria-label="Retirer le filtre ' + esc(t) + '">' + esc(t) + '</button>');
   if (M.q) add('q', '« ' + M.q + ' »');
@@ -1570,7 +1822,7 @@ function activeChips() {
   if (M.sm) add('sm', 'Gestes ' + M.sm + '★+'); if (M.wf) add('wf', 'Pied faible ' + M.wf + '★+');
   if (M.st && M.stv) add('st', M.st + ' ' + M.stv + '+');
   if (M.dir) add('dir', { up: 'En hausse', down: 'En baisse', flat: 'Stable' }[M.dir]);
-  if (M.priced) add('priced', 'Avec prix'); if (M.psplus) add('psplus', 'Style +');
+  if (M.priced) add('priced', 'Avec prix'); if (M.psplus) add('psplus', 'Style +'); if (M.insq) add('insq', 'Mon équipe'); if (M.noted) add('noted', 'Avec ma note'); if (M.onlynew) add('onlynew', 'Nouvelles');
   if (M.ps) add('ps', 'Style : ' + M.ps);
   if (M.sort !== 'price-desc') add('sort', 'Tri : ' + (SORTN[M.sort] || M.sort));
   return a.join('');
@@ -1581,12 +1833,20 @@ function syncFilterUI() {
   set('#q', M.q); set('#fSort', M.sort); set('#fRat', String(M.minR)); set('#fRatMax', String(M.maxR)); set('#fMax', M.maxP === '' ? '' : String(M.maxP)); set('#fMin', M.minP === '' ? '' : String(M.minP));
   set('#fClub', M.club); set('#fLeague', M.league); set('#fNation', M.nation); set('#fType', M.type); set('#fAcc', M.acc);
   set('#fSm', String(M.sm)); set('#fWf', String(M.wf)); set('#fSt', M.st); set('#fStv', String(M.stv)); set('#fDir', M.dir); set('#fPsz', String(S.psz)); set('#fPos', M.pos);
-  const ck = (id, v) => { const el = $(id); if (el) el.checked = !!v; }; ck('#fPriced', M.priced); ck('#fPsp', M.psplus);
-  const fv = $('#fFav'); if (fv) fv.setAttribute('aria-pressed', String(M.fav));
-  const g = $('#vGrid'), l = $('#vList'); if (g) g.setAttribute('aria-pressed', String(S.view === 'grid')); if (l) l.setAttribute('aria-pressed', String(S.view === 'list'));
+  const ck = (id, v) => { const el = $(id); if (el) el.checked = !!v; }; ck('#fPriced', M.priced); ck('#fPsp', M.psplus); ck('#fInSq', M.insq); ck('#fNoted', M.noted); ck('#fNew', M.onlynew);
+  const fv = $('#fFav'); if (fv) { fv.setAttribute('aria-pressed', String(M.fav)); fv.textContent = '★ Favoris' + (FAV.size ? ' (' + FAV.size + ')' : ''); }
+  [['#vGrid', 'grid'], ['#vList', 'list'], ['#vTable', 'table']].forEach(([id, v]) => { const b = $(id); if (b) b.setAttribute('aria-pressed', String(S.view === v)); });
+  const qc = $('#qClear'); if (qc) qc.hidden = !($('#q').value || '').length;
   document.querySelectorAll('#pChips button').forEach((b) => b.setAttribute('aria-pressed', String(String(M.minP === '' ? 0 : M.minP) === b.dataset.a && String(M.maxP) === b.dataset.b)));
 }
 // « Humeur du marché » : combien de cartes montent / baissent sur 24 h
+const TIPS = ['Tape « 12,5k » au lieu de « 12 500 » dans n\'importe quel champ de prix.', 'Touche 5 fois la citrouille… 🎃', 'Dans une fiche, les flèches ‹ › passent au joueur suivant.', 'Le bouton « 🔗 Partager » des filtres crée un lien vers ta recherche.', 'La vue « Tableau » est idéale sur ordinateur : clique sur une colonne pour trier.', 'Dans Découvrir → Stats, touche une barre pour filtrer le Marché.', 'Ta note perso sur un joueur est visible dans ton profil.', 'Les SBC faits restent cochés : filtre « À faire » dans la page SBC.', 'Avant d\'acheter, regarde la jauge « Bon moment pour acheter ? » dans la fiche.', 'L\'image de ton équipe se télécharge depuis l\'onglet Équipe.'];
+function renderHello() {
+  const b = $('#hello'); if (!b) return; const h = new Date().getHours();
+  const hi = h < 5 ? 'Bonne nuit' : h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir';
+  const tip = TIPS[hashStr(new Date().toLocaleDateString('sv-SE')) % TIPS.length];
+  b.innerHTML = '<b>' + hi + (S.nick ? ' ' + esc(S.nick) : '') + ' ' + esc(S.av || '') + '</b> <span class="muted">· 💡 Astuce du jour : ' + esc(tip) + '</span>';
+}
 function renderMood() {
   const box = $('#moodBox'); if (!box) return;
   let up = 0, dn = 0, sum = 0, n = 0;
@@ -1626,10 +1886,28 @@ function renderMarket() {
   const psBar = M.ps ? '<div class="note" style="margin:0 0 10px;display:flex;gap:10px;align-items:center;justify-content:space-between">' + '<span>Style de jeu : <b>' + esc(M.ps) + '</b></span><button type="button" class="btn" data-act="psclear">Retirer</button></div>' : '';
   const fz = FUZZY ? '<div class="note" style="margin:0 0 10px">Rien d\'exact pour « ' + esc(M.q) + ' » : voici les noms qui s\'en rapprochent.</div>' : '';
   const q = FUZZY ? '' : norm(M.q).trim();
-  $('#list').innerHTML = psBar + fz + (slice.length ? (S.view === 'list' ? '<div class="lst">' + slice.map((c) => listRowHtml(c, q)).join('') + '</div>' : '<div class="grid">' + slice.map(rowHtml).join('') + '</div>')
+  $('#list').innerHTML = psBar + fz + (slice.length ? (S.view === 'list' ? '<div class="lst">' + slice.map((c) => listRowHtml(c, q)).join('') + '</div>' : S.view === 'table' ? tableHtml(slice) : '<div class="grid">' + slice.map(rowHtml).join('') + '</div>')
     : '<div class="empty muted">' + (hwOn() ? '🕸️ ' : '') + 'Aucune carte ne correspond à ces filtres.' + (M.ps ? '<br>Le robot n\'a relevé les styles de jeu que de quelques cartes pour l\'instant.' : '') + '<div style="margin-top:10px"><button type="button" class="btn" data-act="fclear">Effacer les filtres</button></div></div>');
   $('#pager').innerHTML = pages > 1 ? pagerHtml(M.page, pages) : '';
-  syncFilterUI(); renderMood(); renderRecent();
+  syncFilterUI(); renderMood(); renderRecent(); renderQpos(); renderSaved(); renderHello();
+}
+// Vue « Tableau » (pratique sur ordinateur) : clique sur un titre de colonne pour trier
+function tableHtml(list) {
+  const th = (t, k) => { const on = M.sort.split('-')[0] === k; return '<th>' + (k ? '<button type="button" data-act="tsort" data-k="' + k + '" class="' + (on ? 'on' : '') + '">' + t + (on ? (M.sort.endsWith('asc') ? ' ▲' : ' ▼') : '') + '</button>' : t) + '</th>'; };
+  const dv = (v) => v == null ? '<td class="fl">–</td>' : '<td class="' + (v > 0.0005 ? 'up' : v < -0.0005 ? 'dn' : 'fl') + '">' + (Math.abs(v) < 0.0005 ? '0 %' : pct(v)) + '</td>';
+  return '<div class="tbl"><table><thead><tr>' + th('Joueur', 'name') + th('Note', 'rating') + '<th>Poste</th><th>Club</th>' + th('Prix', 'price') + th('24 h', 'd1') + th('7 j', 'd7') + STATK.map((k) => '<th>' + k + '</th>').join('') + '<th></th></tr></thead><tbody>' +
+    list.map((c) => '<tr><td><button type="button" class="linkb" style="color:var(--text);text-decoration:none" data-act="open" data-id="' + esc(c.id) + '">' + esc(c.name) + '</button>' + (isNew(c) ? ' <span class="newb inl">NEW</span>' : '') + '</td><td><b>' + esc(c.rating) + '</b></td><td>' + esc((c._pos || [])[0] || '') + '</td><td class="muted">' + esc(c.club) + '</td><td class="tp">' + (c.price != null ? fmt(c.price) : '—') + '</td>' + dv(c._d1) + dv(c._d7) +
+      STATK.map((k) => '<td>' + (c.stats[k] != null ? esc(c.stats[k]) : '') + '</td>').join('') + '<td><button class="star" style="position:static" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + FAV.has(c.id) + '" aria-label="Favori">' + (FAV.has(c.id) ? '★' : '☆') + '</button></td></tr>').join('') + '</tbody></table></div>';
+}
+// Raccourcis de postes en haut de la liste (faciles à toucher sur téléphone)
+function renderQpos() {
+  const b = $('#qpos'); if (!b) return;
+  b.innerHTML = [['', 'Tous'], ['g:GK', 'Gardiens'], ['g:DEF', 'Défenseurs'], ['g:MIL', 'Milieux'], ['g:ATT', 'Attaquants']].map(([v, t]) => '<button type="button" data-act="pos" data-v="' + v + '" aria-pressed="' + (M.pos === v) + '">' + t + '</button>').join('');
+}
+// Recherches enregistrées
+function renderSaved() {
+  const b = $('#savedS'); if (!b) return;
+  b.innerHTML = S.saved.length ? '<div class="fh" style="margin:2px 0 4px">⭐ Mes recherches</div><div class="chips2">' + S.saved.map((x, i) => '<span class="svd"><button type="button" data-act="svgo" data-i="' + i + '">' + esc(x.n) + '</button><button type="button" data-act="svdel" data-i="' + i + '" aria-label="Supprimer ' + esc(x.n) + '">✕</button></span>').join('') + '</div>' : '';
 }
 let LASTLIST = [];
 
@@ -1646,6 +1924,7 @@ function pagerHtml(cur, total) {
     prev = n;
   }
   h += '<button class="pgb" data-act="pg" data-d="1"' + (cur >= total ? ' disabled' : '') + ' aria-label="Page suivante">›</button>';
+  if (total > 7) h += '<label class="pgg">Page <input type="text" inputmode="numeric" id="pgGo" placeholder="' + cur + '" aria-label="Aller à la page"> / ' + total + '</label>';
   return h;
 }
 
@@ -1722,7 +2001,7 @@ function sbcBlock(s) {
       : '<div class="small muted" style="margin-top:6px">Prérequis inconnus : ajoute-les (bouton « Ajouter un SBC » plus bas, ou sbcs.json) pour obtenir le coût et des conseils.</div>') +
     (s.reward ? '<div class="small" style="margin-top:4px">Récompense : ' + esc(s.reward) + '</div>' : '') +
     (s.note ? '<div class="small muted" style="margin-top:4px">' + esc(s.note) + '</div>' : '') + cost +
-    '<div class="row2" style="margin-top:8px"><button type="button" class="btn" data-act="sbcdone" data-k="' + esc(key) + '">' + (done ? 'Marquer à faire' : '✓ Marquer comme fait') + '</button>' + (s.mine ? '<button type="button" class="btn danger" data-act="sbcdel" data-n="' + esc(s.name) + '">Supprimer</button>' : '') + '</div></div>';
+    '<div class="row2" style="margin-top:8px"><button type="button" class="btn" data-act="sbcdone" data-k="' + esc(key) + '">' + (done ? 'Marquer à faire' : '✓ Marquer comme fait') + '</button>' + (s.reqs.length ? '<button type="button" class="btn" data-act="tofod">🧺 Fourrage le moins cher</button>' : '') + (s.mine ? '<button type="button" class="btn danger" data-act="sbcdel" data-n="' + esc(s.name) + '">Supprimer</button>' : '') + '</div></div>';
 }
 function renderSbc() {
   const { cur, up } = buildSbcs();
@@ -1743,6 +2022,7 @@ document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act;
   if (a === 'sbcf') { SBCF = el.dataset.f; renderSbc(); }
+  else if (a === 'tofod') { S.disc = 'stats'; save(); showTab(10); setTimeout(() => { const t = [...document.querySelectorAll('#pDisc h2')].find((x) => /Fourrage/.test(x.textContent)); if (t) t.scrollIntoView({ behavior: 'smooth' }); }, 300); }
   else if (a === 'sbcdone') { const k = el.dataset.k; S.done = S.done.includes(k) ? S.done.filter((x) => x !== k) : S.done.concat(k); save(); renderSbc(); }
   else if (a === 'sbcdel') { const n = el.dataset.n, old = S.mysbc.slice(); S.mysbc = S.mysbc.filter((x) => x.name !== n); save(); renderSbc(); toast('SBC supprimé', () => { S.mysbc = old; save(); renderSbc(); }); }
   else if (a === 'sbcadd') {
@@ -2076,6 +2356,8 @@ async function scanLaunch() {
     if (r.ok && j.ok) {
       SCAN_AT = Date.now(); try { localStorage.setItem('fc27.scanAt', String(SCAN_AT)); } catch (e) { /* ignoré */ }
       scanSay('Scan lancé. Il prend quelques minutes : cette page te dit quand il est fini.'); scanWatch();
+    } else if (r.status === 429 && j.state === 'daily') {
+      scanSay(j.message || 'Nombre maximum de scans atteint pour aujourd\'hui. Le scan de la nuit mettra les prix à jour.');
     } else if (r.status === 429) {
       const w = Math.max(5, Number(j.wait) || 60); SCAN_AT = Date.now() - SCAN_WAIT + w * 1000;
       scanSay(j.state === 'running' ? 'Un scan est déjà en cours (lancé par quelqu\'un d\'autre) : patiente.' : 'Un scan vient d\'être lancé : réessaie dans quelques minutes.'); scanWatch();
@@ -2268,11 +2550,11 @@ function checkAlerts() {
     if (a.trig) continue;
     const c = MAP.get(a.cid);
     if (!c || c.price == null) continue;
-    if ((a.dir === '<=' && c.price <= a.price) || (a.dir === '>=' && c.price >= a.price)) { a.trig = true; a.seen = false; n++; }
+    if ((a.dir === '<=' && c.price <= a.price) || (a.dir === '>=' && c.price >= a.price)) { a.trig = true; a.seen = false; n++; S.alog.push({ txt: c.name + ' : prix ' + fmt(c.price) + ' (alerte ' + (a.dir === '<=' ? '≤ ' : '≥ ') + fmt(a.price) + ')', t: Date.now() }); S.alog = S.alog.slice(-30); }
   }
   // Objectifs de revente du Portefeuille atteints
   const hits = [];
-  for (const p of S.pf) { if (!p.tgt || p.hit) continue; const c = MAP.get(p.id); if (c && c.price != null && c.price >= p.tgt) { p.hit = true; hits.push(c); } }
+  for (const p of S.pf) { if (!p.tgt || p.hit) continue; const c = MAP.get(p.id); if (c && c.price != null && c.price >= p.tgt) { p.hit = true; hits.push(c); S.alog.push({ txt: '🎯 ' + c.name + ' a atteint ton objectif (' + fmt(p.tgt) + ')', t: Date.now() }); S.alog = S.alog.slice(-30); } }
   if (n || hits.length) {
     save();
     const msg = (n ? n + ' alerte' + (n > 1 ? 's' : '') + ' de prix déclenchée' + (n > 1 ? 's' : '') : '') + (n && hits.length ? ' · ' : '') + (hits.length ? '🎯 Objectif atteint : ' + hits.slice(0, 3).map(cardLabel).join(', ') : '');
@@ -2316,6 +2598,25 @@ function pfValueChart() {
   return '<div class="box"><b>Valeur de ton portefeuille</b> <span class="small muted">(taxe retirée, depuis ' + fmtDate(new Date(start)) + ')</span><svg class="pfchart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Courbe de la valeur du portefeuille"><path d="' + xy.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ') + '" fill="none" stroke="' + (up ? 'var(--up)' : 'var(--down)') + '" stroke-width="2.4" stroke-linejoin="round"/></svg>' +
     '<div class="meterl"><span>' + short(pts[0][1]) + '</span><span>' + (up ? '▲ ' : '▼ ') + pct(pts[pts.length - 1][1] / (pts[0][1] || 1) - 1) + '</span><span>' + short(pts[pts.length - 1][1]) + '</span></div></div>';
 }
+// Répartition de la valeur du portefeuille (anneau) : les 5 plus grosses lignes + « autres »
+function pfDonut() {
+  const parts = []; S.pf.forEach((p) => { const c = MAP.get(p.id); if (c && c.price != null) parts.push([cardLabel(c), c.price * p.qty]); });
+  if (parts.length < 2) return '';
+  parts.sort((a, b) => b[1] - a[1]); const top = parts.slice(0, 5), rest = parts.slice(5).reduce((a, x) => a + x[1], 0); if (rest) top.push(['Autres', rest]);
+  const tot = top.reduce((a, x) => a + x[1], 0), cols = ['#ff7a1a', '#3ddc84', '#4cc9f0', '#b46bff', '#ffd166', '#8d96a6'];
+  let ang = -Math.PI / 2; const arcs = top.map(([n, v], i) => { const a2 = ang + v / tot * Math.PI * 2, large = a2 - ang > Math.PI ? 1 : 0, r = 42, cx = 50, cy = 50; const d = 'M' + (cx + r * Math.cos(ang)).toFixed(2) + ' ' + (cy + r * Math.sin(ang)).toFixed(2) + ' A' + r + ' ' + r + ' 0 ' + large + ' 1 ' + (cx + r * Math.cos(a2 - 0.0001)).toFixed(2) + ' ' + (cy + r * Math.sin(a2 - 0.0001)).toFixed(2); ang = a2; return '<path d="' + d + '" fill="none" stroke="' + cols[i] + '" stroke-width="14"/>'; });
+  return '<div class="box donut"><svg viewBox="0 0 100 100" role="img" aria-label="Répartition de la valeur du portefeuille">' + arcs.join('') + '<text x="50" y="54" text-anchor="middle" style="font-size:11px;font-weight:800;fill:var(--text)">' + short(tot) + '</text></svg><div>' + top.map(([n, v], i) => '<div class="dl"><i style="background:' + cols[i] + '"></i>' + esc(n) + ' <b>' + Math.round(v / tot * 100) + ' %</b></div>').join('') + '</div></div>';
+}
+// Statistiques des ventes : réussite, meilleure / pire, durée moyenne, gains par mois
+function salesStats() {
+  if (!S.sales.length) return '';
+  const g = S.sales.map((x) => [(x.sell * (1 - TAX) - x.buy) * x.qty, x]), wins = g.filter((x) => x[0] > 0).length;
+  const best = g.reduce((a, x) => (x[0] > a[0] ? x : a)), worst = g.reduce((a, x) => (x[0] < a[0] ? x : a));
+  const held = S.sales.filter((x) => x.t0 > 0).map((x) => (x.t - x.t0) / 864e5);
+  const months = []; for (let k = 5; k >= 0; k--) { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - k); const key = d.toISOString().slice(0, 7); months.push({ l: MONTHS[d.getMonth()], v: g.filter((x) => new Date(x[1].t).toISOString().slice(0, 7) === key).reduce((a, x) => a + x[0], 0) }); }
+  return '<div class="kpis" style="margin-top:10px"><div><b class="' + (wins / g.length >= 0.5 ? 'up' : 'dn') + '">' + Math.round(wins / g.length * 100) + ' %</b><i>ventes gagnantes</i></div><div><b class="up">+' + short(best[0]) + '</b><i>meilleure (' + esc(best[1].name || '') + ')</i></div><div><b class="' + (worst[0] >= 0 ? 'up' : 'dn') + '">' + (worst[0] >= 0 ? '+' : '') + short(worst[0]) + '</b><i>moins bonne</i></div><div><b>' + (held.length ? (held.reduce((a, b) => a + b, 0) / held.length).toFixed(1).replace('.', ',') + ' j' : '—') + '</b><i>gardée en moyenne</i></div></div>' +
+    '<div style="margin-top:8px"><b class="small">Gains des ventes par mois</b>' + hbars(months.map((m) => ({ l: m.l, v: m.v, t: (m.v >= 0 ? '+' : '') + short(m.v) })), { signed: true }) + '</div>';
+}
 function heldText(t) { const d = Math.floor((Date.now() - t) / 864e5); return d <= 0 ? 'achetée aujourd\'hui' : 'gardée depuis ' + d + ' jour' + (d > 1 ? 's' : ''); }
 function pfAdvice(c, p) {
   if (!c || c.price == null) return '';
@@ -2339,7 +2640,8 @@ function renderPortfolio() {
     const gainT = net - inv;
     h += '<div class="box"><div class="tri"><div><span class="small muted">Investi</span><b>' + fmt(inv) + '</b></div><div><span class="small muted">Valeur nette</span><b>' + fmt(net) + '</b></div><div><span class="small muted">Gain si tu vends tout</span><b class="' + (gainT >= 0 ? 'up' : 'dn') + '">' + (gainT >= 0 ? '+' : '') + fmt(gainT) + '</b></div></div>' +
       (known ? '' : '<div class="small muted" style="margin-top:6px">Certaines cartes n\'ont pas de prix : elles ne comptent pas dans la valeur nette.</div>') + '</div>';
-    h += pfValueChart();
+    h += pfValueChart() + pfDonut();
+    { const withT = S.pf.filter((p) => p.tgt > 0); if (withT.length) { const g = withT.reduce((a, p) => a + (p.tgt * (1 - TAX) - p.buy) * p.qty, 0); h += '<div class="note">🎯 Si tes ' + withT.length + ' objectif' + (withT.length > 1 ? 's' : '') + ' de revente ' + (withT.length > 1 ? 'sont atteints' : 'est atteint') + ', tu gagnes <b class="' + (g >= 0 ? 'up' : 'dn') + '">' + (g >= 0 ? '+' : '') + fmt(g) + '</b> (taxe retirée).</div>'; } }
     const dup = new Set(), seen = new Set(); S.pf.forEach((p) => { if (seen.has(p.id)) dup.add(p.id); seen.add(p.id); });
     h += '<div class="box">' + (dup.size ? '<div class="row2" style="margin-bottom:6px"><button type="button" class="btn" data-act="pfmerge">Regrouper les achats de la même carte (' + dup.size + ')</button></div>' : '') +
       S.pf.map((p) => {
@@ -2359,7 +2661,8 @@ function renderPortfolio() {
   h += '<h2>Ventes</h2><div class="box"><div class="tri"><div><span class="small muted">Gagné (ventes)</span><b class="' + (real >= 0 ? 'up' : 'dn') + '">' + (real >= 0 ? '+' : '') + fmt(real) + '</b></div><div><span class="small muted">Ce mois-ci</span><b class="' + (realM >= 0 ? 'up' : 'dn') + '">' + (realM >= 0 ? '+' : '') + fmt(realM) + '</b></div><div><span class="small muted">Taxe EA payée</span><b>' + fmt(taxPaid) + '</b></div></div>' +
     '<div style="margin-top:10px"><label class="lab">Objectif de gain ce mois-ci<span class="row2"><input class="field" id="goalIn" type="text" inputmode="decimal" placeholder="ex : 100k" value="' + (S.goal || '') + '" style="flex:1"><button type="button" class="btn" data-act="goalset">OK</button></span></label>' +
     (S.goal ? '<div class="goal" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(Math.max(0, Math.min(1, realM / S.goal)) * 100) + '"><i style="width:' + (Math.max(0, Math.min(1, realM / S.goal)) * 100).toFixed(1) + '%"></i></div><div class="small muted">' + fmt(Math.max(0, realM)) + ' sur ' + fmt(S.goal) + (realM >= S.goal ? ' · 🎉 objectif atteint !' : '') + '</div>' : '') + '</div>' +
-    (S.sales.length ? '<div style="margin-top:10px">' + S.sales.slice().reverse().slice(0, 20).map((x) => { const gg = (x.sell * (1 - TAX) - x.buy) * x.qty; return '<div class="line"><div><b>' + esc(x.name || 'Carte ' + x.id) + '</b> × ' + x.qty + '<div class="small muted">' + fmtDate(new Date(x.t)) + ' · acheté ' + fmt(x.buy) + ' → vendu ' + fmt(x.sell) + '</div></div><b class="' + (gg >= 0 ? 'up' : 'dn') + '">' + (gg >= 0 ? '+' : '') + fmt(gg) + '</b></div>'; }).join('') + (S.sales.length > 20 ? '<div class="small muted">… et ' + (S.sales.length - 20) + ' vente(s) plus ancienne(s) (dans l\'export).</div>' : '') + '</div>' : '<div class="small muted" style="margin-top:8px">Aucune vente enregistrée. Appuie sur « Vendu » sur une ligne quand tu revends une carte.</div>') +
+    (S.sales.length ? '<div style="margin-top:10px">' + S.sales.map((x, i) => [x, i]).reverse().slice(0, 20).map(([x, i]) => { const gg = (x.sell * (1 - TAX) - x.buy) * x.qty; return '<div class="line"><div><b>' + esc(x.name || 'Carte ' + x.id) + '</b> × ' + x.qty + '<div class="small muted">' + fmtDate(new Date(x.t)) + ' · acheté ' + fmt(x.buy) + ' → vendu ' + fmt(x.sell) + '</div></div><div style="display:flex;gap:6px;align-items:center"><b class="' + (gg >= 0 ? 'up' : 'dn') + '">' + (gg >= 0 ? '+' : '') + fmt(gg) + '</b><button type="button" class="btn" style="min-height:32px;padding:2px 8px" data-act="sdel" data-i="' + i + '" aria-label="Supprimer cette vente">✕</button></div></div>'; }).join('') + (S.sales.length > 20 ? '<div class="small muted">… et ' + (S.sales.length - 20) + ' vente(s) plus ancienne(s) (dans l\'export).</div>' : '') + '</div>' : '<div class="small muted" style="margin-top:8px">Aucune vente enregistrée. Appuie sur « Vendu » sur une ligne quand tu revends une carte.</div>') +
+    salesStats() +
     '<div class="row2" style="margin-top:10px"><button type="button" class="btn" data-act="csv">Exporter pour Excel (CSV)</button><button type="button" class="btn" data-act="pfshare">📋 Copier mon bilan</button></div></div>';
   // Alertes
   const trig = S.alerts.filter((a) => a.trig).length;
@@ -2370,6 +2673,7 @@ function renderPortfolio() {
     return '<div class="line"><div><b>' + esc(name) + '</b><div class="small muted">' + (a.dir === '<=' ? 'Prix ≤ ' : 'Prix ≥ ') + fmt(a.price) + ' · actuel ' + fmt(c ? c.price : null) + '</div>' + (a.trig ? '<span class="badge mid">Déclenchée</span>' : '<span class="badge">En attente</span>') + '</div>' +
       '<div class="row2" style="flex-wrap:nowrap">' + (a.trig ? '<button class="btn" data-act="rearm" data-id="' + esc(a.id) + '">Réarmer</button>' : '') + '<button class="btn" data-act="delalert" data-id="' + esc(a.id) + '">Retirer</button></div></div>';
   }).join('') + '</div>';
+  if (S.alog.length) h += '<details class="box invdet"><summary>Historique des alertes (' + S.alog.length + ')</summary><div style="margin-top:6px">' + S.alog.slice().reverse().map((x) => '<div class="line"><span class="small">' + esc(x.txt) + '</span><span class="small muted">' + fmtDT(new Date(x.t)) + '</span></div>').join('') + '</div><button type="button" class="btn" style="margin-top:6px" data-act="alogclr">Effacer l\'historique</button></details>';
   // Favoris, avec le changement depuis ta dernière visite
   h += '<h2>Favoris</h2>';
   let favs = [...FAV].map((id) => MAP.get(id)).filter(Boolean);
@@ -2526,7 +2830,7 @@ function chartBoxHtml(c) {
     const i = Math.round(k * (sr.length - 1) / (nx - 1)), xx = x(i);
     grid += '<line x1="' + xx.toFixed(1) + '" x2="' + xx.toFixed(1) + '" y1="' + CH.T + '" y2="' + base + '" stroke="var(--line)"/><text x="' + xx.toFixed(1) + '" y="' + (CH.H - 7) + '" text-anchor="' + (k === 0 ? 'start' : k === nx - 1 ? 'end' : 'middle') + '" class="cl">' + fmtAxis(sr[i].t, CHP) + '</text>';
   }
-  const dots = sr.length <= 40 ? pts.map((q) => '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="2.4" fill="var(--ch)"/>').join('') : '';
+  const dots = S.dots && sr.length <= 120 ? pts.map((q) => '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="2.4" fill="var(--ch)"/>').join('') : '';
   const sum = sr.reduce((a, q) => a + q.p, 0) / sr.length;
   return '<div class="chead"><div class="ch-left"><div class="chhead" id="chHead">' + chartHead(c, sr, null) + '</div>' + sim + '</div>' + tabs + '</div>' +
     '<div class="cv" data-cv="1"><svg class="chart" viewBox="0 0 ' + CH.W + ' ' + CH.H + '" role="img" aria-label="Courbe de prix">' +
@@ -2540,6 +2844,9 @@ function chartBoxHtml(c) {
       (c._series.slice(-4).reverse().map((h) => '<div class="tr"><span class="muted">' + agoText(h.t) + '</span><b>' + fmt(h.p) + '<span class="coin"></span></b></div>').join('') || '<div class="tr"><span class="muted">Pas encore de relevé</span></div>') + '</div>' +
       '<div class="tb"><h4>Résumé de la période</h4><div class="th"><span>Repère</span><span>Prix</span></div>' +
       '<div class="tr"><span class="muted">Plus bas</span><b class="up">' + fmt(mn) + '<span class="coin"></span></b></div><div class="tr"><span class="muted">Moyenne</span><b>' + fmt(sum) + '<span class="coin"></span></b></div><div class="tr"><span class="muted">Plus haut</span><b class="dn">' + fmt(mx) + '<span class="coin"></span></b></div></div></div>' +
+    '<div class="chopt"><label class="ck"><input type="checkbox" id="chDots"' + (S.dots ? ' checked' : '') + '> Afficher les points</label><button type="button" class="btn" data-act="chpng">⬇ Image de la courbe</button></div>' +
+    '<details class="invdet" style="margin-top:8px"><summary>Tous les relevés (' + c._series.length + ')</summary><div class="tbl" style="max-height:280px;overflow:auto"><table><thead><tr><th>Date</th><th>Prix</th><th>Écart</th></tr></thead><tbody>' +
+      c._series.slice().reverse().map((q, i, a) => { const prev = a[i + 1]; const d = prev ? q.p / prev.p - 1 : null; return '<tr><td>' + (q.t ? fmtLong(q.t) : '?') + '</td><td class="tp">' + fmt(q.p) + '</td><td class="' + (d == null ? 'fl' : d > 0 ? 'up' : d < 0 ? 'dn' : 'fl') + '">' + (d == null ? '' : Math.abs(d) < 0.0005 ? '=' : pct(d)) + '</td></tr>'; }).join('') + '</tbody></table></div></details>' +
     (S.sim ? '<p class="small muted" style="margin:8px 0 0">Cette courbe est une simulation pour montrer le rendu : elle n\'utilise pas les vrais relevés. Tu peux la couper dans Réglages.</p>' : '');
 }
 // Survol (souris) ou doigt (téléphone) : on affiche le prix à cet instant dans l'en-tête.
@@ -2704,11 +3011,13 @@ function renderSheet() {
     '<div class="pgbody"><div class="bc">FC27 Companion › Joueurs › ' + esc(c.name) + (c.version ? ' › ' + esc(c.version) + ' ' + esc(c.rating) + ' OVR' : '') + '</div><h1>' + esc(title) + '</h1><p class="lead">' + esc(lead) + '</p>' +
     '<div class="ptabs"><button class="on" data-act="goto" data-t="sApercu">Aperçu</button><button data-act="goto" data-t="sPrix">Prix</button>' + (c.ps && c.ps.length ? '<button data-act="goto" data-t="sStyles">Styles de jeu</button>' : '') + '<button data-act="goto" data-t="sAttr">Attributs</button></div>' +
     '<div class="pg"><div class="pgl">' +
-      '<div class="card2" id="sApercu">' + (c.alt ? '<div class="stab"><button class="' + (c.variant === 'std' ? 'on' : '') + '" data-act="open" data-id="' + esc(c.variant === 'std' ? c.id : c.alt) + '">Standard</button><button class="' + (c.variant === 'holo' ? 'on' : '') + '" data-act="open" data-id="' + esc(c.variant === 'holo' ? c.id : c.alt) + '">Pristine Holographic</button></div>' : '<div class="stab"><span class="on">Standard</span></div>') + '<div class="hero">' + cardImg(c, 'lg') + psIcons(c) + '</div><div class="hero" style="padding-top:0">' +
+      '<div class="card2" id="sApercu">' + (c.alt ? '<div class="stab"><button class="' + (c.variant === 'std' ? 'on' : '') + '" data-act="open" data-id="' + esc(c.variant === 'std' ? c.id : c.alt) + '">Standard</button><button class="' + (c.variant === 'holo' ? 'on' : '') + '" data-act="open" data-id="' + esc(c.variant === 'holo' ? c.id : c.alt) + '">Pristine Holographic</button></div>' : '<div class="stab"><span class="on">Standard</span></div>') + '<div class="hero"><button type="button" class="tilt" data-act="zoom" aria-label="Agrandir la carte">' + cardImg(c, 'lg') + '</button>' + psIcons(c) + '</div><div class="hero" style="padding-top:0">' +
         '<button class="chip" data-act="fav" data-id="' + esc(c.id) + '" aria-pressed="' + fav + '">' + (fav ? '★ Dans les favoris' : '☆ Ajouter aux favoris') + '</button>' +
-        '<div class="acts"><button class="btn" data-act="sshare" data-id="' + esc(c.id) + '">🔗 Partager</button><button class="btn" data-act="scmp" data-id="' + esc(c.id) + '">' + (S.cmp.includes(c.id) ? '⚖️ Dans le comparateur' : '⚖️ Comparer') + '</button><button class="btn" data-act="ssquad" data-id="' + esc(c.id) + '">➕ Mon équipe</button><button class="btn" data-act="scopy" data-id="' + esc(c.id) + '">📋 Copier la fiche</button></div></div>' +
+        '<div class="acts"><button class="btn" data-act="sshare" data-id="' + esc(c.id) + '">🔗 Partager</button><button class="btn" data-act="scmp" data-id="' + esc(c.id) + '">' + (S.cmp.includes(c.id) ? '⚖️ Dans le comparateur' : '⚖️ Comparer') + '</button><button class="btn" data-act="ssquad" data-id="' + esc(c.id) + '">➕ Mon équipe</button><button class="btn" data-act="scopy" data-id="' + esc(c.id) + '">📋 Copier la fiche</button><button class="btn" data-act="simg" data-id="' + esc(c.id) + '">🖼️ Image</button><button class="btn" data-act="sprint">🖨️ Imprimer</button>' +
+        '<a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.futbin.com/players?search=' + encodeURIComponent(c.name) + '">FUTBIN ↗</a><a class="btn" target="_blank" rel="noopener noreferrer" href="https://www.fut.gg/players/?name=' + encodeURIComponent(c.name) + '">FUT.GG ↗</a></div></div>' +
         '<div class="mini3"><div><b><span class="coin"></span> ' + short(c.price) + '</b><span>Prix</span></div><div><b>' + (c.sm && c.wf ? c.sm + '•' + c.wf : '—') + '</b><span>Gestes · Pied faible</span></div><div><b>' + (p1 ? '<span class="pb">' + esc(p1) + '</span> ' : '') + esc(c.rating) + '</b><span>Poste · Note</span></div></div></div>' +
       '<div class="card2 info"><h3><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M17 8h4M17 12h4"/></svg>Informations du joueur</h3>' +
+        '<div class="pad" style="border-bottom:1px solid var(--line)"><label class="lab">📝 Ma note sur ce joueur (gardée sur cet appareil)<textarea class="field" id="noteTx" data-id="' + esc(c.id) + '" rows="2" maxlength="500" placeholder="ex : très bon en défense, à revendre avant le prochain SBC…">' + esc(S.notes[c.id] || '') + '</textarea></label></div>' +
         kv('Nom', esc(c.name)) + kv('Club', ico(c.clubImage) + esc(c.club)) + kv('Ligue', ico(c.leagueImage) + esc(c.league)) + kv('Nation', ico(safeUrl(c.nationImage) || flagUrl(c.nation)) + esc(c.nation)) +
         kv('Rareté', esc(c.version)) + (c.variant ? kv('Variante', c.variant === 'holo' ? 'Pristine Holographic' : 'Standard') : '') + kv('Poste', esc(c._pos.length ? c._pos.join(', ') : c.pos)) + (c.sm ? kv('Gestes techniques', stars(c.sm)) : '') + (c.wf ? kv('Pied faible', stars(c.wf)) : '') +
         kv('AcceleRATE', esc(c.acc)) + kv('Total des 6 stats', totalStats(c) != null ? String(totalStats(c)) : '') +
@@ -2719,7 +3028,7 @@ function renderSheet() {
       '<div class="top2" id="sPrix"><div class="card2"><div class="pad"><div class="bh"><b>Prix minimum</b><span class="small muted">' + (upd && !isNaN(upd) ? 'relevé ' + agoText(upd.getTime()) : 'non temps réel') + '</span></div><div class="bigp"><span class="coin"></span><b>' + fmt(c.price) + '</b>' + chgHtml(c) + '</div>' +
         (hist ? '<div class="hl">' + hist + '</div>' : '') + sheetPriceExtra(c) + '<div class="small muted" style="margin-top:8px">PlayStation · prix non temps réel</div></div></div>' +
       '<div class="card2"><div class="pad">' + momentumHtml(c) + sheetTiming(c) + '</div></div></div>' +
-      (attrs ? '<div class="card2" id="sAttr"><h3>Attributs</h3><div class="attr">' + attrs + '</div>' + (psGrid ? '<div class="fsec2" id="sStyles"><div class="fh">Styles de jeu</div>' + psGrid + '</div>' : '') + '</div>' : (psGrid ? '<div class="card2" id="sStyles"><h3>Styles de jeu</h3><div class="pad">' + psGrid + '</div></div>' : '')) +
+      (attrs ? '<div class="card2" id="sAttr"><h3>Attributs</h3>' + radarBlock(c) + '<div class="attr">' + attrs + '</div>' + (psGrid ? '<div class="fsec2" id="sStyles"><div class="fh">Styles de jeu</div>' + psGrid + '</div>' : '') + '</div>' : (psGrid ? '<div class="card2" id="sStyles"><h3>Styles de jeu</h3><div class="pad">' + psGrid + '</div></div>' : '')) +
       '<div class="box" id="chartBox">' + chartBoxHtml(c) + '</div>' +
       '<div class="card2" id="sEvo"><h3>Évolutions</h3>' + (c.evos.length
         ? '<div class="evt"><div class="evh"><span>Évolution</span><span>Fin</span><span>Condition</span></div>' + c.evos.map((e) => '<div class="evr"><b>' + esc(e.n) + '</b><span>' + esc(e.e || '—') + '</span><span>' + esc(e.m || '—') + '</span></div>').join('') + '</div>'
@@ -2742,7 +3051,7 @@ function openSheet(id) {
   id = String(id); if (!MAP.has(id)) return;
   const wasOpen = !$('#sheet').hidden;
   CURID = id; if (!wasOpen) lastFocus = document.activeElement;
-  S.recent = [id].concat((S.recent || []).filter((x) => x !== id)).slice(0, 12); save();
+  S.recent = [id].concat((S.recent || []).filter((x) => x !== id)).slice(0, 12); S.viewed = (S.viewed || 0) + 1; save();
   renderSheet(); $('#sheet').hidden = false; document.body.classList.add('lock');
   if (!wasOpen) pushOv();
   const sg = $('#sugg'); if (sg) sg.hidden = true;
@@ -2788,7 +3097,9 @@ function ksHtml() {
   if (hasAll) rest = '<div>Reste sur l\'ensemble des clés : <b>environ ' + fmt(known) + '</b> crédits (estimation)</div>';
   else if (tb) rest = '<div>Reste sur l\'ensemble des clés : <b>environ ' + fmt(Math.max(0, tb - tot)) + '</b> crédits <span class="muted">(' + fmt(tb) + ' au départ − ' + fmt(tot) + ' dépensés, estimation)</span></div>';
   else rest = '<div class="muted">Pour voir le reste sur l\'ensemble des clés, indique au robot ton solde actuel (variable TOTAL_CREDITS sur GitHub).</div>';
-  return head + ' · ' + esc(KS.month || '') + (at && !isNaN(at) ? ' · relevé du robot le ' + fmtDT(at) : '') + '<br>' + rows +
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Paris' });
+  const dayLine = KS.day === today ? '<div style="margin:4px 0">Aujourd\'hui : <b>' + fmt(KS.daySpent || 0) + '</b> crédits dépensés' + (KS.dayCap ? ' sur un plafond de <b>' + fmt(KS.dayCap) + '</b> pour les robots automatiques' + (KS.daySpent >= KS.dayCap ? ' · <b style="color:var(--down)">plafond atteint</b> (ils reprennent demain)' : '') : '') + '.</div>' : '';
+  return head + ' · ' + esc(KS.month || '') + (at && !isNaN(at) ? ' · relevé du robot le ' + fmtDT(at) : '') + '<br>' + dayLine + rows +
     '<div>Total dépensé ce mois-ci : <b>' + fmt(tot) + '</b> crédits (estimation)</div>' + rest +
     '<div style="margin-top:4px">Le robot compte ses propres requêtes (3 crédits par page, 10 par paquet de prix) : ce n\'est pas le solde officiel, et il ne compte pas ce qui a été dépensé avant son premier passage. Vérifie le solde exact sur parse.bot.</div>';
 }
@@ -2804,6 +3115,16 @@ function renderSettings() {
     '<label class="l" for="setHc">Contraste</label><select class="field" id="setHc"><option value="0">Normal</option><option value="1">Renforcé (textes gris plus foncés / plus clairs)</option></select>' +
     '<label class="l" for="setCsz">Taille des cartes dans le Marché</label><select class="field" id="setCsz"><option value="n">Normales</option><option value="l">Grandes</option></select>' +
     '<label class="l" for="setTk">Bandeau défilant des plus gros mouvements</label><select class="field" id="setTk"><option value="1">Afficher</option><option value="0">Masquer</option></select></div>' +
+    '<h2>Encore plus de choix</h2><div class="box">' +
+    '<label class="l" for="setSkin">Ambiance' + (hwOn() ? ' (après Halloween)' : '') + '</label><select class="field" id="setSkin"><option value="def">Classique</option><option value="oled">Noir pur (économise la batterie des écrans OLED)</option><option value="navy">Bleu nuit</option><option value="pitch">Terrain (vert)</option></select>' +
+    '<label class="l" for="setFont">Police des textes</label><select class="field" id="setFont"><option value="sys">Classique (celle du téléphone)</option><option value="round">Arrondie (Nunito)</option><option value="cond">Sportive (Barlow)</option></select>' +
+    '<label class="l" for="setHome">Onglet ouvert au démarrage</label><select class="field" id="setHome"><option value="0">Marché</option><option value="1">Investir</option><option value="10">Découvrir</option><option value="5">Équipe</option><option value="4">Portefeuille</option></select>' +
+    '<label class="ck"><input type="checkbox" id="setCompact"' + (S.compact ? ' checked' : '') + '> Mode compact (moins d\'espace, plus d\'infos à l\'écran)</label>' +
+    '<label class="ck"><input type="checkbox" id="setGstats"' + (S.gstats ? ' checked' : '') + '> Afficher les 6 stats sur les cartes du Marché</label>' +
+    '<label class="ck"><input type="checkbox" id="setFx"' + (S.fx ? ' checked' : '') + '> Confettis pour fêter les records et les succès</label>' +
+    '<label class="ck"><input type="checkbox" id="setRt"' + (S.rt ? ' checked' : '') + '> Réduire la transparence (fonds pleins, plus lisible)</label>' +
+    '<label class="ck"><input type="checkbox" id="setCb"' + (S.cb ? ' checked' : '') + '> Couleurs pour daltoniens (hausse en bleu, baisse en orange)</label>' +
+    '<div class="row2" style="margin-top:8px"><button type="button" class="btn" data-act="tab" data-t="11">🏆 Mon profil et mes succès</button><button type="button" class="btn danger" data-act="gamereset">Remettre à zéro les records des jeux</button></div></div>' +
     '<h2>Alertes</h2><div class="box">' +
     '<label class="ck"><input type="checkbox" id="setSnd"' + (S.snd ? ' checked' : '') + '> Petit son quand une alerte se déclenche</label>' +
     '<label class="ck"><input type="checkbox" id="setVib"' + (S.vib ? ' checked' : '') + '> Vibration (téléphone)</label>' +
@@ -2827,7 +3148,7 @@ function renderSettings() {
     '<h2>À propos</h2><div class="box small muted">Dernière mise à jour des prix : <b>' + (d && !isNaN(d) ? fmtDT(d) : 'aucune') + '</b><br>Cartes : <b>' + fmt(CARDS.length) + '</b> · Source : ' + esc(DATA.source || '—') +
     ksHtml() + '<br><br>Les prix ne sont pas en temps réel : leur âge est affiché en haut de la page. Les gains et conseils sont des estimations. Application non officielle, sans lien avec EA.</div>';
   $('#setCard').value = S.card; $('#setSim').value = S.sim ? '1' : '0'; $('#setTheme').value = S.theme; $('#setAnim').value = S.anim;
-  $('#setHw').value = S.hw; $('#setFs').value = S.fs; $('#setAcc').value = S.acc; $('#setHc').value = S.hc ? '1' : '0'; $('#setCsz').value = S.csz; $('#setTk').value = S.tk ? '1' : '0';
+  $('#setFont').value = S.font; $('#setSkin').value = S.skin; $('#setHome').value = String(S.home); $('#setHw').value = S.hw; $('#setFs').value = S.fs; $('#setAcc').value = S.acc; $('#setHc').value = S.hc ? '1' : '0'; $('#setCsz').value = S.csz; $('#setTk').value = S.tk ? '1' : '0';
 }
 function download(name, text) {
   const a = document.createElement('a');
@@ -2852,6 +3173,7 @@ function applyLook() {
   document.documentElement.dataset.anim = S.anim;
   const de = document.documentElement.dataset, hw = hwOn();
   de.hw = hw ? 'on' : 'off'; de.fs = S.fs; de.acc = hw ? 'def' : S.acc; de.hc = S.hc ? 'on' : 'off'; de.csz = S.csz; de.tk = S.tk ? 'on' : 'off';
+  de.skin = hw ? 'def' : S.skin; de.compact = S.compact ? 'on' : 'off'; de.rt = S.rt ? 'on' : 'off'; de.gstats = S.gstats ? 'on' : 'off'; de.cb = S.cb ? 'on' : 'off'; de.font = S.font;
   $('#metaTheme').setAttribute('content', hw ? (t === 'dark' ? '#0c0713' : '#fbf3ea') : (t === 'dark' ? '#0a0c11' : '#f4f6f8'));
 }
 // Halloween : automatique du 1er octobre au 2 novembre, ou forcé (oui / non) dans Réglages
@@ -2902,7 +3224,7 @@ function sqSlotHtml(i, chem) {
   if (!c) return '<button type="button" class="sqs empty' + sel + '" data-act="sqslot" data-i="' + i + '"' + mv + ' aria-label="Choisir un joueur (' + esc(pos) + ')"><span class="sqp">+</span><span class="sqpos">' + esc(pos) + '</span></button>';
   const oop = chem && i < 11 && chem.oop[i];
   return '<button type="button" class="sqs' + sel + (oop ? ' oop' : '') + '" data-act="sqslot" data-i="' + i + '"' + mv + ' aria-label="' + esc(c.name) + (oop ? ' (hors de son poste)' : '') + '">' + cardImg(c, 'sm') +
-    '<span class="sqn">' + esc(cardLabel(c)) + '</span><span class="sqr">' + esc(c.rating) + ' ' + esc((c._pos && c._pos[0]) || '') + '</span>' +
+    (S.cap[S.sqi] === i ? '<span class="capb" title="Capitaine">C</span>' : '') + '<span class="sqn">' + esc(cardLabel(c)) + '</span><span class="sqr">' + esc(c.rating) + ' ' + esc((c._pos && c._pos[0]) || '') + '</span>' +
     (chem && i < 11 ? (oop ? '<span class="oopw">⚠ pas son poste</span>' : '<span class="chem" aria-label="Chimie ' + chem.per[i] + ' sur 3">' + [0, 1, 2].map((k) => '<i class="' + (k < chem.per[i] ? 'on' : '') + '"></i>').join('') + '</span>') : '') +
     '<span class="sqpr">' + (c.price != null ? short(c.price) : '—') + '</span></button>';
 }
@@ -2924,12 +3246,13 @@ function renderSquad() {
   let total = 0, noPrice = 0, before = 0;
   all.forEach((id) => { const c = MAP.get(id), p = c.price; if (p == null) noPrice++; else { total += p; before += c._d7 != null ? p / (1 + c._d7) : p; } });
   const d7 = all.length && before ? total / before - 1 : null;
-  let h = '<h2 class="hwt">Mon équipe</h2><div class="sqtabs" role="group" aria-label="Mes équipes">' + [0, 1, 2].map((k) => '<button type="button" data-act="sqtab" data-k="' + k + '" aria-pressed="' + (S.sqi === k) + '">Équipe ' + (k + 1) + '</button>').join('') + '</div>' +
+  let h = '<h2 class="hwt">Mon équipe</h2><div class="sqtabs" role="group" aria-label="Mes équipes">' + [0, 1, 2].map((k) => '<button type="button" data-act="sqtab" data-k="' + k + '" aria-pressed="' + (S.sqi === k) + '">' + esc(S.sqn[k] || 'Équipe ' + (k + 1)) + '</button>').join('') + '</div>' +
+    '<label class="lab" style="margin:6px 0">Nom de cette équipe<input class="field" id="sqName" maxlength="30" value="' + esc(S.sqn[S.sqi] || '') + '"></label>' +
     '<div class="box"><label class="l" for="sqForm">Formation</label><select class="field" id="sqForm">' + Object.keys(FORMS).map((k) => '<option value="' + k + '">' + FORMS[k].n + '</option>').join('') + '</select></div>' +
     '<div class="sqtop" style="grid-template-columns:repeat(4,1fr)"><div><b>' + (rating == null ? '—' : rating) + '</b><i>Note d\'équipe</i></div><div><b>' + chem.total + '/33</b><i>Chimie (estim.)</i></div><div><b>' + start.length + '/11</b><i>Titulaires</i></div><div><b>' + (all.length ? short(total) : '—') + '</b><i>Prix total' + (d7 != null && Math.abs(d7) >= 0.0005 ? ' <span class="' + (d7 > 0 ? 'up' : 'dn') + '">' + pct(d7) + ' 7 j</span>' : '') + '</i></div></div>';
   if (rating == null) h += '<p class="small muted" style="margin:0 2px">Place les 11 titulaires pour voir la note d\'équipe (estimation).</p>';
   if (noPrice) h += '<p class="small muted" style="margin:4px 2px 0">' + noPrice + ' carte(s) sans prix : non comptées dans le total.</p>';
-  if (chem.oop.some(Boolean)) h += '<p class="small" style="margin:4px 2px 0;color:var(--down)">⚠ ' + chem.oop.filter(Boolean).length + ' joueur(s) hors de leur poste : ils n\'ont aucune chimie. Change de formation ou de place.</p>';
+  if (chem.oop.some(Boolean)) h += '<p class="small" style="margin:4px 2px 0;color:var(--down)">⚠ ' + chem.oop.filter(Boolean).length + ' joueur(s) hors de leur poste : ils n\'ont aucune chimie. <button type="button" class="linkb" data-act="sqfix">Les replacer automatiquement</button></p>';
   if (SQ.move >= 0) h += '<div class="note" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>Touche la place où mettre <b>' + esc(cardLabel(MAP.get(S.sq.s[SQ.move]) || { name: '' })) + '</b> (les deux joueurs s\'échangent).</span><button type="button" class="btn" data-act="sqmovecancel">Annuler</button></div>';
   let idx = 0;
   h += '<div class="pitch">' + f.rows.map((row) => '<div class="prow">' + row.map(() => sqSlotHtml(idx++, chem)).join('') + '</div>').join('') + '</div>';
@@ -2938,7 +3261,16 @@ function renderSquad() {
   if (start.length) {
     const avg = STATK.map((k) => { const v = start.map((id) => Number((MAP.get(id).stats || {})[k])).filter((x) => x > 0); return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null; });
     h += '<h2>Moyennes des titulaires</h2><div class="sqstats">' + STATK.map((k, i) => '<div><b>' + (avg[i] == null ? '—' : avg[i]) + '</b><i>' + k + '</i></div>').join('') + '</div>';
+    // note moyenne par ligne (attaque, milieu, défense) + radar
+    let ix = 0; const lines = f.rows.map((row) => row.map(() => MAP.get(S.sq.s[ix++])).filter(Boolean));
+    const nm = (r) => (r.every((p) => p === 'GK') ? 'Gardien' : r.some((p) => GROUPS.ATT.includes(p)) && !r.some((p) => GROUPS.MIL.includes(p)) ? 'Attaque' : r.some((p) => GROUPS.DEF.includes(p)) ? 'Défense' : 'Milieu');
+    h += '<div class="two2"><div class="box" style="margin:0"><b>Note moyenne par ligne</b>' + f.rows.map((r, k) => { const l = lines[k]; return '<div class="line"><span class="muted">' + nm(r) + ' (' + r.join(', ') + ')</span><b>' + (l.length ? Math.round(l.reduce((a, c) => a + c.rating, 0) / l.length) : '—') + '</b></div>'; }).join('') + '</div>' +
+      '<div class="box" style="margin:0;text-align:center"><b>Profil de l\'équipe</b>' + radar(avg.map((v) => v || 0), null, 'Radar des statistiques moyennes de l\'équipe') + '</div></div>';
   }
+  // comparer mes 3 équipes
+  { const sq = [0, 1, 2].map((k) => (k === S.sqi ? S.sq : S.sqb[k])).map((q) => q ? q.s.slice(0, 11).map((id) => MAP.get(id)).filter(Boolean) : []);
+    if (sq.filter((l) => l.length).length >= 2) h += '<h2>Comparer mes 3 équipes</h2><div class="box tbl"><table><thead><tr><th></th>' + [0, 1, 2].map((k) => '<th>' + esc(S.sqn[k]) + '</th>').join('') + '</tr></thead><tbody>' +
+      '<tr><td>Titulaires</td>' + sq.map((l) => '<td>' + l.length + '/11</td>').join('') + '</tr><tr><td>Note</td>' + sq.map((l) => '<td><b>' + (l.length === 11 ? sqRating(l.map((c) => c.id)) : '—') + '</b></td>').join('') + '</tr><tr><td>Prix</td>' + sq.map((l) => '<td class="tp">' + short(l.reduce((a, c) => a + (c.price || 0), 0)) + '</td>').join('') + '</tr></tbody></table></div>'; }
   const ch = sqCheaper();
   if (ch.length) h += '<h2>Économiser sans perdre de note</h2><div class="box">' + ch.map((x) => '<div class="line"><div class="small">Remplace <b>' + esc(cardLabel(x.c)) + '</b> (' + short(x.c.price) + ') par <button type="button" class="linkb" data-act="open" data-id="' + esc(x.x.id) + '">' + esc(cardLabel(x.x)) + ' ' + esc(x.x.rating) + '</button> (' + short(x.x.price) + ')</div><button type="button" class="btn" data-act="sqswap" data-i="' + x.i + '" data-id="' + esc(x.x.id) + '">−' + short(x.save) + '</button></div>').join('') + '</div>';
   // équipe automatique
@@ -2946,7 +3278,7 @@ function renderSquad() {
   h += '<h2>Équipe automatique</h2><div class="box"><p class="small muted" style="margin-top:0">L\'appli remplit les 11 places de la formation choisie avec la meilleure note possible pour ton budget (joueurs à leur poste, prix actuels). La chimie n\'est pas optimisée.</p>' +
     '<div class="two"><label class="lab">Budget total<input class="field" id="sqBud" type="text" inputmode="decimal" placeholder="ex : 200k"></label><label class="lab">Ligue (facultatif)<select class="field" id="sqLg"><option value="">Toutes</option>' + leagues.map((l) => '<option value="' + esc(l) + '">' + esc(l) + '</option>').join('') + '</select></label></div>' +
     '<div class="row2" style="margin-top:8px"><button type="button" class="btn primary" data-act="sqbuild">Créer l\'équipe</button></div><div class="small" id="sqBuildMsg" style="margin-top:6px"></div></div>';
-  h += '<div class="row2" style="margin:10px 0"><button class="btn" data-act="sqcopy">📋 Copier l\'équipe</button><button class="btn danger" data-act="sqreset">Vider l\'équipe</button></div>' +
+  h += '<div class="row2" style="margin:10px 0"><button class="btn" data-act="sqcopy">📋 Copier l\'équipe</button><button class="btn" data-act="sqpng">🖼️ Image de l\'équipe</button><button class="btn" data-act="sqbench">🪑 Compléter le banc</button><button class="btn danger" data-act="sqreset">Vider l\'équipe</button></div>' +
     '<p class="small muted">Chimie : estimation avec les règles publiques d\'EA (club, ligue, nation). Pour déplacer un joueur, touche-le puis « Déplacer ». Prix : derniers relevés du robot, pas en temps réel.</p>';
   $('#pSq').innerHTML = h;
   $('#sqForm').value = S.sq.f;
@@ -3027,7 +3359,7 @@ function openSq(i) {
     '<input class="field" id="sqQ" type="search" autocomplete="off" placeholder="Nom, club, pays…">' +
     '<div class="row2" style="margin-top:6px"><input class="field" id="sqMax" type="text" inputmode="decimal" placeholder="Prix max (ex : 20k)" style="flex:1;min-width:120px"><button type="button" class="btn" data-act="sqqsort">' + (SQ.sort === 'price' ? 'Tri : prix ↑' : 'Tri : note ↓') + '</button></div>' +
     (sqPosOf(i) === 'REM' ? '' : '<label class="small" style="display:flex;gap:6px;align-items:center;margin-top:6px"><input type="checkbox" id="sqAll"> Tous les postes</label>') +
-    (c ? '<div class="row2" style="margin-top:8px"><button type="button" class="btn" data-act="sqmove">↔ Déplacer</button><button type="button" class="btn" data-act="sqopen" data-id="' + esc(c.id) + '">Voir la fiche</button><button type="button" class="btn danger" data-act="sqclear">Retirer ' + esc(cardLabel(c)) + '</button></div>' : '') +
+    (c ? '<div class="row2" style="margin-top:8px">' + (i < 11 ? '<button type="button" class="btn" data-act="sqcap">' + (S.cap[S.sqi] === i ? '✓ Capitaine' : '©️ Capitaine') + '</button>' : '') + '<button type="button" class="btn" data-act="sqmove">↔ Déplacer</button><button type="button" class="btn" data-act="sqopen" data-id="' + esc(c.id) + '">Voir la fiche</button><button type="button" class="btn danger" data-act="sqclear">Retirer ' + esc(cardLabel(c)) + '</button></div>' : '') +
     '<div class="sqres" id="sqRes">' + sqResults() + '</div>';
   if ($('#sqModal').hidden) pushOv();
   $('#sqModal').hidden = false;
@@ -3052,14 +3384,14 @@ function sqChangeForm(key) {
 
 let TAB = 0;
 // Pages : 0 Marché, 1 Investir, 2 Conseils, 3 SBC, 4 Portefeuille, 5 Équipe, 6 Réglages, 7 Plus, 8 Aide, 9 Comparer
-const RENDER = [renderMarket, renderInvest, renderTips, renderSbc, renderPortfolio, renderSquad, renderSettings, renderMore, renderHelp, renderCompare];
-const NAVSLOT = { 0: 0, 1: 1, 5: 2, 4: 3 };   // place de l'onglet dans la barre du bas ; les autres pages allument « Plus »
-const TABNAME = ['Marché', 'Investir', 'Conseils', 'SBC', 'Portefeuille', 'Équipe', 'Réglages', 'Plus', 'Aide', 'Comparer'];
+const RENDER = [renderMarket, renderInvest, renderTips, renderSbc, renderPortfolio, renderSquad, renderSettings, renderMore, renderHelp, renderCompare, renderDisc, renderProfile];
+const NAVSLOT = { 0: 0, 1: 1, 10: 2, 5: 3, 4: 4 };   // place de l'onglet dans la barre du bas ; les autres pages allument « Plus »
+const TABNAME = ['Marché', 'Investir', 'Conseils', 'SBC', 'Portefeuille', 'Équipe', 'Réglages', 'Plus', 'Aide', 'Comparer', 'Découvrir', 'Mon profil'];
 function renderActive() { if (TAB !== 0) RENDER[TAB](); }
 let TABPUSH = false;
 function showTab(i, fromPop) {
   const prev = TAB; TAB = i;
-  const slot = i in NAVSLOT ? NAVSLOT[i] : 4;
+  const slot = i in NAVSLOT ? NAVSLOT[i] : 5;
   document.querySelectorAll('#tabs button').forEach((b, k) => b.setAttribute('aria-selected', String(k === slot)));
   $('#ind').style.setProperty('--i', slot);
   document.querySelectorAll('.page').forEach((p, k) => {
@@ -3143,6 +3475,13 @@ document.addEventListener('change', (e) => {
   else if (t.id === 'setAnim') { S.anim = t.value; save(); applyLook(); }
   else if (t.id === 'setHw') { S.hw = t.value; save(); applyLook(); renderHwBanner(); renderSettings(); }
   else if (t.id === 'setFs') { S.fs = t.value; save(); applyLook(); }
+  else if (t.id === 'setSkin') { S.skin = t.value; save(); applyLook(); if (hwOn() && S.skin !== 'def') toast('L\'ambiance choisie s\'affichera après Halloween (ou mets la décoration sur « Jamais »)'); }
+  else if (t.id === 'setHome') { S.home = Number(t.value) || 0; save(); toast('Au prochain démarrage : ' + TABNAME[S.home]); }
+  else if (t.id === 'setCompact') { S.compact = t.checked; save(); applyLook(); }
+  else if (t.id === 'setGstats') { S.gstats = t.checked; save(); applyLook(); }
+  else if (t.id === 'setFx') { S.fx = t.checked; save(); if (S.fx) confetti(40); }
+  else if (t.id === 'setRt') { S.rt = t.checked; save(); applyLook(); }
+  else if (t.id === 'setCb') { S.cb = t.checked; save(); applyLook(); }
   else if (t.id === 'setAcc') { S.acc = t.value; save(); applyLook(); if (hwOn() && S.acc !== 'def') toast('La couleur choisie reviendra après Halloween (ou mets la décoration sur « Jamais »)'); }
   else if (t.id === 'setHc') { S.hc = t.value === '1'; save(); applyLook(); }
   else if (t.id === 'setCsz') { S.csz = t.value; save(); applyLook(); }
@@ -3211,7 +3550,7 @@ function renderHwBanner() {
 }
 let PUMPN = 0, PUMPT = 0;
 function booBurst() {   // 5 touchers sur la citrouille : des fantômes s'envolent
-  if (S.anim === 'none') { toast('Bouh ! 👻'); return; }
+  if (S.anim === 'none') { toast('Bouh ! 👻'); if (!S.ach.boo) { S.ach.boo = Date.now(); save(); } return; }
   const svg = '<svg viewBox="0 0 40 48"><path d="M20 2C10 2 4 10 4 20v26l6-5 5 5 5-5 5 5 5-5 6 5V20C36 10 30 2 20 2z"/><circle cx="14" cy="19" r="3"/><circle cx="26" cy="19" r="3"/><ellipse cx="20" cy="30" rx="3.5" ry="4.5"/></svg>';
   for (let i = 0; i < 9; i++) {
     const g = document.createElement('div'); g.innerHTML = svg; const el = g.firstChild; el.setAttribute('class', 'boo'); el.setAttribute('aria-hidden', 'true');
@@ -3219,6 +3558,7 @@ function booBurst() {   // 5 touchers sur la citrouille : des fantômes s'envole
     document.body.appendChild(el); setTimeout(() => el.remove(), 3600);
   }
   toast('Bouh ! 👻 Joyeux Halloween !');
+  if (!S.ach.boo) { S.ach.boo = Date.now(); save(); setTimeout(() => toast('🏆 Succès débloqué : 🎃 Bouh !'), 2500); }
 }
 
 // --- Marché : réglages des filtres ---
@@ -3277,7 +3617,7 @@ function shareLink(url, title) {
 function readHash() {
   const h = location.hash.slice(1); if (!h) return;
   try {
-    if (h.startsWith('j=')) { const id = decodeURIComponent(h.slice(2)); if (MAP.has(id)) openSheet(id); }
+    if (h.startsWith('j=')) { const id = decodeURIComponent(h.slice(2)); try { history.replaceState(null, '', location.href.split('#')[0]); } catch (e) { /* ignoré */ } if (MAP.has(id)) openSheet(id); }   // on enlève le lien de l'adresse : fermer la fiche ne la rouvre pas
     else if (h.startsWith('m=')) {
       const o = JSON.parse(decodeURIComponent(h.slice(2)));
       if (o && typeof o === 'object') { for (const k of Object.keys(M0)) if (k in o && (typeof o[k] === typeof M0[k] || (k === 'maxP' || k === 'minP'))) M[k] = o[k]; M.page = 1; saveMF(); buildPosFilter(); renderMarket(); toast('Recherche partagée ouverte'); }
@@ -3306,13 +3646,18 @@ function renderMore() {
     tile(2, '💡', 'Conseils', 'Cartes à acheter avant un SBC') +
     tile(9, '⚖️', 'Comparer', S.cmp.length ? S.cmp.length + ' carte' + (S.cmp.length > 1 ? 's' : '') + ' choisie' + (S.cmp.length > 1 ? 's' : '') : 'Jusqu\'à 3 cartes côte à côte') +
     tile(8, '❓', 'Aide', 'Comment ça marche, mots expliqués', S.news !== NEWS_VER ? 'Nouveautés' : '') +
-    tile(6, '⚙️', 'Réglages', 'Thème, Halloween, taille du texte, sauvegarde') +
-    '<button type="button" class="mtile" data-act="tutorial"><span class="ic" aria-hidden="true">🎓</span><b>Visite guidée</b><span>Revoir la présentation en 4 étapes</span></button>' +
+    tile(11, '🏆', 'Mon profil', Object.keys(S.ach).length + ' succès sur ' + ACH.length) +
+    tile(6, '⚙️', 'Réglages', 'Thème, ambiances, taille du texte, sauvegarde') +
+    '<button type="button" class="mtile" data-act="tutorial"><span class="ic" aria-hidden="true">🎓</span><b>Visite guidée</b><span>Revoir la présentation en 5 étapes</span></button>' +
     '</div>';
 }
 
 // --- Page « Aide » : comment ça marche, mots expliqués, raccourcis, nouveautés ---
 const NEWS = [
+  'NOUVEAU : catégorie « Découvrir » dans la barre du bas : joueur du jour, quiz, défi, classements, chiffres du marché et 9 mini-jeux.',
+  'NOUVEAU : « Mon profil » avec 19 succès à débloquer (Plus → Mon profil).',
+  'NOUVEAU : vue « Tableau » du Marché, recherches enregistrées, recherche vocale, ta note perso sur chaque joueur, radar des stats.',
+  'NOUVEAU : capitaine, nom et image de ton équipe ; statistiques de tes ventes ; 3 ambiances de couleurs ; confettis.',
   'Décoration d\'Halloween (automatique jusqu\'au 2 novembre, réglable).',
   'Barre du bas plus simple : 5 onglets. SBC, Conseils, Réglages et Aide sont dans « Plus ».',
   'Marché : filtres club, ligue, nation, prix minimum, type de carte, gestes, pied faible, statistiques, AcceleRATE ; vue en liste ; filtres gardés en mémoire.',
@@ -3333,6 +3678,8 @@ function renderHelp() {
     ['Mes favoris, mon portefeuille et mon équipe sont-ils sauvegardés ?', 'Oui, sur cet appareil seulement. Pour les garder en changeant de téléphone : Réglages → « Télécharger ma sauvegarde », puis « Restaurer un fichier » sur l\'autre appareil.'],
     ['Comment chercher plus vite ?', 'Tape quelques lettres : des suggestions apparaissent. Sur ordinateur, appuie sur / pour aller directement à la recherche.'],
     ['Comment partager un joueur ou une recherche ?', 'Dans une fiche, appuie sur « Partager ». Dans les filtres du Marché, appuie sur « 🔗 Partager » : le lien ouvre la même recherche.'],
+    ['C\'est quoi « Découvrir » ?', 'Une catégorie pour s\'amuser et apprendre : le joueur du jour, un quiz, un défi, des classements (les plus rapides, les bonnes affaires…), les chiffres du marché et 9 mini-jeux. Tes records sont gardés.'],
+    ['Comment débloquer des succès ?', 'En utilisant l\'appli : ajouter un favori, ouvrir des fiches, vendre une carte, battre un record… La liste complète est dans Plus → Mon profil.'],
     ['À quoi sert l\'onglet Équipe ?', 'À composer ton équipe de rêve : note, prix total et chimie (estimation). Tu peux en garder 3 et en créer une automatiquement selon un budget.']
   ];
   const gl = [['Taxe EA', '5 % gardés par EA sur chaque vente.'], ['Relevé', 'Un prix noté par le robot à un moment précis.'], ['Courbe', 'Tous les relevés d\'une carte mis bout à bout.'], ['SBC', 'Défi où l\'on échange des cartes contre une récompense.'],
@@ -3364,17 +3711,18 @@ function renderCompare() {
   h += '<div class="box cmpg"><table><thead><tr><th></th>' + list.map((c) => '<th><div class="cmph"><button class="open" style="padding:0" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') + '</button><b class="small">' + esc(cardLabel(c)) + '</b><button type="button" class="btn" style="min-height:30px;padding:2px 8px;font-size:12px" data-act="cmprm" data-id="' + esc(c.id) + '">Retirer</button></div></th>').join('') + '</tr></thead><tbody>' +
     rows.map(([n, f, dir, show]) => { const vals = list.map(f), ok = vals.filter((v) => v != null); const best = list.length > 1 && ok.length > 1 ? (dir > 0 ? Math.max(...ok) : Math.min(...ok)) : null;
       return '<tr><td>' + n + '</td>' + vals.map((v) => '<td' + (best != null && v === best ? ' class="best"' : '') + '>' + (v == null ? '—' : show(v)) + '</td>').join('') + '</tr>'; }).join('') +
-    '</tbody></table><p class="small muted" style="margin:6px 0 0">En vert : le meilleur de la ligne (pour le prix : le moins cher).</p><button type="button" class="btn" style="margin-top:8px" data-act="cmpclear">Vider le comparateur</button></div>';
+    '</tbody></table>' + (list.length >= 2 && list.slice(0, 2).every((c) => totalStats(c)) ? '<div style="text-align:center;margin-top:10px"><b class="small">Radar : ' + esc(cardLabel(list[0])) + ' (plein) contre ' + esc(cardLabel(list[1])) + ' (pointillés)</b>' + radar(STATK.map((k) => Number(list[0].stats[k]) || 0), STATK.map((k) => Number(list[1].stats[k]) || 0), 'Radar comparé') + '</div>' : '') + '<p class="small muted" style="margin:6px 0 0">En vert : le meilleur de la ligne (pour le prix : le moins cher).</p><button type="button" class="btn" style="margin-top:8px" data-act="cmpclear">Vider le comparateur</button></div>';
   $('#pCmp').innerHTML = h;
 }
 function totalStats(c) { const v = STATK.map((k) => Number(c.stats[k])).filter((x) => isFinite(x) && x > 0); return v.length === 6 ? v.reduce((a, b) => a + b, 0) : null; }
 
 // --- Visite guidée (première visite) ---
 const TUT = [
-  ['Bienvenue 👋', 'FC27 Companion te montre le prix des cartes EA FC 27 et t\'aide à acheter malin. Voici l\'essentiel en 4 étapes.'],
+  ['Bienvenue 👋', 'FC27 Companion te montre le prix des cartes EA FC 27 et t\'aide à acheter malin. Voici l\'essentiel en 5 étapes.'],
   ['1. Le Marché', 'Touche une carte pour ouvrir sa fiche : prix, courbe, statistiques. « Filtres et tri » permet de chercher par poste, prix, club…'],
   ['2. Investir', 'Réponds à 3 questions (budget, nombre de cartes, risque) : l\'appli propose quoi acheter et à quel prix revendre, taxe de 5 % déjà retirée.'],
-  ['3. Portefeuille et Plus', 'Note tes achats dans le Portefeuille pour suivre tes gains. Le bouton « Plus » contient les SBC, les conseils, l\'aide et les réglages. Bonne chasse ! 🎃']
+  ['3. Découvrir', 'Le joueur du jour, un quiz, des classements (les plus rapides, les bonnes affaires…) et 9 mini-jeux pour t\'amuser.'],
+  ['4. Portefeuille et Plus', 'Note tes achats dans le Portefeuille pour suivre tes gains. Le bouton « Plus » contient les SBC, ton profil, l\'aide et les réglages. Bonne chasse ! 🎃']
 ];
 let TUTI = 0;
 function openTut() { TUTI = 0; drawTut(); if ($('#tutModal').hidden) { $('#tutModal').hidden = false; pushOv(); } }
@@ -3394,7 +3742,7 @@ document.addEventListener('click', (e) => {
   else if (a === 'unf') { const k = el.dataset.k; M[k] = M0[k]; if (k === 'st') M.stv = 0; if (k === 'q') $('#q').value = ''; if (k === 'pos') buildPosFilter(); mkChanged(); }
   else if (a === 'rnd') { const l = filtered().filter((c) => c.price != null); const pool = l.length ? l : CARDS; if (pool.length) openSheet(pool[Math.floor(Math.random() * pool.length)].id); }
   else if (a === 'mkshare') { const o = {}; for (const k of Object.keys(M0)) if (k !== 'page' && M[k] !== M0[k]) o[k] = M[k]; shareLink(shareUrl('m=' + encodeURIComponent(JSON.stringify(o))), 'Recherche FC27 Companion'); }
-  else if (a === 'view') { S.view = el.dataset.v === 'list' ? 'list' : 'grid'; save(); renderMarket(); }
+  else if (a === 'view') { S.view = ['list', 'table'].includes(el.dataset.v) ? el.dataset.v : 'grid'; save(); renderMarket(); }
   else if (a === 'prange') { const lo = Number(el.dataset.a) || 0, hi = el.dataset.b === '' ? '' : Number(el.dataset.b); const same = String(M.minP === '' ? 0 : M.minP) === el.dataset.a && String(M.maxP) === el.dataset.b; M.minP = same || !lo ? '' : lo; M.maxP = same ? '' : hi; mkChanged(); }
   else if (a === 'mood') { M.sort = el.dataset.s; M.dir = ''; mkChanged(); }
   else if (a === 'clrrecent') { S.recent = []; save(); renderRecent(); }
@@ -3575,6 +3923,550 @@ document.addEventListener('click', (e) => {
 });
 
 /* =====================================================================
+   VERSION 4 — catégorie « Découvrir » : classements, statistiques, du jour, mini-jeux
+   ===================================================================== */
+const statv = (k) => (c) => (c.stats[k] != null && c.stats[k] !== '' && isFinite(Number(c.stats[k])) ? Number(c.stats[k]) : null);
+const priced = () => CARDS.filter((c) => c.price != null);
+const todayKey = () => new Date().toLocaleDateString('sv-SE');
+function cvOf(c) { const p = c._series.map((q) => q.p); if (p.length < 5) return null; const a = p.reduce((x, y) => x + y, 0) / p.length; return Math.sqrt(p.reduce((x, y) => x + (y - a) * (y - a), 0) / p.length) / (a || 1); }
+function med7(c) { const lim = (Date.parse(DATA.updatedAt) || Date.now()) - 7 * 864e5, w = c._series.filter((q) => q.t >= lim).map((q) => q.p); return w.length >= 3 ? median(w) : null; }
+let RATMED = null, RATMED_FOR = null;
+function ratingMedians() { if (RATMED_FOR === CARDS && RATMED) return RATMED; const m = new Map(); for (const c of priced()) { if (!m.has(c.rating)) m.set(c.rating, []); m.get(c.rating).push(c.price); } RATMED = new Map([...m].map(([r, l]) => [r, median(l)])); RATMED_FOR = CARDS; return RATMED; }
+// Classements : chaque classement = une façon de mesurer les cartes (null = carte ignorée)
+const RANKS = [
+  { k: 'exp', t: 'Les plus chères', ic: '💰', v: (c) => c.price, f: () => '' },
+  { k: 'deal', t: 'Moins chères que leur note', ic: '🏷️', v: (c) => { if (c.price == null || c.rating < 80) return null; const m = ratingMedians().get(c.rating); return m ? -(c.price / m - 1) : null; }, f: (v) => pct(-v) + ' vs la médiane' },
+  { k: 'pac', t: 'Les plus rapides', ic: '⚡', v: statv('PAC'), f: (v) => 'PAC ' + v },
+  { k: 'sho', t: 'Meilleurs tireurs', ic: '🎯', v: statv('SHO'), f: (v) => 'SHO ' + v },
+  { k: 'pas', t: 'Meilleurs passeurs', ic: '🧭', v: statv('PAS'), f: (v) => 'PAS ' + v },
+  { k: 'dri', t: 'Meilleurs dribbleurs', ic: '🪄', v: statv('DRI'), f: (v) => 'DRI ' + v },
+  { k: 'def', t: 'Meilleurs défenseurs', ic: '🛡️', v: statv('DEF'), f: (v) => 'DEF ' + v },
+  { k: 'phy', t: 'Les plus physiques', ic: '💪', v: statv('PHY'), f: (v) => 'PHY ' + v },
+  { k: 'tot', t: 'Meilleur total des stats', ic: '📊', v: (c) => totalStats(c), f: (v) => v + ' pts' },
+  { k: 'gk', t: 'Meilleurs gardiens', ic: '🧤', v: (c) => (c._pos.includes('GK') ? c.rating + (c.price ? 1 / (1 + Math.log10(c.price)) : 0) : null), f: (v) => 'note ' + Math.floor(v) },
+  { k: 'five', t: 'Gestes 5★ et pied faible 5★', ic: '⭐', v: (c) => (c.sm >= 5 && c.wf >= 5 ? c.rating : null), f: (v) => 'note ' + v },
+  { k: 'up7', t: 'Plus fortes hausses (7 jours)', ic: '🚀', v: (c) => c._d7, f: (v) => pct(v) },
+  { k: 'dn7', t: 'Plus fortes baisses (7 jours)', ic: '📉', v: (c) => (c._d7 == null ? null : -c._d7), f: (v) => pct(-v) },
+  { k: 'calm', t: 'Prix les plus stables', ic: '🧊', v: (c) => { const v = c.price > 1000 ? cvOf(c) : null; return v == null ? null : -v; }, f: (v) => 'variation ±' + (-v * 100).toFixed(1).replace('.', ',') + ' %' },
+  { k: 'wild', t: 'Prix les plus agités', ic: '🌪️', v: (c) => (c.price > 1000 ? cvOf(c) : null), f: (v) => 'variation ±' + (v * 100).toFixed(1).replace('.', ',') + ' %' },
+  { k: 'under', t: 'Sous leur prix habituel', ic: '🛒', v: (c) => { const m = med7(c); return m && c.price ? -(c.price / m - 1) : null; }, f: (v) => pct(-v) + ' vs 7 jours' },
+  { k: 'over', t: 'Au-dessus de leur prix habituel', ic: '🎈', v: (c) => { const m = med7(c); return m && c.price ? c.price / m - 1 : null; }, f: (v) => pct(v) + ' vs 7 jours' },
+  { k: 'k10', t: 'Meilleures à moins de 10 k', ic: '🪙', v: (c) => (c.price != null && c.price <= 10000 ? c.rating - c.price / 1e6 : null), f: (v) => 'note ' + Math.round(v) },
+  { k: 'k50', t: 'Meilleures à moins de 50 k', ic: '💵', v: (c) => (c.price != null && c.price <= 50000 ? c.rating - c.price / 1e7 : null), f: (v) => 'note ' + Math.round(v) },
+  { k: 'psp', t: 'Le plus de styles de jeu +', ic: '💎', v: (c) => { const n = (c.ps || []).filter((x) => x.g && !x.x).length; return n ? n + c.rating / 100 : null; }, f: (v) => Math.floor(v) + ' style(s) +' },
+  { k: 'expl', t: 'AcceleRATE explosive', ic: '💥', v: (c) => (/explos/i.test(c.acc) ? statv('PAC')(c) : null), f: (v) => 'PAC ' + v },
+  { k: 'new', t: 'Nouvelles cartes', ic: '🆕', v: (c) => (c._first ? c._first : null), f: (v) => agoText(v).replace('il y a', 'arrivée il y a') },
+  { k: 'base', t: 'Meilleures cartes normales', ic: '🟡', v: (c) => (isBase(c) ? c.rating + (c.price ? 1 / (1 + Math.log10(c.price)) : 0) : null), f: (v) => 'note ' + Math.floor(v) },
+  { k: 'spec', t: 'Meilleures cartes spéciales', ic: '✨', v: (c) => (!isBase(c) ? c.rating + (c.price ? 1 / (1 + Math.log10(c.price)) : 0) : null), f: (v) => 'note ' + Math.floor(v) },
+  { k: 'sm5', t: 'Gestes techniques 5★', ic: '🕺', v: (c) => (c.sm >= 5 ? c.rating : null), f: (v) => 'note ' + v },
+  { k: 'wf5', t: 'Pied faible 5★', ic: '🦶', v: (c) => (c.wf >= 5 ? c.rating : null), f: (v) => 'note ' + v },
+  { k: 'cheap', t: 'Les moins chères', ic: '🧺', v: (c) => (c.price != null ? -c.price : null), f: () => '' },
+  { k: 'spk', t: 'Le plus de stats pour le prix', ic: '🧮', v: (c) => { const t = totalStats(c); return t && c.price ? t / Math.log10(c.price + 10) : null; }, f: (v) => (v).toFixed(0) + ' pts/log(prix)' },
+  { k: 'favup', t: 'Mes favoris en hausse (7 jours)', ic: '❤️', v: (c) => (FAV.has(c.id) && c._d7 != null ? c._d7 : null), f: (v) => pct(v) }
+];
+const DISC = { rank: 'exp', pos: '', league: '', nation: '', club: '' };
+function discSubtabs() {
+  return '<div class="tabs2 invmode dsub" role="tablist">' + [['day', '☀️ Du jour'], ['rank', '🏆 Classements'], ['stats', '📈 Stats'], ['games', '🎮 Jeux']].map(([k, l]) => '<button role="tab" aria-selected="' + (S.disc === k) + '" data-act="dsub" data-k="' + k + '">' + l + '</button>').join('') + '</div>';
+}
+function renderDisc() {
+  let h = '<h1 class="mk-title" style="font-size:30px">Découvrir</h1><p class="mk-sub">Classements, chiffres du marché, la carte du jour et des mini-jeux pour tester tes connaissances.</p>' + discSubtabs();
+  if (!CARDS.length) { $('#pDisc').innerHTML = h + '<div class="empty box"><div class="big">En attente des premiers prix</div></div>'; return; }
+  if (S.disc === 'rank') h += discRanks(); else if (S.disc === 'stats') h += discStats(); else if (S.disc === 'games') h += discGames(); else h += discDay();
+  $('#pDisc').innerHTML = h; countUp($('#pDisc')); if (S.disc === 'games') gameAfterRender();
+}
+// ---------- Classements ----------
+function rankRow(c, i, val) {
+  return '<div class="lrow rk"><span class="rkn' + (i < 3 ? ' m' + i : '') + '">' + (i + 1) + '</span><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') +
+    '<span class="lt"><b>' + esc(c.name) + ' <span class="rt" style="display:inline;color:var(--muted)">' + esc(c.rating) + '</span></b><span>' + esc([(c._pos || [])[0], c.club].filter(Boolean).join(' · ')) + '</span>' + (val ? '<span class="rkv">' + esc(val) + '</span>' : '') + '</span>' +
+    '<span class="lp"><b>' + (c.price != null ? '<span class="coin"></span>' + short(c.price) : '—') + '</b></span></button></div>';
+}
+function discRanks() {
+  const R = RANKS.find((r) => r.k === DISC.rank) || RANKS[0];
+  const opts = (key, label) => { const set = [...new Set(CARDS.map((c) => c[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr')); return '<label class="lab">' + label + '<select class="field" data-dsel="' + key + '"><option value="">Tous</option>' + set.map((v) => '<option value="' + esc(v) + '"' + (DISC[key] === v ? ' selected' : '') + '>' + esc(v) + '</option>').join('') + '</select></label>'; };
+  const posOpts = '<label class="lab">Poste<select class="field" data-dsel="pos"><option value="">Tous</option>' + Object.keys(GROUPS).map((g) => '<option value="g:' + g + '"' + (DISC.pos === 'g:' + g ? ' selected' : '') + '>' + GROUP_NAMES[g] + '</option>').join('') + POSLIST.map((p) => '<option value="' + esc(p) + '"' + (DISC.pos === p ? ' selected' : '') + '>' + esc(p) + '</option>').join('') + '</select></label>';
+  const list = [];
+  for (const c of CARDS) {
+    if (DISC.pos && !posMatch(c, DISC.pos)) continue; if (DISC.league && c.league !== DISC.league) continue; if (DISC.nation && c.nation !== DISC.nation) continue; if (DISC.club && c.club !== DISC.club) continue;
+    const v = R.v(c); if (v == null || !isFinite(v)) continue; list.push([c, v]);
+  }
+  list.sort((a, b) => b[1] - a[1] || (b[0].rating - a[0].rating));
+  return '<div class="rkchips">' + RANKS.map((r) => '<button type="button" data-act="drk" data-k="' + r.k + '" aria-pressed="' + (r.k === R.k) + '"><span aria-hidden="true">' + r.ic + '</span> ' + esc(r.t) + '</button>').join('') + '</div>' +
+    '<div class="box"><div class="two">' + posOpts + opts('league', 'Ligue') + opts('nation', 'Nation') + opts('club', 'Club') + '</div></div>' +
+    '<h2>' + R.ic + ' ' + esc(R.t) + ' <span class="small muted">(' + fmt(list.length) + ' cartes)</span></h2>' +
+    (list.length ? '<div class="lst">' + list.slice(0, 25).map(([c, v], i) => rankRow(c, i, R.f(v))).join('') + '</div>' : '<div class="note">Aucune carte pour ce classement avec ces filtres (il faut parfois plus de relevés de prix).</div>');
+}
+// ---------- Statistiques ----------
+function hbars(rows, opt) {   // barres horizontales simples ; rows = [{l, v, t, act?}]
+  const mx = Math.max(...rows.map((r) => Math.abs(r.v)), 1e-9);
+  return '<div class="hb">' + rows.map((r) => '<div class="hbr"' + (r.act ? ' role="button" tabindex="0" data-act="' + r.act + '" data-v="' + esc(r.av) + '"' : '') + '><span class="hbl">' + esc(r.l) + '</span><span class="hbt"><i class="' + (opt && opt.signed ? (r.v >= 0 ? 'pos' : 'neg') : '') + '" style="width:' + (Math.abs(r.v) / mx * 100).toFixed(1) + '%"></i></span><span class="hbv">' + esc(r.t) + '</span></div>').join('') + '</div>';
+}
+function marketIndex() {   // indice du marché : prix moyen des cartes (en % du prix actuel) jour par jour sur 14 jours
+  const now = Date.parse(DATA.updatedAt) || Date.now(), out = [];
+  for (let d = 13; d >= 0; d--) {
+    const t = now - d * 864e5; const r = [];
+    for (const c of CARDS) { if (c.price == null || c._series.length < 2) continue; let p = null; for (const q of c._series) { if (q.t <= t) p = q.p; else break; } if (p) r.push(p / c.price); }
+    if (r.length >= 10) out.push([t, median(r) * 100]);
+  }
+  return out;
+}
+function discStats() {
+  const pc = priced(), tot = pc.reduce((a, c) => a + c.price, 0);
+  const up = CARDS.filter((c) => c._d1 > 0.0005).length, dn = CARDS.filter((c) => c._d1 < -0.0005).length;
+  let h = '<div class="kpis"><div><b data-cu="' + CARDS.length + '">' + fmt(CARDS.length) + '</b><i>cartes</i></div><div><b>' + short(tot) + '</b><i>valeur totale</i></div><div><b>' + short(pc.length ? median(pc.map((c) => c.price)) : null) + '</b><i>prix médian</i></div><div><b class="up">' + fmt(up) + '</b><i>en hausse 24 h</i></div><div><b class="dn">' + fmt(dn) + '</b><i>en baisse 24 h</i></div></div>';
+  const idx = marketIndex();
+  if (idx.length >= 3) {
+    const W = 340, H = 110, lo = Math.min(...idx.map((q) => q[1])), hi = Math.max(...idx.map((q) => q[1])), sp = (hi - lo) || 1;
+    const xy = idx.map((q, i) => [6 + i / (idx.length - 1) * (W - 12), H - 16 - (q[1] - lo) / sp * (H - 30)]);
+    const first = idx[0][1];
+    h += '<h2>Indice du marché (14 jours)</h2><div class="box"><svg class="pfchart drawn" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Indice du marché sur 14 jours"><path d="' + smoothPath(xy) + '" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linecap="round"/>' + xy.map((p) => '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.2" fill="var(--accent)"/>').join('') + '</svg>' +
+      '<div class="meterl"><span>' + fmtDate(new Date(idx[0][0])) + '</span><span class="' + (100 >= first ? 'up' : 'dn') + '">' + (100 >= first ? '▲ ' : '▼ ') + pct(100 / first - 1) + ' en ' + Math.round((idx[idx.length - 1][0] - idx[0][0]) / 864e5) + ' jours</span><span>aujourd\'hui</span></div><p class="small muted" style="margin:6px 0 0">Prix médian de toutes les cartes, comparé à leur prix d\'aujourd\'hui. Au-dessus de 100 = c\'était plus cher.</p></div>';
+  }
+  // répartition par note
+  const byR = new Map(); CARDS.forEach((c) => { const r = c.rating < 75 ? '< 75' : String(c.rating); byR.set(r, (byR.get(r) || 0) + 1); });
+  const rr = [...byR].sort((a, b) => (a[0] === '< 75' ? -1 : b[0] === '< 75' ? 1 : Number(a[0]) - Number(b[0])));
+  h += '<h2>Cartes par note</h2><div class="box">' + hbars(rr.map(([r, n]) => ({ l: r, v: n, t: fmt(n), act: 'dgo', av: r === '< 75' ? 'maxR:74' : 'minR:' + r }))) + '</div>';
+  // prix moyen par note
+  const pr = [...ratingMedians()].filter(([r]) => r >= 78).sort((a, b) => a[0] - b[0]);
+  if (pr.length) h += '<h2>Prix médian par note</h2><div class="box">' + hbars(pr.map(([r, m]) => ({ l: String(r), v: m, t: short(m) }))) + '</div>';
+  // tranches de prix
+  const br = [[0, 1000, '< 1 k'], [1000, 10000, '1 – 10 k'], [10000, 50000, '10 – 50 k'], [50000, 250000, '50 – 250 k'], [250000, 1e6, '250 k – 1 M'], [1e6, Infinity, '> 1 M']];
+  h += '<h2>Cartes par tranche de prix</h2><div class="box">' + hbars(br.map(([a, b, l]) => ({ l, v: pc.filter((c) => c.price >= a && c.price < b).length, t: fmt(pc.filter((c) => c.price >= a && c.price < b).length) }))) + '</div>';
+  // postes
+  h += '<h2>Par poste</h2><div class="box">' + hbars(Object.keys(GROUPS).map((g) => { const l = CARDS.filter((c) => c._pos.some((q) => GROUPS[g].includes(q))); const u = l.filter((c) => c._d1 > 0.0005).length; return { l: GROUP_NAMES[g], v: l.length, t: fmt(l.length) + ' · ' + (l.length ? Math.round(u / l.length * 100) : 0) + ' % en hausse' }; })) + '</div>';
+  const top = (key, n) => { const m = new Map(); CARDS.forEach((c) => { if (c[key]) m.set(c[key], (m.get(c[key]) || 0) + 1); }); return [...m].sort((a, b) => b[1] - a[1]).slice(0, n); };
+  h += '<div class="two2"><div><h2>Clubs les plus présents</h2><div class="box">' + hbars(top('club', 10).map(([k, n]) => ({ l: k, v: n, t: fmt(n), act: 'dgo', av: 'club:' + k }))) + '</div></div>' +
+    '<div><h2>Nations les plus présentes</h2><div class="box">' + hbars(top('nation', 10).map(([k, n]) => ({ l: k, v: n, t: fmt(n), act: 'dgo', av: 'nation:' + k }))) + '</div></div></div>';
+  const lgs = top('league', 8);
+  h += '<h2>Ligues : variation moyenne sur 7 jours</h2><div class="box">' + hbars(lgs.map(([k]) => { const v = CARDS.filter((c) => c.league === k && c._d7 != null).map((c) => c._d7); const a = v.length ? v.reduce((x, y) => x + y, 0) / v.length : 0; return { l: k, v: a, t: v.length ? pct(a) : '—', act: 'dgo', av: 'league:' + k }; }), { signed: true }) + '</div>';
+  h += '<h2>La carte la plus chère de chaque ligue</h2><div class="box">' + lgs.map(([k]) => { const c = pc.filter((x) => x.league === k).sort((a, b) => b.price - a.price)[0]; return c ? '<div class="line"><span class="small muted">' + esc(k) + '</span><button type="button" class="linkb" data-act="open" data-id="' + esc(c.id) + '">' + esc(cardLabel(c)) + ' ' + esc(c.rating) + '</button><b>' + short(c.price) + '</b></div>' : ''; }).join('') + '</div>';
+  const ver = top('version', 8);
+  if (ver.length) h += '<h2>Cartes par rareté</h2><div class="box">' + hbars(ver.map(([k, n]) => ({ l: k, v: n, t: fmt(n) }))) + '</div>';
+  h += '<div class="two2"><div><h2>Gestes techniques</h2><div class="box">' + hbars([1, 2, 3, 4, 5].map((k) => { const n = CARDS.filter((c) => c.sm === k).length; return { l: k + '★', v: n, t: fmt(n), act: 'dgo', av: 'sm:' + k }; })) + '</div></div>' +
+    '<div><h2>Pied faible</h2><div class="box">' + hbars([1, 2, 3, 4, 5].map((k) => { const n = CARDS.filter((c) => c.wf === k).length; return { l: k + '★', v: n, t: fmt(n), act: 'dgo', av: 'wf:' + k }; })) + '</div></div></div>';
+  h += '<h2>Statistiques moyennes par poste</h2><div class="box tbl"><table><thead><tr><th>Poste</th><th>Cartes</th>' + STATK.map((k) => '<th>' + k + '</th>').join('') + '</tr></thead><tbody>' +
+    POSLIST.filter((p) => posAvg(p)).map((p) => '<tr><td><b>' + esc(p) + '</b></td><td>' + fmt(CARDS.filter((c) => (c._pos || [])[0] === p).length) + '</td>' + posAvg(p).map((v) => '<td>' + v + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
+  // fourrage SBC
+  const fod = []; for (let r = 82; r <= 91; r++) { const c = pc.filter((x) => x.rating === r).sort((a, b) => a.price - b.price)[0]; if (c) fod.push([r, c]); }
+  if (fod.length) h += '<h2>Fourrage SBC : la moins chère par note</h2><div class="box">' + fod.map(([r, c]) => '<div class="line"><b class="rbadge">' + r + '</b><button type="button" class="linkb" data-act="open" data-id="' + esc(c.id) + '">' + esc(c.name) + '</button><b>' + short(c.price) + '</b></div>').join('') + '</div>';
+  return h;
+}
+// ---------- Du jour ----------
+function dayPick(list, salt) { if (!list.length) return null; const r = rng(hashStr(todayKey() + salt)); return list[Math.floor(r() * list.length)]; }
+function bigCard(c, title, why, cls) {
+  return '<div class="box dcard ' + (cls || '') + '"><div class="dct">' + title + '</div><div class="dcb"><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'md') + '</button><div class="dci"><b>' + esc(c.name) + '</b><span class="muted small">' + esc([c.version, (c._pos || [])[0], c.club].filter(Boolean).join(' · ')) + '</span>' +
+    '<span class="dcp"><span class="coin"></span>' + fmt(c.price) + '</span>' + (why ? '<span class="small">' + why + '</span>' : '') + statsGrid(c) + '</div></div></div>';
+}
+function discDay() {
+  const pc = priced();
+  const star = dayPick(pc.filter((c) => c.rating >= 85), 'star') || dayPick(pc, 'star');
+  const deals = pc.filter((c) => c.rating >= 82 && med7(c) && c.price < med7(c) * 0.95);
+  const gem = dayPick(deals.length ? deals : pc.filter((c) => c.rating >= 82), 'gem');
+  const fire = pc.filter((c) => c._d1 != null).sort((a, b) => b._d1 - a._d1)[0], cold = pc.filter((c) => c._d1 != null).sort((a, b) => a._d1 - b._d1)[0];
+  let h = '<div class="dgrid">';
+  if (star) h += bigCard(star, '🌟 Le joueur du jour', 'Choisi au hasard parmi les meilleures cartes. Il change chaque jour.', 'gold');
+  if (gem) h += bigCard(gem, '💎 La pépite du jour', deals.includes(gem) ? 'Moins chère que son prix habituel (' + pct(gem.price / med7(gem) - 1) + ' sur 7 jours).' : 'Une bonne carte à découvrir.', 'gem');
+  h += '</div><div class="two2">';
+  if (fire && fire._d1 > 0) h += '<div class="box"><div class="dct">🔥 En feu aujourd\'hui</div><div class="line"><button type="button" class="linkb" data-act="open" data-id="' + esc(fire.id) + '">' + esc(fire.name) + ' ' + esc(fire.rating) + '</button><b class="up">' + pct(fire._d1) + '</b></div><div class="small muted">La plus forte hausse sur 24 h (' + short(fire.price) + ').</div></div>';
+  if (cold && cold._d1 < 0) h += '<div class="box"><div class="dct">🧊 La chute du jour</div><div class="line"><button type="button" class="linkb" data-act="open" data-id="' + esc(cold.id) + '">' + esc(cold.name) + ' ' + esc(cold.rating) + '</button><b class="dn">' + pct(cold._d1) + '</b></div><div class="small muted">La plus forte baisse sur 24 h (' + short(cold.price) + ').</div></div>';
+  h += '</div>';
+  h += quizOfDay() + challengeOfDay() + factsHtml();
+  return h;
+}
+function factsHtml() {
+  const pc = priced(); if (pc.length < 5) return '';
+  const f = [], mx = pc.reduce((a, c) => (c.price > a.price ? c : a)), mn = pc.reduce((a, c) => (c.price < a.price ? c : a));
+  f.push('La carte la plus chère (' + cardLabel(mx) + ', ' + short(mx.price) + ') vaut ' + fmt(Math.round(mx.price / mn.price)) + ' fois la moins chère.');
+  const nat = new Map(); CARDS.forEach((c) => nat.set(c.nation, (nat.get(c.nation) || 0) + 1)); const tn = [...nat].sort((a, b) => b[1] - a[1])[0];
+  if (tn) f.push('La nation la plus représentée est ' + tn[0] + ', avec ' + fmt(tn[1]) + ' cartes.');
+  const r90 = CARDS.filter((c) => c.rating >= 90).length; f.push(fmt(r90) + ' cartes ont une note de 90 ou plus.');
+  const fast = CARDS.reduce((a, c) => ((statv('PAC')(c) || 0) > (statv('PAC')(a) || 0) ? c : a)); if (statv('PAC')(fast)) f.push('Le plus rapide est ' + cardLabel(fast) + ' avec ' + statv('PAC')(fast) + ' de vitesse.');
+  const five = CARDS.filter((c) => c.sm >= 5 && c.wf >= 5).length; f.push(fmt(five) + ' cartes ont 5★ en gestes ET en pied faible.');
+  const r = rng(hashStr(todayKey() + 'facts')); const pick = f.sort(() => r() - 0.5).slice(0, 3);
+  return '<h2>💡 Le saviez-vous ?</h2><div class="box"><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">' + pick.map((t) => '<li>' + esc(t) + '</li>').join('') + '</ul></div>';
+}
+function qdGet() { try { const o = JSON.parse(localStorage.getItem('fc27.qd') || 'null'); return o && o.d === todayKey() ? o : null; } catch (e) { return null; } }
+function quizOfDay() {
+  const pc = priced().filter((c) => c.rating >= 80); if (pc.length < 2) return '';
+  const r = rng(hashStr(todayKey() + 'quiz')); let a = pc[Math.floor(r() * pc.length)], b = pc[Math.floor(r() * pc.length)], n = 0;
+  while ((b === a || Math.abs(a.price - b.price) / Math.max(a.price, b.price) < 0.08) && n++ < 50) b = pc[Math.floor(r() * pc.length)];
+  const done = qdGet(), right = a.price >= b.price ? a.id : b.id;
+  const btn = (c) => '<button type="button" class="qopt' + (done ? (c.id === right ? ' ok' : done.a === c.id ? ' ko' : '') : '') + '" data-act="qd" data-id="' + esc(c.id) + '" data-r="' + esc(right) + '"' + (done ? ' disabled' : '') + '>' + cardImg(c, 'sm') + '<span><b>' + esc(cardLabel(c)) + '</b><br><span class="small muted">' + esc(c.rating) + ' · ' + esc((c._pos || [])[0] || '') + '</span>' + (done ? '<br><b>' + short(c.price) + '</b>' : '') + '</span></button>';
+  return '<h2>❓ Le quiz du jour</h2><div class="box"><b>Laquelle est la plus chère ?</b><div class="qrow">' + btn(a) + btn(b) + '</div>' + (done ? '<div class="small ' + (done.a === right ? 'up' : 'dn') + '" style="margin-top:6px">' + (done.a === right ? '✅ Bravo ! Reviens demain pour une nouvelle question.' : '❌ Raté ! Reviens demain pour une nouvelle question.') + '</div>' : '<div class="small muted" style="margin-top:6px">Une seule réponse par jour.</div>') + '</div>';
+}
+function challengeOfDay() {
+  const r = rng(hashStr(todayKey() + 'chal')), target = 82 + Math.floor(r() * 5), budget = [50000, 100000, 150000, 250000, 400000][Math.floor(r() * 5)];
+  const start = S.sq.s.slice(0, 11).filter((id) => id && MAP.has(id)), rt = sqRating(start), cost = start.reduce((a, id) => a + (MAP.get(id).price || 0), 0);
+  const ok = rt != null && rt >= target && cost <= budget;
+  return '<h2>🏗️ Le défi du jour</h2><div class="box"><b>Construis une équipe notée ' + target + ' ou plus pour moins de ' + short(budget) + ' crédits.</b>' +
+    '<div class="small" style="margin-top:6px">Ton équipe actuelle : note ' + (rt == null ? '— (11 titulaires nécessaires)' : rt) + ' · prix ' + short(cost) + (ok ? ' · <b class="up">✅ Défi réussi !</b>' : '') + '</div>' +
+    '<div class="row2" style="margin-top:8px"><button type="button" class="btn primary" data-act="chal" data-b="' + budget + '">Essayer dans l\'onglet Équipe</button></div></div>';
+}
+
+// ---------- Mini-jeux ----------
+let G = null, GTIMER = 0;
+const GAMES = [
+  ['hl', '⬆️⬇️', 'Plus ou moins cher ?', 'Devine si la carte suivante vaut plus ou moins. Fais la plus longue série.'],
+  ['hlc', '⏱️', 'Chrono 60 secondes', 'Le même jeu, mais un maximum de bonnes réponses en 1 minute.'],
+  ['gn', '🔢', 'Devine la note', '5 joueurs, tu vois leurs stats : trouve leur note. 10 points par joueur.'],
+  ['gp', '🕵️', 'Qui est-ce ?', 'Stats, poste, nation… à toi de reconnaître le joueur parmi 4 noms.'],
+  ['duel', '⚔️', 'Duel de stats', 'Qui a la meilleure vitesse, le meilleur tir… ? Fais une série.'],
+  ['mem', '🧠', 'Mémoire', 'Retrouve les 6 paires de cartes en un minimum de coups.'],
+  ['jp', '💯', 'Le juste prix', '5 cartes : donne leur prix. Plus tu es proche, plus tu marques (20 points max par carte).'],
+  ['low', '🔍', 'Trouve la moins chère', '4 cartes de même note : laquelle coûte le moins ? Fais une série.'],
+  ['pack', '🎁', 'Ouverture de pack (simulation)', 'Ouvre des packs imaginaires et regarde ce qu\'ils vaudraient au prix du marché.']
+];
+const REC = { jp: ['Meilleur score', (v) => v + ' / 100'], low: ['Meilleure série', (v) => v], hl: ['Meilleure série', (v) => v], hlc: ['Record en 60 s', (v) => v], gn: ['Meilleur score', (v) => v + ' / 50'], gp: ['Meilleure série', (v) => v], duel: ['Meilleure série', (v) => v], mem: ['Moins de coups', (v) => (v ? v + ' coups' : '—')], pack: ['Meilleur pack', (v) => (v ? short(v) : '—')] };
+const rndOf = (l) => l[Math.floor(Math.random() * l.length)];
+const gpool = () => priced().filter((c) => c.rating >= 75);
+function discGames() {
+  let h = '';
+  if (!G) {
+    h += '<div class="ggrid">' + GAMES.map(([k, ic, t, d]) => '<button type="button" class="gtile" data-act="gstart" data-g="' + k + '"><span class="ic" aria-hidden="true">' + ic + '</span><b>' + esc(t) + '</b><span>' + esc(d) + '</span><em>' + REC[k][0] + ' : ' + REC[k][1](S.games[k] || 0) + '</em></button>').join('') + '</div>';
+    h += '<h2>🏅 Mes records</h2><div class="box">' + GAMES.map(([k, ic, t]) => '<div class="line"><span>' + ic + ' ' + esc(t) + '</span><b>' + REC[k][1](S.games[k] || 0) + '</b></div>').join('') +
+      '<div class="small muted" style="margin-top:6px">Parties jouées : ' + fmt(S.games.played || 0) + '</div><div class="row2" style="margin-top:8px"><button type="button" class="btn" data-act="gshare">📋 Partager mes records</button></div></div>';
+    return h;
+  }
+  return '<div class="row2" style="margin:6px 0 10px"><button type="button" class="btn" data-act="gquit">← Tous les jeux</button><b>' + esc((GAMES.find((g) => g[0] === G.k) || [])[2] || '') + '</b></div><div class="box gbox" id="gameBox"></div>';
+}
+function gameAfterRender() { if (G) drawGame(); }
+function gameStart(k) {
+  clearInterval(GTIMER); const pool = gpool();
+  if (pool.length < 12) { toast('Pas assez de cartes avec un prix pour jouer'); return; }
+  S.games.played = (S.games.played || 0) + 1; save();
+  if (k === 'hl' || k === 'hlc') { G = { k, a: rndOf(pool), b: null, streak: 0, ans: '', over: false }; G.b = hlNext(G.a); if (k === 'hlc') { G.end = Date.now() + 60e3; GTIMER = setInterval(hlTick, 250); } }
+  else if (k === 'gn') { G = { k, round: 1, score: 0, card: rndOf(pool.filter((c) => totalStats(c))), rev: false, guess: 80 }; }
+  else if (k === 'gp') { G = { k, streak: 0 }; gpNew(); }
+  else if (k === 'duel') { G = { k, streak: 0 }; duelNew(); }
+  else if (k === 'mem') { const six = []; while (six.length < 6) { const c = rndOf(pool); if (!six.includes(c)) six.push(c); } const tiles = six.concat(six).map((c) => ({ id: c.id, open: false, done: false })).sort(() => Math.random() - 0.5); G = { k, tiles, first: -1, moves: 0, lock: false }; }
+  else if (k === 'pack') { G = { k, cards: [], shown: 0, type: '' }; }
+  else if (k === 'jp') { G = { k, round: 1, score: 0, card: rndOf(pool), rev: false, last: 0 }; }
+  else if (k === 'low') { G = { k, streak: 0 }; lowNew(); }
+  renderDisc();
+}
+function hlNext(a) { const pool = gpool(); for (let i = 0; i < 80; i++) { const b = rndOf(pool); if (b.id !== a.id && Math.abs(b.price - a.price) / Math.max(a.price, b.price) >= 0.05) return b; } return rndOf(pool); }
+function hlTick() { if (!G || G.k !== 'hlc') { clearInterval(GTIMER); return; } const left = Math.max(0, G.end - Date.now()); const t = document.getElementById('gTimer'); if (t) t.textContent = Math.ceil(left / 1000) + ' s'; if (!left) { clearInterval(GTIMER); G.over = true; if (G.streak > (S.games.hlc || 0)) { S.games.hlc = G.streak; save(); confetti(); } drawGame(); checkAch(); } }
+function gcard(c, hide) { return '<div class="gc">' + cardImg(c, 'md') + '<b>' + esc(cardLabel(c)) + '</b><span class="small muted">' + esc(c.rating) + ' · ' + esc((c._pos || [])[0] || '') + '</span><span class="gprice">' + (hide ? '? ? ?' : '<span class="coin"></span>' + fmt(c.price)) + '</span></div>'; }
+function silhouette(c) { return '<div class="gsil"><svg viewBox="0 0 40 48" aria-hidden="true"><circle cx="20" cy="14" r="9"/><path d="M3 48c0-12 7-20 17-20s17 8 17 20z"/></svg><span>?</span></div>'; }
+function drawGame() {
+  const box = document.getElementById('gameBox'); if (!box || !G) return; let h = '';
+  if (G.k === 'hl' || G.k === 'hlc') {
+    h += '<div class="gtop"><span>' + (G.k === 'hlc' ? 'Bonnes réponses' : 'Série') + ' : <b>' + G.streak + '</b></span>' + (G.k === 'hlc' ? '<b id="gTimer" class="gtimer">' + Math.ceil(Math.max(0, G.end - Date.now()) / 1000) + ' s</b>' : '<span class="muted">Record : ' + (S.games.hl || 0) + '</span>') + '</div>';
+    h += '<div class="gvs">' + gcard(G.a) + '<span class="vs">VS</span>' + gcard(G.b, !G.ans) + '</div>';
+    if (G.over) h += '<div class="gend">' + (G.k === 'hlc' ? '⏱️ Temps écoulé ! <b>' + G.streak + '</b> bonne(s) réponse(s).' : '❌ Perdu ! Ta série : <b>' + G.streak + '</b>.') + (G.streak && G.streak >= (S.games[G.k] || 0) ? ' <b class="up">Record !</b>' : '') + '<div class="row2" style="justify-content:center;margin-top:8px"><button type="button" class="btn primary" data-act="gstart" data-g="' + G.k + '">Rejouer</button></div></div>';
+    else if (!G.ans) h += '<p class="gq">' + esc(cardLabel(G.b)) + ' vaut-elle plus ou moins que ' + esc(cardLabel(G.a)) + ' ?</p><div class="gbtns"><button type="button" class="btn primary" data-act="ghl" data-d="up">⬆️ Plus chère</button><button type="button" class="btn primary" data-act="ghl" data-d="down">⬇️ Moins chère</button></div>';
+    else h += '<p class="gq ' + (G.ans === 'ok' ? 'up' : 'dn') + '">' + (G.ans === 'ok' ? '✅ Bien vu !' : '❌ Raté') + '</p>';
+  } else if (G.k === 'gn') {
+    const c = G.card;
+    h += '<div class="gtop"><span>Joueur <b>' + G.round + '</b> / 5</span><span>Score : <b>' + G.score + '</b></span></div><div class="gnc">' + silhouette(c) + '<div><b class="gname">' + esc(c.name) + '</b><div class="small muted">' + esc([c.version, (c._pos || [])[0], c.club, c.nation].filter(Boolean).join(' · ')) + '</div>' + statsGrid(c) + '</div></div>';
+    if (!G.rev) h += '<label class="lab" style="margin-top:12px">Ta réponse : <b id="gnV" style="font-size:22px;color:var(--text)">' + G.guess + '</b><input type="range" id="gnR" min="60" max="99" value="' + G.guess + '" class="grange"></label><div class="gbtns"><button type="button" class="btn primary" data-act="gnok">Valider</button></div>';
+    else { const pts = Math.max(0, 10 - 2 * Math.abs(G.guess - c.rating)); h += '<p class="gq">La note était <b>' + c.rating + '</b> (tu as dit ' + G.guess + ') : <b class="' + (pts >= 6 ? 'up' : pts ? '' : 'dn') + '">+' + pts + ' point' + (pts > 1 ? 's' : '') + '</b></p>' + (G.round < 5 ? '<div class="gbtns"><button type="button" class="btn primary" data-act="gnnext">Joueur suivant →</button></div>' : '<div class="gend">Score final : <b>' + G.score + ' / 50</b>' + (G.score >= (S.games.gn || 0) && G.score ? ' <b class="up">Record !</b>' : '') + '<div class="row2" style="justify-content:center;margin-top:8px"><button type="button" class="btn primary" data-act="gstart" data-g="gn">Rejouer</button></div></div>'); }
+  } else if (G.k === 'gp') {
+    const c = G.card;
+    h += '<div class="gtop"><span>Série : <b>' + G.streak + '</b></span><span class="muted">Record : ' + (S.games.gp || 0) + '</span></div><div class="gnc">' + silhouette(c) + '<div><b class="gname">Note ' + esc(c.rating) + ' · ' + esc((c._pos || []).join(', ')) + '</b><div class="small muted">' + esc([c.nation, c.league].filter(Boolean).join(' · ')) + (c.sm ? ' · gestes ' + c.sm + '★ · pied faible ' + c.wf + '★' : '') + '</div>' + statsGrid(c) + '</div></div>';
+    h += '<div class="gopts">' + G.opts.map((o) => '<button type="button" class="btn' + (G.ans ? (o.id === c.id ? ' okb' : o.id === G.ans ? ' kob' : '') : '') + '" data-act="gpick" data-id="' + esc(o.id) + '"' + (G.ans ? ' disabled' : '') + '>' + esc(o.name) + '</button>').join('') + '</div>';
+    if (G.over) h += '<div class="gend">❌ C\'était <b>' + esc(c.name) + '</b>. Ta série : <b>' + G.streak + '</b>.<div class="row2" style="justify-content:center;margin-top:8px"><button type="button" class="btn primary" data-act="gstart" data-g="gp">Rejouer</button></div></div>';
+  } else if (G.k === 'duel') {
+    h += '<div class="gtop"><span>Série : <b>' + G.streak + '</b></span><span class="muted">Record : ' + (S.games.duel || 0) + '</span></div><p class="gq">Qui a le plus de <b>' + esc(G.statN) + '</b> ?</p>';
+    h += '<div class="gvs">' + [G.a, G.b].map((c) => '<button type="button" class="gc gpickc' + (G.ans ? (statv(G.stat)(c) >= Math.max(statv(G.stat)(G.a), statv(G.stat)(G.b)) ? ' okc' : ' koc') : '') + '" data-act="gduel" data-id="' + esc(c.id) + '"' + (G.ans ? ' disabled' : '') + '>' + cardImg(c, 'md') + '<b>' + esc(cardLabel(c)) + '</b><span class="small muted">' + esc(c.rating) + ' · ' + esc((c._pos || [])[0] || '') + '</span>' + (G.ans ? '<span class="gprice">' + G.stat + ' ' + statv(G.stat)(c) + '</span>' : '') + '</button>').join('<span class="vs">VS</span>') + '</div>';
+    if (G.over) h += '<div class="gend">❌ Perdu ! Ta série : <b>' + G.streak + '</b>.<div class="row2" style="justify-content:center;margin-top:8px"><button type="button" class="btn primary" data-act="gstart" data-g="duel">Rejouer</button></div></div>';
+  } else if (G.k === 'mem') {
+    const done = G.tiles.every((t) => t.done);
+    h += '<div class="gtop"><span>Coups : <b>' + G.moves + '</b></span><span class="muted">Record : ' + (S.games.mem ? S.games.mem + ' coups' : '—') + '</span></div><div class="mgrid2">' +
+      G.tiles.map((t, i) => { const c = MAP.get(t.id); return '<button type="button" class="mt' + (t.open || t.done ? ' on' : '') + (t.done ? ' done' : '') + '" data-act="gmem" data-i="' + i + '" aria-label="' + (t.open || t.done ? esc(c.name) : 'Carte cachée') + '"><span class="mb">🎴</span><span class="mf"><b>' + esc(c.rating) + '</b><span>' + esc(cardLabel(c)) + '</span></span></button>'; }).join('') + '</div>';
+    if (done) h += '<div class="gend">🎉 Bravo, terminé en <b>' + G.moves + '</b> coups !' + (S.games.mem === G.moves ? ' <b class="up">Record !</b>' : '') + '<div class="row2" style="justify-content:center;margin-top:8px"><button type="button" class="btn primary" data-act="gstart" data-g="mem">Rejouer</button></div></div>';
+  } else if (G.k === 'jp') {
+    const c = G.card;
+    h += '<div class="gtop"><span>Carte <b>' + G.round + '</b> / 5</span><span>Score : <b>' + G.score + '</b></span></div><div class="gnc"><div style="width:110px;flex:none">' + cardImg(c, 'md') + '</div><div><b class="gname">' + esc(c.name) + '</b><div class="small muted">' + esc([c.version, (c._pos || [])[0], c.club].filter(Boolean).join(' · ')) + '</div>' + statsGrid(c) + '</div></div>';
+    if (!G.rev) h += '<label class="lab" style="margin-top:12px">Ton prix (ex : 15k, 1,2M)<input class="field" id="jpIn" type="text" inputmode="decimal" autocomplete="off"></label><div class="gbtns"><button type="button" class="btn primary" data-act="jpok">Valider</button></div>';
+    else h += '<p class="gq">Le prix était <b>' + fmt(c.price) + '</b> : <b class="' + (G.last >= 12 ? 'up' : G.last ? '' : 'dn') + '">+' + G.last + ' points</b></p>' + (G.round < 5 ? '<div class="gbtns"><button type="button" class="btn primary" data-act="jpnext">Carte suivante →</button></div>' : '<div class="gend">Score final : <b>' + G.score + ' / 100</b>' + (G.score && G.score >= (S.games.jp || 0) ? ' <b class="up">Record !</b>' : '') + '<div class="row2" style="justify-content:center;margin-top:8px"><button type="button" class="btn primary" data-act="gstart" data-g="jp">Rejouer</button></div></div>');
+  } else if (G.k === 'low') {
+    const lo = Math.min(...G.cards.map((c) => c.price));
+    h += '<div class="gtop"><span>Série : <b>' + G.streak + '</b></span><span class="muted">Record : ' + (S.games.low || 0) + '</span></div><p class="gq">Laquelle de ces cartes <b>' + G.cards[0].rating + '</b> est la moins chère ?</p><div class="lowg">' +
+      G.cards.map((c) => '<button type="button" class="gc gpickc' + (G.ans ? (c.price === lo ? ' okc' : c.id === G.ans ? ' koc' : '') : '') + '" data-act="glow" data-id="' + esc(c.id) + '"' + (G.ans ? ' disabled' : '') + '>' + cardImg(c, 'sm') + '<b>' + esc(cardLabel(c)) + '</b><span class="small muted">' + esc((c._pos || [])[0] || '') + ' · ' + esc(c.club) + '</span>' + (G.ans ? '<span class="gprice">' + short(c.price) + '</span>' : '') + '</button>').join('') + '</div>';
+    if (G.over) h += '<div class="gend">❌ Perdu ! Ta série : <b>' + G.streak + '</b>.<div class="row2" style="justify-content:center;margin-top:8px"><button type="button" class="btn primary" data-act="gstart" data-g="low">Rejouer</button></div></div>';
+  } else if (G.k === 'pack') {
+    h += '<p class="small muted" style="margin-top:0">⚠️ Simulation pour s\'amuser : ce ne sont <b>pas</b> les vraies chances des packs d\'EA, et rien n\'est acheté.</p><div class="gbtns">' +
+      [['or', '🟡 Pack Or (12 cartes)'], ['rare', '🔷 Pack Rare 84+ (3 cartes)'], ['leg', '🔥 Pack Légende 88+ (1 carte)']].map(([k, l]) => '<button type="button" class="btn primary" data-act="gpack" data-t="' + k + '">' + l + '</button>').join('') + '</div>';
+    if (G.cards.length) {
+      const all = G.shown >= G.cards.length, val = G.cards.reduce((a, c) => a + (c.price || 0), 0);
+      h += '<div class="pgrid">' + G.cards.map((c, i) => '<div class="pk' + (i < G.shown ? ' on' : '') + (c.rating >= 88 ? ' wow' : '') + '"><div class="pkb">🎁</div><div class="pkf"><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') + '</button><b>' + esc(cardLabel(c)) + '</b><span>' + short(c.price) + '</span></div></div>').join('') + '</div>' +
+        (all ? '<div class="gend">Valeur du pack : <b>' + fmt(val) + '</b> crédits' + (val >= (S.games.pack || 0) ? ' <b class="up">Record !</b>' : '') + '</div>' : '<div class="gbtns"><button type="button" class="btn" data-act="greveal">Révéler la suivante</button><button type="button" class="btn" data-act="grevall">Tout révéler</button></div>');
+    }
+    const pulls = S.pulls.map((id) => MAP.get(id)).filter(Boolean);
+    if (pulls.length) h += '<h3 style="margin-top:14px">Ma collection simulée (' + pulls.length + ' cartes · ' + short(pulls.reduce((a, c) => a + (c.price || 0), 0)) + ')</h3><div class="vlist">' + pulls.slice().reverse().slice(0, 30).map((c) => '<button type="button" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') + '<span>' + esc(cardLabel(c)) + ' ' + esc(c.rating) + '<br><b>' + short(c.price) + '</b></span></button>').join('') + '</div><button type="button" class="btn" style="margin-top:8px" data-act="gpclear">Vider la collection</button>';
+  }
+  box.innerHTML = h;
+}
+function lowNew() {   // 4 cartes de la même note avec des prix assez différents
+  const pool = gpool(); for (let t = 0; t < 40; t++) { const r = rndOf(pool).rating, same = pool.filter((c) => c.rating === r); if (same.length < 4) continue; const pick = []; while (pick.length < 4) { const c = rndOf(same); if (!pick.includes(c)) pick.push(c); } const ps = pick.map((c) => c.price).sort((a, b) => a - b); if (ps[1] / ps[0] < 1.05) continue; Object.assign(G, { cards: pick, ans: '', over: false }); return; }
+  Object.assign(G, { cards: [0, 1, 2, 3].map(() => rndOf(pool)), ans: '', over: false });
+}
+function gpNew() { const pool = gpool().filter((c) => totalStats(c)); const c = rndOf(pool); const grp = Object.keys(GROUPS).find((g) => c._pos.some((q) => GROUPS[g].includes(q))); const same = pool.filter((x) => x.id !== c.id && x._nn !== c._nn && (!grp || x._pos.some((q) => GROUPS[grp].includes(q)))); const opts = [c]; while (opts.length < 4 && same.length) { const o = rndOf(same); if (!opts.some((x) => x._nn === o._nn)) opts.push(o); else same.splice(same.indexOf(o), 1); } G.card = c; G.opts = opts.sort(() => Math.random() - 0.5); G.ans = ''; G.over = false; }
+const DSTATS = [['PAC', 'vitesse'], ['SHO', 'tir'], ['PAS', 'passes'], ['DRI', 'dribbles'], ['DEF', 'défense'], ['PHY', 'physique']];
+function duelNew() { const pool = gpool().filter((c) => totalStats(c)); const st = rndOf(DSTATS); let a = rndOf(pool), b = rndOf(pool), n = 0; while ((b.id === a.id || statv(st[0])(a) === statv(st[0])(b)) && n++ < 60) b = rndOf(pool); Object.assign(G, { a, b, stat: st[0], statN: st[1] + ' (' + st[0] + ')', ans: '', over: false }); }
+function packDraw(type) {
+  const pool = gpool(); const rule = { or: [12, 75, 3.2], rare: [3, 84, 2], leg: [1, 88, 1.8] }[type];
+  const cand = pool.filter((c) => c.rating >= rule[1]); if (!cand.length) return [];
+  const w = cand.map((c) => Math.exp(-(c.rating - rule[1]) / rule[2])), tot = w.reduce((a, b) => a + b, 0), out = [];
+  while (out.length < Math.min(rule[0], cand.length)) { let x = Math.random() * tot, i = 0; while (x > w[i]) { x -= w[i]; i++; } const c = cand[Math.min(i, cand.length - 1)]; if (!out.includes(c)) out.push(c); }
+  return out.sort((a, b) => a.rating - b.rating);
+}
+function packDone() { const val = G.cards.reduce((a, c) => a + (c.price || 0), 0); S.pulls = S.pulls.concat(G.cards.map((c) => c.id)).slice(-60); if (val > (S.games.pack || 0)) S.games.pack = val; save(); if (G.cards.some((c) => c.rating >= 90) || val === S.games.pack) confetti(); checkAch(); }
+document.addEventListener('input', (e) => { if (e.target.id === 'gnR' && G && G.k === 'gn') { G.guess = Number(e.target.value); const v = document.getElementById('gnV'); if (v) v.textContent = G.guess; } });
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]'); if (!el) return; const a = el.dataset.act;
+  if (a === 'dsub') { S.disc = el.dataset.k; save(); if (S.disc !== 'games') { clearInterval(GTIMER); G = null; } renderDisc(); }
+  else if (a === 'drk') { DISC.rank = el.dataset.k; renderDisc(); }
+  else if (a === 'dgo') { const [k, ...v] = (el.dataset.v || '').split(':'); const val = v.join(':'); Object.assign(M, M0); if (k === 'minR' || k === 'maxR') { M[k] = Number(val) || 0; if (k === 'minR') M.maxR = Number(val) || 0; } else if (k === 'sm' || k === 'wf') M[k] = Number(val) || 0; else M[k] = val; saveMF(); buildPosFilter(); showTab(0); renderMarket(); toast('Marché filtré'); }
+  else if (a === 'qd') { if (qdGet()) return; try { localStorage.setItem('fc27.qd', JSON.stringify({ d: todayKey(), a: el.dataset.id })); } catch (err) { /* ignoré */ } if (el.dataset.id === el.dataset.r) confetti(30); renderDisc(); }
+  else if (a === 'chal') { showTab(5); setTimeout(() => { const b = $('#sqBud'); if (b) { b.value = String(el.dataset.b); b.scrollIntoView({ behavior: 'smooth', block: 'center' }); b.focus(); } }, 200); }
+  else if (a === 'gstart') gameStart(el.dataset.g);
+  else if (a === 'gquit') { clearInterval(GTIMER); G = null; renderDisc(); }
+  else if (a === 'gshare') copyText('Mes records FC27 Companion :\n' + GAMES.map(([k, ic, t]) => ic + ' ' + t + ' : ' + REC[k][1](S.games[k] || 0)).join('\n'), 'Records copiés');
+  else if (a === 'ghl' && G && !G.ans && !G.over) {
+    const up = G.b.price >= G.a.price, ok = (el.dataset.d === 'up') === up; G.ans = ok ? 'ok' : 'ko';
+    if (ok) G.streak++;
+    if (G.k === 'hl' && !ok) { G.over = true; if (G.streak > (S.games.hl || 0)) { S.games.hl = G.streak; save(); confetti(); } checkAch(); }
+    drawGame();
+    if (!G.over) setTimeout(() => { if (!G || G.over) return; G.a = G.b; G.b = hlNext(G.a); G.ans = ''; drawGame(); }, G.k === 'hlc' ? 450 : 900);
+    if (G.k === 'hl' && ok && G.streak > (S.games.hl || 0)) { S.games.hl = G.streak; save(); }
+  }
+  else if (a === 'gnok' && G && G.k === 'gn' && !G.rev) { G.rev = true; G.score += Math.max(0, 10 - 2 * Math.abs(G.guess - G.card.rating)); if (G.round >= 5 && G.score > (S.games.gn || 0)) { S.games.gn = G.score; save(); confetti(); checkAch(); } drawGame(); }
+  else if (a === 'gnnext' && G && G.k === 'gn') { G.round++; G.rev = false; G.guess = 80; G.card = rndOf(gpool().filter((c) => totalStats(c))); drawGame(); }
+  else if (a === 'gpick' && G && G.k === 'gp' && !G.ans) { G.ans = el.dataset.id; if (G.ans === G.card.id) { G.streak++; if (G.streak > (S.games.gp || 0)) { S.games.gp = G.streak; save(); } drawGame(); setTimeout(() => { if (G && G.k === 'gp') { gpNew(); drawGame(); } }, 900); } else { G.over = true; checkAch(); drawGame(); } }
+  else if (a === 'gduel' && G && G.k === 'duel' && !G.ans) { const c = MAP.get(el.dataset.id), mx = Math.max(statv(G.stat)(G.a), statv(G.stat)(G.b)); G.ans = el.dataset.id; if (statv(G.stat)(c) >= mx) { G.streak++; if (G.streak > (S.games.duel || 0)) { S.games.duel = G.streak; save(); } drawGame(); setTimeout(() => { if (G && G.k === 'duel') { duelNew(); drawGame(); } }, 1100); } else { G.over = true; checkAch(); drawGame(); } }
+  else if (a === 'gmem' && G && G.k === 'mem' && !G.lock) {
+    const i = Number(el.dataset.i), t = G.tiles[i]; if (t.done || t.open) return; t.open = true;
+    if (G.first < 0) { G.first = i; drawGame(); return; }
+    G.moves++; const f = G.tiles[G.first]; G.first = -1;
+    if (f.id === t.id) { f.done = t.done = true; f.open = t.open = false; if (G.tiles.every((x) => x.done)) { if (!S.games.mem || G.moves < S.games.mem) { S.games.mem = G.moves; save(); confetti(); } checkAch(); } drawGame(); }
+    else { G.lock = true; drawGame(); setTimeout(() => { f.open = t.open = false; G.lock = false; drawGame(); }, 750); }
+  }
+  else if (a === 'jpok' && G && G.k === 'jp' && !G.rev) { const v = num(($('#jpIn') || {}).value); if (!(v > 0)) { toast('Entre un prix (ex : 15k)'); return; } const err = Math.abs(v - G.card.price) / G.card.price; G.last = Math.max(0, Math.round(20 * (1 - err / 0.5))); G.score += G.last; G.rev = true; if (G.round >= 5 && G.score > (S.games.jp || 0)) { S.games.jp = G.score; save(); confetti(); } drawGame(); }
+  else if (a === 'jpnext' && G && G.k === 'jp') { G.round++; G.rev = false; G.card = rndOf(gpool()); drawGame(); const i = $('#jpIn'); if (i) i.focus(); }
+  else if (a === 'glow' && G && G.k === 'low' && !G.ans) { const c = MAP.get(el.dataset.id), lo = Math.min(...G.cards.map((x) => x.price)); G.ans = el.dataset.id; if (c.price === lo) { G.streak++; if (G.streak > (S.games.low || 0)) { S.games.low = G.streak; save(); } drawGame(); setTimeout(() => { if (G && G.k === 'low') { lowNew(); drawGame(); } }, 1100); } else { G.over = true; drawGame(); } }
+  else if (a === 'gpack' && G && G.k === 'pack') { G.cards = packDraw(el.dataset.t); G.shown = 0; G.type = el.dataset.t; S.games.played++; save(); drawGame(); }
+  else if (a === 'greveal' && G && G.k === 'pack') { G.shown++; if (G.shown >= G.cards.length) packDone(); drawGame(); }
+  else if (a === 'grevall' && G && G.k === 'pack') { G.shown = G.cards.length; packDone(); drawGame(); }
+  else if (a === 'gpclear') { const old = S.pulls.slice(); S.pulls = []; save(); drawGame(); toast('Collection vidée', () => { S.pulls = old; save(); drawGame(); }); }
+});
+
+/* =====================================================================
+   VERSION 4 — profil, succès, confettis, chiffres animés, radar
+   ===================================================================== */
+const realized = () => S.sales.reduce((a, x) => a + (x.sell * (1 - TAX) - x.buy) * x.qty, 0);
+const ACH = [
+  ['fav1', '⭐', 'Premier favori', 'Ajoute une carte en favori', () => FAV.size >= 1],
+  ['fav10', '🌟', 'Collectionneur', 'Aie 10 favoris', () => FAV.size >= 10],
+  ['view10', '👀', 'Curieux', 'Ouvre 10 fiches de joueurs', () => S.viewed >= 10],
+  ['view100', '🔎', 'Expert du marché', 'Ouvre 100 fiches de joueurs', () => S.viewed >= 100],
+  ['alert1', '🔔', 'Aux aguets', 'Crée une alerte de prix', () => S.alerts.length >= 1],
+  ['buy1', '🧾', 'Premier achat', 'Ajoute une carte au Portefeuille', () => S.pf.length + S.sales.length >= 1],
+  ['sale1', '💸', 'Première vente', 'Enregistre une vente', () => S.sales.length >= 1],
+  ['p10k', '🤑', 'Trader', 'Gagne 10 000 crédits avec tes ventes', () => realized() >= 10000],
+  ['p100k', '🏦', 'Magnat', 'Gagne 100 000 crédits avec tes ventes', () => realized() >= 100000],
+  ['squad', '⚽', 'Coach', 'Complète une équipe de 11 titulaires', () => S.sq.s.slice(0, 11).every((id) => id && MAP.has(id))],
+  ['chem', '🧪', 'Alchimiste', 'Atteins 25 de chimie', () => S.sq.s.slice(0, 11).every((id) => id && MAP.has(id)) && sqChem().total >= 25],
+  ['cmp', '⚖️', 'Analyste', 'Mets 3 cartes dans le comparateur', () => S.cmp.length >= 3],
+  ['hl10', '⬆️', 'Flair', 'Fais une série de 10 à « Plus ou moins cher ? »', () => S.games.hl >= 10],
+  ['gn40', '🔢', 'Œil de lynx', 'Marque 40 points à « Devine la note »', () => S.games.gn >= 40],
+  ['gp5', '🕵️', 'Détective', 'Série de 5 à « Qui est-ce ? »', () => S.games.gp >= 5],
+  ['mem', '🧠', 'Mémoire d\'éléphant', 'Finis « Mémoire » en 10 coups ou moins', () => S.games.mem > 0 && S.games.mem <= 10],
+  ['pack90', '🎁', 'Chanceux', 'Tire une carte 90+ dans un pack simulé', () => S.pulls.some((id) => (MAP.get(id) || {}).rating >= 90)],
+  ['sbc1', '🧩', 'Bâtisseur', 'Marque un SBC comme fait', () => S.done.length >= 1],
+  ['boo', '🎃', 'Bouh !', 'Trouve la surprise cachée dans la citrouille', () => false]
+];
+let ACHBUSY = false;
+function checkAch() {
+  if (ACHBUSY || !CARDS.length) return; ACHBUSY = true; const got = [];
+  try { for (const [k, ic, t, , f] of ACH) { if (S.ach[k]) continue; let ok = false; try { ok = f(); } catch (e) { ok = false; } if (ok) { S.ach[k] = Date.now(); got.push(ic + ' ' + t); } } } finally { ACHBUSY = false; }
+  if (got.length) { save(); toast('🏆 Succès débloqué : ' + got.join(', ')); confetti(); if (TAB === 11) renderProfile(); }
+}
+setInterval(() => { try { checkAch(); } catch (e) { /* ignoré */ } }, 5000);
+function renderProfile() {
+  const n = Object.keys(S.ach).length, lvl = 1 + Math.floor(n / 3), next = 3 - (n % 3);
+  const kp = (v, l, raw) => '<div><b' + (raw ? '' : ' data-cu="' + v + '"') + '>' + (raw || fmt(v)) + '</b><i>' + l + '</i></div>';
+  let h = '<div class="prof"><div class="pav" aria-hidden="true">' + esc(S.av || '⚽') + '</div><div><h1 class="mk-title" style="font-size:28px;margin:0">' + (S.nick ? esc(S.nick) : 'Mon profil') + '</h1><div class="small muted">Niveau <b>' + lvl + '</b> · ' + n + ' succès sur ' + ACH.length + ' · encore ' + next + ' pour le niveau ' + (lvl + 1) + '</div><div class="goal" style="margin-top:6px"><i style="width:' + ((n % 3) / 3 * 100) + '%"></i></div></div></div>';
+  h += '<div class="kpis">' + kp(S.viewed, 'fiches ouvertes') + kp(FAV.size, 'favoris') + kp(S.alerts.length, 'alertes') + kp(S.pf.length, 'cartes en portefeuille') + kp(S.sales.length, 'ventes') + kp(0, 'gagné en ventes', (realized() >= 0 ? '+' : '') + short(realized())) + kp(S.games.played || 0, 'parties jouées') + kp(Object.keys(S.notes).length, 'notes perso') + '</div>';
+  h += '<div class="box"><div class="two"><label class="lab">Mon pseudo<input class="field" id="nickIn" maxlength="24" value="' + esc(S.nick) + '" placeholder="ex : Kylian"></label><div class="lab">Mon avatar<div class="avs">' + ['⚽', '🏆', '🔥', '⚡', '🦁', '🐐', '👑', '🎃', '🧤', '🚀'].map((a) => '<button type="button" data-act="avset" data-a="' + a + '" aria-pressed="' + (S.av === a) + '">' + a + '</button>').join('') + '</div></div></div></div>';
+  h += '<h2>🏆 Succès</h2><div class="achg">' + ACH.map(([k, ic, t, d]) => '<div class="ach' + (S.ach[k] ? ' on' : '') + '"><span class="ic" aria-hidden="true">' + ic + '</span><b>' + esc(t) + '</b><span>' + esc(d) + '</span>' + (S.ach[k] ? '<em>✓ ' + fmtDate(new Date(S.ach[k])) + '</em>' : '<em>🔒 à débloquer</em>') + '</div>').join('') + '</div>';
+  const notes = Object.entries(S.notes).map(([id, t]) => [MAP.get(id), t, id]).filter((x) => x[0]);
+  h += '<h2>📝 Mes notes sur les joueurs</h2>' + (notes.length ? '<div class="box">' + notes.map(([c, t]) => '<div class="line"><div><button type="button" class="linkb" data-act="open" data-id="' + esc(c.id) + '">' + esc(c.name) + ' ' + esc(c.rating) + '</button><div class="small muted">' + esc(t) + '</div></div></div>').join('') + '</div>' : '<div class="note">Aucune note. Dans la fiche d\'un joueur, écris ce que tu en penses dans « Ma note ».</div>');
+  h += '<div class="row2" style="margin:12px 0"><button type="button" class="btn" data-act="tab" data-t="10">🎮 Mes jeux et records</button><button type="button" class="btn" data-act="tab" data-t="4">💼 Mon portefeuille</button></div>';
+  $('#pProf').innerHTML = h; countUp($('#pProf')); checkAch();
+}
+// Confettis (fête !) : coupés si les animations sont désactivées ou dans Réglages
+function confetti(n) {
+  if (!S.fx || S.anim === 'none') return;
+  const box = document.createElement('div'); box.className = 'confetti'; box.setAttribute('aria-hidden', 'true');
+  const cols = ['#ff7a1a', '#ffd166', '#3ddc84', '#4cc9f0', '#b46bff', '#ff4fa3'];
+  for (let i = 0; i < (n || 70); i++) { const p = document.createElement('i'); p.style.left = Math.random() * 100 + 'vw'; p.style.background = cols[i % cols.length]; p.style.animationDuration = (1.6 + Math.random() * 1.6).toFixed(2) + 's'; p.style.animationDelay = (Math.random() * 0.4).toFixed(2) + 's'; p.style.setProperty('--r', (Math.random() * 720 - 360).toFixed(0) + 'deg'); p.style.setProperty('--x', (Math.random() * 120 - 60).toFixed(0) + 'px'); box.appendChild(p); }
+  document.body.appendChild(box); setTimeout(() => box.remove(), 3800);
+}
+// Chiffres qui « comptent » jusqu'à leur valeur
+function countUp(root) {
+  if (!root || S.anim === 'none') return;
+  root.querySelectorAll('[data-cu]').forEach((el) => {
+    const to = Number(el.dataset.cu); if (!isFinite(to) || to <= 0) return; const t0 = performance.now(), d = 700;
+    const step = (t) => { const k = Math.min(1, (t - t0) / d), e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(to * e); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+// Radar des 6 statistiques (joueur ou équipe). b = valeurs de comparaison facultatives (en pointillés)
+function radar(vals, b, label) {
+  const R = 70, cx = 90, cy = 86, n = 6, pt = (i, v) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n, r = R * Math.max(0, Math.min(99, v || 0)) / 99; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
+  const ring = (k) => STATK.map((_, i) => pt(i, 99 * k).map((x) => x.toFixed(1)).join(',')).join(' ');
+  const poly = (v) => STATK.map((k, i) => pt(i, v[i]).map((x) => x.toFixed(1)).join(',')).join(' ');
+  return '<svg class="radar" viewBox="0 0 180 176" role="img" aria-label="' + esc(label || 'Radar des statistiques') + '">' + [1, 0.75, 0.5, 0.25].map((k) => '<polygon points="' + ring(k) + '" fill="none" stroke="var(--line)"/>').join('') +
+    STATK.map((k, i) => { const [x, y] = pt(i, 112); return '<text x="' + x.toFixed(1) + '" y="' + (y + 3).toFixed(1) + '" text-anchor="middle" class="cl" style="font-weight:700">' + k + '</text>'; }).join('') +
+    (b ? '<polygon points="' + poly(b) + '" fill="none" stroke="var(--muted)" stroke-dasharray="4 3" stroke-width="1.5"/>' : '') +
+    '<polygon points="' + poly(vals) + '" fill="color-mix(in srgb,var(--accent) 30%,transparent)" stroke="var(--accent)" stroke-width="2"/>' +
+    STATK.map((k, i) => { const [x, y] = pt(i, vals[i]); return vals[i] ? '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2.6" fill="var(--accent)"/>' : ''; }).join('') + '</svg>';
+}
+
+/* =====================================================================
+   VERSION 4 — actions : recherche, fiche, équipe, portefeuille
+   ===================================================================== */
+// --- Recherche : effacer, voix, recherches récentes et enregistrées ---
+let RST = 0;
+$('#q').addEventListener('input', () => { const qc = $('#qClear'); if (qc) qc.hidden = !$('#q').value; clearTimeout(RST); RST = setTimeout(() => { const v = $('#q').value.trim(); if (v.length >= 2 && filtered().length) { S.rs = [v].concat(S.rs.filter((x) => x.toLowerCase() !== v.toLowerCase())).slice(0, 8); save(); } }, 1500); });
+$('#q').addEventListener('focus', () => {
+  if ($('#q').value || !S.rs.length) return; const box = $('#sugg');
+  box.innerHTML = '<div class="small muted" style="padding:6px 10px">Recherches récentes</div>' + S.rs.map((t) => '<button type="button" data-act="rsgo" data-t="' + esc(t) + '"><span class="t">🕘 ' + esc(t) + '</span></button>').join(''); box.hidden = false;
+});
+try { const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (SR) { const m = $('#qMic'); if (m) m.hidden = false; } } catch (e) { /* pas de micro */ }
+function voiceSearch() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) { toast('Recherche vocale non disponible sur ce navigateur'); return; }
+  try { const r = new SR(); r.lang = 'fr-FR'; r.interimResults = false; r.maxAlternatives = 1; toast('🎤 Parle maintenant : dis le nom d\'un joueur');
+    r.onresult = (e) => { const t = e.results[0][0].transcript; $('#q').value = t; M.q = t; mkChanged(); toast('Recherche : « ' + t + ' »'); };
+    r.onerror = () => toast('Je n\'ai pas compris, réessaie'); r.start(); } catch (e) { toast('Micro indisponible'); }
+}
+// --- Fiche : radar comparé à la moyenne du poste ---
+const POSAVG = new Map(); let POSAVG_FOR = null;
+function posAvg(p) {
+  if (POSAVG_FOR !== CARDS) { POSAVG.clear(); POSAVG_FOR = CARDS; }
+  if (!POSAVG.has(p)) { const l = CARDS.filter((c) => (c._pos || [])[0] === p && totalStats(c)); POSAVG.set(p, l.length >= 5 ? STATK.map((k) => Math.round(l.reduce((a, c) => a + Number(c.stats[k]), 0) / l.length)) : null); }
+  return POSAVG.get(p);
+}
+function radarBlock(c) {
+  if (!totalStats(c)) return ''; const v = STATK.map((k) => Number(c.stats[k]) || 0), p0 = (c._pos || [])[0], b = p0 ? posAvg(p0) : null;
+  return '<div class="rdb">' + radar(v, b, 'Radar des statistiques de ' + c.name) + '<div class="small muted">' + (b ? 'En pointillés : la moyenne des cartes au poste ' + esc(p0) + '.<br>' + STATK.map((k, i) => k + ' ' + (v[i] - b[i] >= 0 ? '<b class="up">+' : '<b class="dn">') + (v[i] - b[i]) + '</b>').join(' · ') : '') + '</div></div>';
+}
+// --- Fiche : agrandir la carte, effet 3D, imprimer, image ---
+function zoomCard(c) {
+  const z = document.createElement('div'); z.className = 'zoom'; z.setAttribute('role', 'dialog'); z.setAttribute('aria-label', 'Carte agrandie');
+  z.innerHTML = '<div class="zin">' + cardImg(c, 'lg') + '<div class="small" style="margin-top:10px;color:#fff">Touche n\'importe où pour fermer</div></div>';
+  z.addEventListener('click', () => z.remove()); document.body.appendChild(z); fitSoon();
+}
+document.addEventListener('pointermove', (e) => {
+  const t = e.target.closest && e.target.closest('.tilt'); if (!t || S.anim !== 'full' || e.pointerType === 'touch') return;
+  const r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+  t.style.transform = 'perspective(700px) rotateY(' + (x * 14).toFixed(1) + 'deg) rotateX(' + (-y * 14).toFixed(1) + 'deg)';
+});
+document.addEventListener('pointerout', (e) => { const t = e.target.closest && e.target.closest('.tilt'); if (t && !t.contains(e.relatedTarget)) t.style.transform = ''; });
+function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888'; }
+function canvasDownload(cv, name) { try { const a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => a.remove(), 300); toast('Image téléchargée'); } catch (e) { toast('Image impossible sur ce navigateur'); } }
+function sheetImage(c) {   // image « fiche » à partager : nom, note, prix, variations, statistiques
+  const cv = document.createElement('canvas'); cv.width = 720; cv.height = 900; const x = cv.getContext('2d');
+  const bg = cssVar('--bg'), sf = cssVar('--surface'), tx = cssVar('--text'), mu = cssVar('--muted'), ac = cssVar('--accent');
+  x.fillStyle = bg; x.fillRect(0, 0, 720, 900); x.fillStyle = sf; x.fillRect(30, 30, 660, 840);
+  x.fillStyle = ac; x.fillRect(30, 30, 660, 8);
+  x.fillStyle = tx; x.font = 'bold 120px system-ui, sans-serif'; x.fillText(String(c.rating), 60, 170);
+  x.font = 'bold 40px system-ui, sans-serif'; x.fillText(String((c._pos || [])[0] || ''), 70, 225);
+  x.font = 'bold 44px system-ui, sans-serif'; x.fillText(c.name.slice(0, 26), 60, 310);
+  x.fillStyle = mu; x.font = '28px system-ui, sans-serif'; x.fillText([c.version, c.club, c.nation].filter(Boolean).join(' · ').slice(0, 44), 60, 355);
+  x.fillStyle = '#f0b429'; x.font = 'bold 64px system-ui, sans-serif'; x.fillText(fmt(c.price) + ' crédits', 60, 450);
+  x.fillStyle = mu; x.font = '26px system-ui, sans-serif'; x.fillText('24 h : ' + (c._d1 == null ? '—' : pct(c._d1)) + '   ·   7 jours : ' + (c._d7 == null ? '—' : pct(c._d7)), 60, 495);
+  STATK.forEach((k, i) => { const v = Number(c.stats[k]) || 0, y = 560 + i * 48; x.fillStyle = mu; x.font = 'bold 26px system-ui, sans-serif'; x.fillText(k, 60, y + 22); x.fillStyle = cssVar('--line'); x.fillRect(150, y, 440, 26); x.fillStyle = v >= 80 ? '#3ddc84' : v >= 65 ? '#f0b429' : '#ff5d5d'; x.fillRect(150, y, 440 * v / 99, 26); x.fillStyle = tx; x.fillText(String(v), 610, y + 22); });
+  x.fillStyle = mu; x.font = '22px system-ui, sans-serif'; x.fillText('FC27 Companion · ' + (DATA.updatedAt ? 'prix du ' + fmtDT(new Date(DATA.updatedAt)) : ''), 60, 850);
+  canvasDownload(cv, 'fc27-' + cardLabel(c).replace(/[^\w-]+/g, '_') + '.png');
+}
+function chartImage() {   // la courbe affichée, en image PNG
+  const svg = document.querySelector('#chartBox svg.chart'); if (!svg) { toast('Pas de courbe à enregistrer'); return; }
+  let src = new XMLSerializer().serializeToString(svg);
+  src = src.replace(/var\((--[\w-]+)\)/g, (m, n) => cssVar(n));
+  if (!/xmlns=/.test(src)) src = src.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+  const vb = svg.viewBox.baseVal, W = vb.width * 2, H = vb.height * 2, img = new Image();
+  img.onload = () => { const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d'); x.fillStyle = cssVar('--bg'); x.fillRect(0, 0, W, H); x.drawImage(img, 0, 0, W, H); const c = MAP.get(CURID); canvasDownload(cv, 'fc27-courbe-' + (c ? cardLabel(c).replace(/[^\w-]+/g, '_') : 'carte') + '.png'); };
+  img.onerror = () => toast('Image impossible sur ce navigateur');
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(src);
+}
+// --- Équipe : image, banc automatique ---
+function squadImage() {
+  const f = sqForm(), cv = document.createElement('canvas'), W = 720, H = 960; cv.width = W; cv.height = H; const x = cv.getContext('2d');
+  for (let i = 0; i < 12; i++) { x.fillStyle = i % 2 ? '#196034' : '#1d6b3b'; x.fillRect(0, i * 80, W, 80); }
+  x.strokeStyle = 'rgba(255,255,255,.35)'; x.lineWidth = 3; x.strokeRect(20, 20, W - 40, 820); x.beginPath(); x.moveTo(20, 430); x.lineTo(W - 20, 430); x.stroke(); x.beginPath(); x.arc(W / 2, 430, 70, 0, Math.PI * 2); x.stroke();
+  let idx = 0; const rows = f.rows;
+  rows.forEach((row, r) => { const y = 90 + r * (720 / Math.max(1, rows.length - 1)) * 0.98; row.forEach((p, k) => { const c = MAP.get(S.sq.s[idx]), cap = S.cap[S.sqi] === idx; idx++; const cx = (k + 1) * W / (row.length + 1);
+    x.fillStyle = 'rgba(0,0,0,.45)'; x.beginPath(); x.arc(cx, y, 38, 0, Math.PI * 2); x.fill(); x.fillStyle = '#ffd75e'; x.font = 'bold 30px system-ui, sans-serif'; x.textAlign = 'center'; x.fillText(c ? String(c.rating) : '+', cx, y + 10);
+    x.fillStyle = '#fff'; x.font = 'bold 20px system-ui, sans-serif'; x.fillText(c ? cardLabel(c).slice(0, 14) + (cap ? ' (C)' : '') : p, cx, y + 64); }); });
+  const st = S.sq.s.slice(0, 11).filter((id) => id && MAP.has(id)), rt = sqRating(st), tot = st.reduce((a, id) => a + (MAP.get(id).price || 0), 0);
+  x.fillStyle = '#0c0e14'; x.fillRect(0, 860, W, 100); x.fillStyle = '#fff'; x.textAlign = 'left'; x.font = 'bold 30px system-ui, sans-serif'; x.fillText((S.sqn[S.sqi] || 'Mon équipe') + ' · ' + f.n, 30, 902);
+  x.font = '24px system-ui, sans-serif'; x.fillStyle = '#c9cfd8'; x.fillText('Note ' + (rt == null ? '—' : rt) + ' · Chimie ' + sqChem().total + '/33 · Prix ' + short(tot) + ' · FC27 Companion', 30, 940);
+  canvasDownload(cv, 'fc27-equipe.png');
+}
+function benchFill() {   // banc : pour chaque place libre, la meilleure carte à moins de 20 000 qui n'est pas déjà dans l'équipe
+  const want = ['GK', 'DEF', 'DEF', 'MIL', 'MIL', 'ATT', 'ATT'], used = new Set(S.sq.s.filter(Boolean).map((id) => (MAP.get(id) || {})._nn)); let n = 0;
+  for (let k = 0; k < 7; k++) { if (S.sq.s[11 + k]) continue; const g = want[k]; const c = priced().filter((x) => x.price <= 20000 && !used.has(x._nn) && x._pos.some((q) => GROUPS[g].includes(q))).sort((a, b) => b.rating - a.rating || a.price - b.price)[0]; if (c) { S.sq.s[11 + k] = c.id; used.add(c._nn); n++; } }
+  save(); renderSquad(); toast(n ? n + ' remplaçant(s) ajouté(s) (meilleures cartes à moins de 20 000)' : 'Le banc est déjà complet');
+}
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]'); if (!el) return; const a = el.dataset.act;
+  if (a === 'qclear') { $('#q').value = ''; M.q = ''; el.hidden = true; mkChanged(); $('#q').focus(); }
+  else if (a === 'qmic') voiceSearch();
+  else if (a === 'rsgo') { $('#q').value = el.dataset.t; M.q = el.dataset.t; $('#sugg').hidden = true; mkChanged(); }
+  else if (a === 'mksave') { const n = (window.prompt('Nom de cette recherche :', (M.q || M.club || M.league || 'Ma recherche').slice(0, 40)) || '').trim(); if (!n) return; const o = {}; for (const k of Object.keys(M0)) if (k !== 'page' && M[k] !== M0[k]) o[k] = M[k]; S.saved = S.saved.filter((x) => x.n !== n).concat({ n: n.slice(0, 40), mf: o }).slice(-20); save(); renderSaved(); toast('Recherche « ' + n + ' » enregistrée'); }
+  else if (a === 'svgo') { const x = S.saved[Number(el.dataset.i)]; if (!x) return; Object.assign(M, M0); for (const k of Object.keys(x.mf)) if (k in M0) M[k] = x.mf[k]; $('#q').value = M.q || ''; buildPosFilter(); mkChanged(); toast('Recherche « ' + x.n + ' »'); }
+  else if (a === 'svdel') { const i = Number(el.dataset.i), old = S.saved.slice(); S.saved.splice(i, 1); save(); renderSaved(); toast('Recherche supprimée', () => { S.saved = old; save(); renderSaved(); }); }
+  else if (a === 'mkcopy') { const l = filtered().slice(0, 200); copyText(l.map((c) => c.name + ' ' + c.rating + ' (' + ((c._pos || [])[0] || '') + ') : ' + (c.price != null ? fmt(c.price) : '—')).join('\n'), l.length + ' cartes copiées'); }
+  else if (a === 'tsort') { const k = el.dataset.k, cur = M.sort.split('-'); M.sort = k + '-' + (cur[0] === k ? (cur[1] === 'desc' ? 'asc' : 'desc') : k === 'name' ? 'asc' : 'desc'); mkChanged(); }
+  else if (a === 'zoom') { const c = MAP.get(CURID); if (c) zoomCard(c); }
+  else if (a === 'sprint') window.print();
+  else if (a === 'simg') { const c = MAP.get(el.dataset.id); if (c) sheetImage(c); }
+  else if (a === 'chpng') chartImage();
+  else if (a === 'sqcap') { S.cap[S.sqi] = S.cap[S.sqi] === SQ.sel ? -1 : SQ.sel; save(); closeSq(); toast(S.cap[S.sqi] >= 0 ? 'Capitaine choisi' : 'Plus de capitaine'); }
+  else if (a === 'sqpng') squadImage();
+  else if (a === 'sqbench') benchFill();
+  else if (a === 'sdel') { const i = Number(el.dataset.i), old = S.sales.slice(); S.sales.splice(i, 1); save(); renderPortfolio(); toast('Vente supprimée', () => { S.sales = old; save(); renderPortfolio(); }); }
+  else if (a === 'alogclr') { S.alog = []; save(); renderPortfolio(); }
+  else if (a === 'avset') { S.av = el.dataset.a; save(); renderProfile(); }
+  else if (a === 'sqfix') { sqChangeForm(S.sq.f); toast('Joueurs replacés à leur poste quand c\'est possible'); }
+  else if (a === 'gamereset') { if (confirm('Remettre à zéro tous les records des jeux ?')) { Object.keys(S.games).forEach((k) => { S.games[k] = 0; }); save(); toast('Records remis à zéro'); } }
+});
+let NOTET = 0;
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if (t.id === 'noteTx') { clearTimeout(NOTET); NOTET = setTimeout(() => { const v = t.value.trim(); if (v) S.notes[t.dataset.id] = v.slice(0, 500); else delete S.notes[t.dataset.id]; save(); }, 400); }
+  else if (t.id === 'nickIn') { S.nick = t.value.slice(0, 24); save(); }
+  else if (t.id === 'sqName') { S.sqn[S.sqi] = t.value.slice(0, 30) || 'Équipe ' + (S.sqi + 1); save(); const b = document.querySelector('[data-act=sqtab][data-k="' + S.sqi + '"]'); if (b) b.textContent = S.sqn[S.sqi]; }
+});
+document.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.id === 'fInSq') { M.insq = t.checked; mkChanged(); }
+  else if (t.id === 'fNoted') { M.noted = t.checked; mkChanged(); }
+  else if (t.id === 'fNew') { M.onlynew = t.checked; mkChanged(); }
+  else if (t.id === 'setFont') { S.font = t.value; save(); applyLook(); fitSoon(); }
+  else if (t.id === 'chDots') { S.dots = t.checked; save(); const c = MAP.get(CURID); if (c) $('#chartBox').innerHTML = chartBoxHtml(c); }
+  else if (t.id === 'pgGo') { const n = Math.round(num(t.value) || 0); if (n >= 1) { M.page = n; renderMarket(); window.scrollTo(0, 0); } }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.target && e.target.id === 'pgGo' && e.key === 'Enter') { e.target.blur(); return; }
+  if (e.target && e.target.id === 'jpIn' && e.key === 'Enter') { const b = document.querySelector('[data-act=jpok]'); if (b) b.click(); return; }
+  if (!(e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) && $('#sheet').hidden && TAB === 0 && !e.ctrlKey && !e.metaKey && !e.altKey && ['g', 'l', 't'].includes(e.key)) { S.view = { g: 'grid', l: 'list', t: 'table' }[e.key]; save(); renderMarket(); return; }
+  const typing = e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName); if (typing || $('#sheet').hidden || !CURID || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'f') { const b = document.querySelector('#panel [data-act=fav]'); if (b) b.click(); }
+  else if (e.key === 'c') { cmpToggle(CURID); renderSheet(); }
+});
+
+
+// Petite onde quand on appuie sur un bouton
+document.addEventListener('pointerdown', (e) => {
+  const b = e.target.closest && e.target.closest('.btn'); if (!b || S.anim === 'none') return;
+  const r = b.getBoundingClientRect(), d = Math.max(r.width, r.height) * 2, sp = document.createElement('span');
+  sp.className = 'rp'; sp.style.width = sp.style.height = d + 'px'; sp.style.left = (e.clientX - r.left - d / 2) + 'px'; sp.style.top = (e.clientY - r.top - d / 2) + 'px';
+  b.appendChild(sp); setTimeout(() => sp.remove(), 520);
+});
+/* =====================================================================
    Démarrage
    ===================================================================== */
 applyLook();
@@ -3584,7 +4476,7 @@ try { const ci = new Image(); ci.onload = () => document.documentElement.classLi
 try { if (!matchMedia('(min-width:900px)').matches) $('#flt').removeAttribute('open'); } catch (e) { }
 try { const mo = new MutationObserver(fitSoon); ['#list', '#panel', '#tickerBox'].forEach((q) => { const el = $(q); if (el) mo.observe(el, { childList: true, subtree: true }); }); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSoon); } catch (e) { }
 renderHeader(); renderMarket(); updateDot(); updateMoreDot(); netState();
-loadAll().then(() => { readHash(); if (!S.tut && CARDS.length) setTimeout(openTut, 600); }).catch(() => { });
+loadAll().then(() => { if (S.home && !location.hash) showTab(S.home, true); readHash(); if (!S.tut && CARDS.length) setTimeout(openTut, 600); }).catch(() => { });
 window.addEventListener('hashchange', readHash);
 setInterval(() => { if (TAB === 3) { const ae = document.activeElement; if (!(ae && /^(INPUT|SELECT)$/.test(ae.tagName) && ae.closest('#p2'))) renderSbc(); } }, 60e3);   // comptes à rebours des SBC à jour
 // Appli installable + ouverture sans connexion (fichiers manifest.json et sw.js à côté de index.html ; sans eux, le site marche pareil)
