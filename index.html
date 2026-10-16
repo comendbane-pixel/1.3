@@ -1053,6 +1053,85 @@ html[data-cb=on]{--up:#3b8bff!important;--down:#ff9d1a!important}
 .avs button[aria-pressed=true]{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 40%,transparent)}
 html[data-font=round] body{font-family:'Nunito',system-ui,sans-serif}
 html[data-font=cond] body{font-family:'Barlow Condensed',system-ui,sans-serif;font-size:16px}
+
+/* ---------- logo (écusson FC27 ; citrouille sculptée pendant Halloween) ---------- */
+.brand::before{display:none!important}
+.pumpkin.logo{display:block;width:38px;height:38px;margin-right:10px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.45));transition:transform .2s var(--ease)}
+.pumpkin.logo:hover{transform:rotate(-6deg) scale(1.06)}
+.pumpkin.logo svg{width:100%;height:100%;display:block;overflow:visible}
+.pumpkin.logo .lg-h{display:none}
+html[data-hw=on] .pumpkin.logo .lg-n{display:none}
+html[data-hw=on] .pumpkin.logo .lg-h{display:block}
+html[data-hw=on] .pumpkin.logo{width:40px;height:40px}
+.brandtxt{background:linear-gradient(90deg,var(--text),color-mix(in srgb,var(--accent) 70%,var(--text)));-webkit-background-clip:text;background-clip:text;color:transparent}
+html[data-hw=on] .brandtxt{background:linear-gradient(90deg,#ffb35c,#ff7a1a 55%,#c58cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* =====================================================================
+   VERSION 5 : album, pack du jour, défi du jour
+   ===================================================================== */
+.packbox{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));background:radial-gradient(120% 100% at 0% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 55%),var(--surface)}
+.pkhead{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pkwrap{display:flex;gap:16px;align-items:center}
+@media(max-width:420px){.pkwrap{flex-direction:column;text-align:center}.pkwrap .pkodds{justify-content:center}}
+.pkopen{border:0;background:none;padding:0;flex:none;cursor:pointer}
+.pkbig{position:relative;width:118px;aspect-ratio:3/4.2;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;overflow:hidden;
+  background:linear-gradient(150deg,var(--c1),var(--c2));box-shadow:0 14px 30px -12px var(--c1),inset 0 0 0 2px rgba(255,255,255,.35);animation:pkfloat 3.2s ease-in-out infinite}
+.pkbig::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.4) 45%,transparent 60%);background-size:250% 100%;animation:shine 2.6s linear infinite}
+.pkbig.mys{box-shadow:0 14px 30px -12px #b46bff,inset 0 0 0 2px rgba(200,160,255,.5)}
+.pkbig .pkic{font-size:44px;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+.pkbig .pkn{font-weight:900;font-size:13px;text-transform:uppercase;letter-spacing:.06em;text-align:center;padding:0 6px;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.pkbig .pk12{font-size:11px;font-weight:700;opacity:.9}
+@keyframes pkfloat{50%{transform:translateY(-6px) rotate(-2deg)}}
+.pktype{text-align:center;padding:10px 4px}
+.pktype .pkbig{margin:0 auto 12px;width:140px;animation:pkreveal .8s var(--ease) both,pkfloat 3.2s ease-in-out .8s infinite}
+@keyframes pkreveal{0%{transform:scale(.3) rotate(-25deg);opacity:0;filter:brightness(3)}60%{transform:scale(1.12) rotate(5deg);filter:brightness(1.6)}100%{transform:none;filter:none}}
+.pkgot{font-size:16px;margin-bottom:12px}
+.pkodds{display:flex;flex-wrap:wrap;gap:6px}
+.pkodds span{border:1px solid color-mix(in srgb,var(--c) 60%,var(--line));background:color-mix(in srgb,var(--c) 12%,transparent);border-radius:12px;padding:4px 9px;font-size:12px;font-weight:700}
+.pkg .pk{border:0;background:none;padding:0;color:var(--text);cursor:pointer;font:inherit}
+.pkg .pk.on{cursor:default}
+.pkg .pk .pkb{background:linear-gradient(135deg,#3a2a55,#140d22);border:1px solid #6b4fa0;font-size:30px}
+.pkg .pk .pkf{gap:2px}
+.pkg .pk .pkf .open{width:48px}
+.pkg .pk.on.t1 .pkf{border-color:#4cc9f0;box-shadow:0 0 10px rgba(76,201,240,.35)}
+.pkg .pk.on.t2 .pkf{border-color:#b46bff;box-shadow:0 0 14px rgba(180,107,255,.5)}
+.pkg .pk.on.t3 .pkf{border-color:#f0b429;box-shadow:0 0 20px rgba(240,180,41,.75);background:linear-gradient(160deg,rgba(240,180,41,.22),var(--surface2))}
+.pkt{font-size:10.5px;font-weight:800}
+.pnew,.pdup{font-style:normal;font-size:9.5px;font-weight:900;border-radius:6px;padding:1px 5px;letter-spacing:.04em}
+.pnew{background:var(--up);color:#04140b}.pdup{background:var(--surface);color:var(--muted);border:1px solid var(--line)}
+.pkg.mini{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:5px;margin-top:8px}
+.pkg.mini .pk{aspect-ratio:3/4.6}
+.pkg.mini .pk .pkf .open{width:34px}
+.pkg.mini .pk b{font-size:10px}
+.pknext,.pkbonus{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-top:10px;font-size:13.5px}
+.pkbonus{border-top:1px solid var(--line);padding-top:10px}
+.albhead .albt{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.albpage .albpt{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+.albg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media(min-width:420px){.albg{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(min-width:700px){.albg{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.als{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;border:2px solid var(--tc);border-radius:12px;padding:8px 4px 6px;background:linear-gradient(170deg,color-mix(in srgb,var(--tc) 18%,var(--surface2)),var(--surface2));color:var(--text);font:inherit;cursor:pointer;transition:transform .15s var(--ease)}
+.als:hover{transform:translateY(-2px)}
+.als .cardbox.sm,.als .fc.sm{width:100%;max-width:66px}
+.als b{font-size:11.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.als i{font-style:normal;font-size:10px;font-weight:800;color:var(--tc)}
+.als.t3:not(.miss){box-shadow:0 0 16px color-mix(in srgb,var(--tc) 55%,transparent)}
+.als.miss{border-style:dashed;background:var(--surface);opacity:.85}
+.als .sil{position:relative;width:56px;height:72px;border-radius:8px;background:color-mix(in srgb,var(--tc) 10%,var(--surface2));display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.als .sil svg{width:70%;height:75%;fill:currentColor;opacity:.35}
+.als .sil span{position:absolute;font-weight:900;font-size:18px;color:var(--tc)}
+.als .dup{position:absolute;top:-8px;right:-6px;z-index:3;background:var(--accent);color:var(--accent-text);border-radius:10px;padding:1px 6px;font-size:11px;font-weight:900;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.als.sel{outline:3px solid var(--accent);outline-offset:2px}
+.altrade{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-top:12px;border-top:1px solid var(--line);padding-top:10px;font-size:13.5px}
+.alpages button{font-size:12.5px}
+.alpages button[aria-pressed=true] .muted{color:inherit;opacity:.85}
+.chcard.won,.chgoal.won{border-color:var(--up);background:linear-gradient(160deg,color-mix(in srgb,var(--up) 14%,var(--surface)),var(--surface))}
+.chobj{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+.chl{display:flex;gap:8px;align-items:center;font-size:14px}
+.chl.ok{color:var(--up)}.chl.ko{color:var(--text)}
+.chl b{margin-left:auto;font-variant-numeric:tabular-nums}
+.chwin{font-size:17px;font-weight:800;color:var(--up);margin-top:6px}
+.sqrow.over{opacity:.55}
 </style>
 </head>
 <body>
@@ -1070,7 +1149,7 @@ html[data-font=cond] body{font-family:'Barlow Condensed',system-ui,sans-serif;fo
   <svg class="hw-web" viewBox="0 0 100 100" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1"><path d="M0 0L100 100M0 0L50 100M0 0L100 50M0 0L0 100M0 0L100 0"/><path d="M0 22Q12 14 22 0M0 44Q26 30 44 0M0 66Q40 44 66 0M0 88Q54 58 88 0"/></g></svg>
   <div class="hw-spider" aria-hidden="true"><i></i><svg viewBox="0 0 30 30"><g stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"><path d="M10 13L2 8M10 15L1 15M10 17L2 22M11 19L5 27M20 13L28 8M20 15L29 15M20 17L28 22M19 19L25 27"/></g><ellipse cx="15" cy="16" rx="6" ry="7"/><circle cx="15" cy="8" r="4"/><circle cx="13.5" cy="7.5" r="1" fill="#ff3b3b"/><circle cx="16.5" cy="7.5" r="1" fill="#ff3b3b"/></svg></div>
   <div class="brandrow">
-    <div class="brand"><button type="button" class="pumpkin" id="pumpkin" aria-label="Citrouille (surprise)"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7c-1-3 0-5 3-6l1 2c-2 1-2 2-2 4z" fill="#4a7a2a"/><ellipse cx="9" cy="18" rx="7" ry="10" fill="#f07a12"/><ellipse cx="23" cy="18" rx="7" ry="10" fill="#f07a12"/><ellipse cx="16" cy="18" rx="7.5" ry="11" fill="#ff8c1a"/><path d="M10 15l3 3h-4zM22 15l1 3h-4zM10 23q6 4 12 0l-2 1-2-1-2 1-2-1-2 1z" fill="#3a1500"/></svg></button><span class="brandtxt">FC27 Companion</span></div>
+    <div class="brand"><button type="button" class="pumpkin logo" id="pumpkin" aria-label="Logo FC27 Companion"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="lg-n" aria-hidden="true"><defs><linearGradient id="nb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c2433"/><stop offset="1" stop-color="#0b0f17"/></linearGradient><linearGradient id="ns" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7cf2b0"/><stop offset=".5" stop-color="#3ddc84"/><stop offset="1" stop-color="#118a4c"/></linearGradient><linearGradient id="ng" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="M32 3.5 55.5 11.2v18.6c0 15.3-10 25.7-23.5 31.1C18.5 55.5 8.5 45.1 8.5 29.8V11.2Z" fill="url(#nb)" stroke="url(#ns)" stroke-width="3" stroke-linejoin="round"/><path d="M32 7.6 52 14.2v15.6c0 7-2.4 13-6.5 17.6L18.1 9.9Z" fill="url(#ng)"/><path d="M21 41.5h22" stroke="url(#ns)" stroke-width="2.4" stroke-linecap="round"/><text x="32" y="37" text-anchor="middle" font-family="'Barlow Condensed','Arial Narrow','DejaVu Sans Condensed',sans-serif" font-weight="800" font-size="22" fill="#fff" letter-spacing=".5">FC</text><text x="32" y="53" text-anchor="middle" font-family="'Barlow Condensed','Arial Narrow','DejaVu Sans Condensed',sans-serif" font-weight="800" font-size="12" fill="#3ddc84" letter-spacing="2">27</text><path d="M32 10.6l1.3 2.7 3 .4-2.2 2 .5 2.9L32 17.2l-2.7 1.4.5-2.9-2.2-2 3-.4Z" fill="#ffd166"/></svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" class="lg-h" aria-hidden="true"><defs><radialGradient id="hp" cx=".38" cy=".3" r=".8"><stop offset="0" stop-color="#ffb35c"/><stop offset=".55" stop-color="#f27a12"/><stop offset="1" stop-color="#a84300"/></radialGradient><radialGradient id="hl" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#fff3a6"/><stop offset=".6" stop-color="#ffc83a"/><stop offset="1" stop-color="#ff8a00"/></radialGradient><linearGradient id="hs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c58cff"/><stop offset="1" stop-color="#6b2fb3"/></linearGradient></defs><path d="M33 9.5c-.4-3.4 1-5.6 4.4-6.6l1.2 2.4c-2.2.8-3 2.1-2.6 4.2Z" fill="#4a7a2a"/><path d="M38.5 5.8c3.5-1.4 6.6-.6 8 1.6-2.8-.6-5 .1-6.6 1.4Z" fill="#6aa83a"/><path d="M32 8.5 55.5 15.6v15.7c0 14.4-10 24.3-23.5 29.5C18.5 55.6 8.5 45.7 8.5 31.3V15.6Z" fill="url(#hp)" stroke="url(#hs)" stroke-width="3" stroke-linejoin="round"/><path d="M24 13.2c-3.2 9-3.6 26 1.6 44M40 13.2c3.2 9 3.6 26-1.6 44M32 9.5v51" fill="none" stroke="#b24c00" stroke-width="1.6" opacity=".55"/><path d="M16.5 27.5l9.5-2.6-3.2 9.2Z" fill="url(#hl)" stroke="#3a1500" stroke-width="1.6" stroke-linejoin="round"/><path d="M47.5 27.5l-9.5-2.6 3.2 9.2Z" fill="url(#hl)" stroke="#3a1500" stroke-width="1.6" stroke-linejoin="round"/><path d="M29.7 36.5h4.6L32 33Z" fill="url(#hl)" stroke="#3a1500" stroke-width="1.4" stroke-linejoin="round"/><path d="M15.5 40.5c4.5 9 28.5 9 33 0l-4 1.8-2.7-3-3 3.2-3.3-3-3.5 3-3.3-3-3 3.2-2.7-3Z" fill="url(#hl)" stroke="#3a1500" stroke-width="1.6" stroke-linejoin="round"/><path d="M51.5 6.2c1.2-1.4 2.8-2 4.4-1.7-.6.6-.7 1.3-.3 2 1-.7 2.3-.8 3.4-.1-.9.3-1.4 1-1.4 1.8-1.4-.7-2.9-.5-4 .5-.4-1.1-1.2-1.9-2.1-2.5Z" fill="#2a1240"/></svg></button><span class="brandtxt">FC27 Companion</span></div>
     <div class="hdbtns"><button type="button" class="hbtn" data-act="help" aria-label="Aide : comment ça marche">?</button></div>
   </div>
   <div class="upd" id="upd">En attente des premiers prix</div>
@@ -1175,6 +1254,7 @@ html[data-font=cond] body{font-family:'Barlow Condensed',system-ui,sans-serif;fo
   <section class="page" id="pCmp" aria-label="Comparer"></section>
   <section class="page" id="pDisc" aria-label="Découvrir"></section>
   <section class="page" id="pProf" aria-label="Mon profil"></section>
+  <section class="page" id="pChal" aria-label="Défi du jour"></section>
 </main>
 
 <!-- Barre du bas : 6 onglets (texte lisible). SBC, Conseils, Réglages, Profil et Aide sont dans « Plus ». -->
@@ -1256,7 +1336,9 @@ const defaults = () => ({ v: 2, theme: 'dark', anim: prefersReduced ? 'reduced' 
   mf: {}, sales: [], track: [], goal: 0, seenP: {}, tut: false, news: '', done: [], cmp: [], recent: [], sqb: [null, null, null], sqi: 0, mysbc: [],
   // --- ajouts version 4 (Découvrir, jeux, profil, beauté) ---
   disc: 'day', games: { hl: 0, hlc: 0, gn: 0, gp: 0, pack: 0, mem: 0, duel: 0, jp: 0, low: 0, played: 0 }, pulls: [], notes: {}, rs: [], saved: [], ach: {}, sqn: ['Équipe 1', 'Équipe 2', 'Équipe 3'], cap: [-1, -1, -1],
-  home: 0, compact: false, fx: true, skin: 'def', rt: false, gstats: false, viewed: 0, alog: [], dots: true, cb: false, nick: '', av: '⚽', font: 'sys' });
+  home: 0, compact: false, fx: true, skin: 'def', rt: false, gstats: false, viewed: 0, alog: [], dots: true, cb: false, nick: '', av: '⚽', font: 'sys',
+  // --- version 5 : album + défi du jour à part ---
+  album: { pages: [], own: {}, last: '', cur: null, bonus: 0, done: [], packs: 0, best: 0 }, chal: { def: null, s: Array(11).fill(null), won: [] } });
 const NEWS_VER = '4';   // version des nouveautés (page « Nouveautés »)
 
 function sanitize(o) {
@@ -1299,7 +1381,22 @@ function sanitize(o) {
   if (Array.isArray(o.sqb)) d.sqb = [0, 1, 2].map((i) => { const q = o.sqb[i]; return q && typeof q === 'object' && FORMS[q.f] && Array.isArray(q.s) ? { f: q.f, s: Array.from({ length: 18 }, (_, k) => (q.s[k] == null ? null : String(q.s[k]))) } : null; });
   { const i = Math.round(Number(o.sqi)); if (i >= 0 && i <= 2) d.sqi = i; }
   // --- version 4 ---
-  if (['rank', 'stats', 'day', 'games'].includes(o.disc)) d.disc = o.disc;
+  if (['rank', 'stats', 'day', 'games', 'album'].includes(o.disc)) d.disc = o.disc;
+  if (o.album && typeof o.album === 'object') {
+    const A = o.album, D = d.album;
+    if (Array.isArray(A.pages)) D.pages = A.pages.filter((x) => x && typeof x.n === 'string' && Array.isArray(x.ids) && x.ids.length === 12).slice(0, 12).map((x) => ({ n: x.n.slice(0, 60), ids: x.ids.map(String) }));
+    if (A.own && typeof A.own === 'object') for (const [k, v] of Object.entries(A.own).slice(0, 400)) { const n = Math.floor(Number(v)); if (n > 0) D.own[String(k)] = Math.min(999, n); }
+    if (typeof A.last === 'string') D.last = A.last.slice(0, 10);
+    ['bonus', 'packs', 'best'].forEach((k) => { const n = Math.floor(Number(A[k])); if (n >= 0) D[k] = Math.min(k === 'best' ? 3 : 99999, n); });
+    if (Array.isArray(A.done)) D.done = [...new Set(A.done.map(Number).filter((x) => x >= 0 && x < 12))];
+    const c = A.cur; if (c && typeof c === 'object' && ['or', 'rare', 'prem', 'leg'].includes(c.type) && Array.isArray(c.ids) && c.ids.length <= 12) D.cur = { type: c.type, ids: c.ids.map(String), isNew: c.ids.map((_, i) => !!(Array.isArray(c.isNew) && c.isNew[i])), shown: Math.max(0, Math.min(c.ids.length, Math.floor(Number(c.shown)) || 0)), bonus: !!c.bonus, phase: ['type', 'cards', 'done'].includes(c.phase) ? c.phase : 'done', t: Number(c.t) || 0 };
+  }
+  if (o.chal && typeof o.chal === 'object') {
+    const C = o.chal, D = d.chal, f = C.def;
+    if (f && typeof f === 'object' && typeof f.d === 'string' && FORMS[f.f] && Number(f.T) > 0 && Number(f.B) > 0) D.def = { d: f.d.slice(0, 10), f: f.f, T: Math.round(Number(f.T)), B: Math.round(Number(f.B)), rule: f.rule && typeof f.rule === 'object' && ['league', 'nation', 'chem'].includes(f.rule.k) ? { k: f.rule.k, v: String(f.rule.v || '').slice(0, 60), n: Math.round(Number(f.rule.n)) || 1 } : null };
+    if (Array.isArray(C.s)) D.s = Array.from({ length: 11 }, (_, i) => (C.s[i] == null ? null : String(C.s[i])));
+    if (Array.isArray(C.won)) D.won = [...new Set(C.won.filter((x) => typeof x === 'string').map((x) => x.slice(0, 10)))].slice(-400);
+  }
   if (o.games && typeof o.games === 'object') for (const k of Object.keys(d.games)) { const n = Number(o.games[k]); if (isFinite(n) && n >= 0) d.games[k] = Math.round(n); }
   if (Array.isArray(o.pulls)) d.pulls = o.pulls.map(String).slice(-60);
   if (o.notes && typeof o.notes === 'object') for (const [k, v] of Object.entries(o.notes).slice(0, 500)) if (typeof v === 'string' && v.trim()) d.notes[String(k)] = v.slice(0, 500);
@@ -3175,6 +3272,7 @@ function applyLook() {
   de.hw = hw ? 'on' : 'off'; de.fs = S.fs; de.acc = hw ? 'def' : S.acc; de.hc = S.hc ? 'on' : 'off'; de.csz = S.csz; de.tk = S.tk ? 'on' : 'off';
   de.skin = hw ? 'def' : S.skin; de.compact = S.compact ? 'on' : 'off'; de.rt = S.rt ? 'on' : 'off'; de.gstats = S.gstats ? 'on' : 'off'; de.cb = S.cb ? 'on' : 'off'; de.font = S.font;
   $('#metaTheme').setAttribute('content', hw ? (t === 'dark' ? '#0c0713' : '#fbf3ea') : (t === 'dark' ? '#0a0c11' : '#f4f6f8'));
+  try { const lg = document.querySelector(hw ? '#pumpkin .lg-h' : '#pumpkin .lg-n'), ic = document.querySelector('link[rel=icon]'); if (lg && ic) { ic.type = 'image/svg+xml'; ic.href = 'data:image/svg+xml,' + encodeURIComponent(lg.outerHTML); } } catch (e) { /* ancien navigateur : icône PNG */ }
 }
 // Halloween : automatique du 1er octobre au 2 novembre, ou forcé (oui / non) dans Réglages
 function hwOn() {
@@ -3209,9 +3307,9 @@ function sqRating(ids) {
 // Icônes et Héros : 3 points d'office s'ils sont à leur poste ; une Icône compte double pour sa nation, un Héros double pour sa ligue.
 const isIcon = (c) => /icon/i.test(c.version) || /icon/i.test(String(c.cardImage || '').split('?')[0].split('/').pop());
 const isHero = (c) => /hero/i.test(c.version) || /hero/i.test(String(c.cardImage || '').split('?')[0].split('/').pop());
-function sqChem() {
-  const pos = sqPositions(), per = Array(11).fill(0), oop = Array(11).fill(false), on = [];
-  for (let i = 0; i < 11; i++) { const c = MAP.get(S.sq.s[i]); if (!c) continue; if (!c._pos.includes(pos[i])) { oop[i] = true; continue; } on.push([i, c]); }
+function sqChem(ids, posL) {
+  const pos = posL || sqPositions(), src = ids || S.sq.s, per = Array(11).fill(0), oop = Array(11).fill(false), on = [];
+  for (let i = 0; i < 11; i++) { const c = MAP.get(src[i]); if (!c) continue; if (!c._pos.includes(pos[i])) { oop[i] = true; continue; } on.push([i, c]); }
   const cnt = (key, f) => { const m = new Map(); on.forEach(([, c]) => { const v = c[key]; if (v) m.set(v, (m.get(v) || 0) + f(c)); }); return m; };
   const club = cnt('club', () => 1), nat = cnt('nation', (c) => (isIcon(c) ? 2 : 1)), lg = cnt('league', (c) => (isHero(c) ? 2 : 1));
   const pts = (n, t) => (n >= t[2] ? 3 : n >= t[1] ? 2 : n >= t[0] ? 1 : 0);
@@ -3284,13 +3382,8 @@ function renderSquad() {
   $('#sqForm').value = S.sq.f;
 }
 // Équipe automatique : on part des joueurs les moins chers, puis on améliore la place qui gagne le plus de note par crédit, tant que le budget le permet.
-function sqBuild(budget, league) {
-  const pos = sqPositions();
-  const front = pos.map((p) => {   // pour chaque poste : seulement les cartes « intéressantes » (aucune carte moins chère n'a une note aussi haute)
-    const l = CARDS.filter((c) => c.price != null && c._pos.includes(p) && (!league || c.league === league)).sort((a, b) => a.price - b.price || b.rating - a.rating);
-    const out = []; let best = -1; for (const c of l) if (c.rating > best) { out.push(c); best = c.rating; }
-    return out;
-  });
+function sqBuild(budget, league) { const pos = sqPositions(); return sqGreedy(pos, sqFronts(pos, league), budget, league); }
+function sqGreedy(pos, front, budget, league) {
   if (front.some((l) => !l.length)) return { err: 'Aucune carte ' + (league ? 'de ' + league + ' ' : '') + 'pour le poste ' + pos[front.findIndex((l) => !l.length)] + '.' };
   const pick = Array(11).fill(null), used = new Set();
   const free = (c) => !used.has(norm(c.name));
@@ -3365,7 +3458,7 @@ function openSq(i) {
   $('#sqModal').hidden = false;
   renderSquad();
 }
-function closeSq(fromPop) { if ($('#sqModal').hidden) return; SQ.sel = -1; $('#sqModal').hidden = true; if (!fromPop) popOv(); if (TAB === 5) renderSquad(); }
+function closeSq(fromPop) { if ($('#sqModal').hidden) return; SQ.sel = -1; $('#sqModal').hidden = true; if (!fromPop) popOv(); if (TAB === 5) renderSquad(); if (TAB === 12) { CHL.sel = -1; renderChal(); } }
 function sqPlace(i, id) {
   const s = S.sq.s, j = s.indexOf(id);
   if (j >= 0 && j !== i) s[j] = s[i]; // la carte était déjà dans l'équipe : on échange les deux places
@@ -3384,9 +3477,9 @@ function sqChangeForm(key) {
 
 let TAB = 0;
 // Pages : 0 Marché, 1 Investir, 2 Conseils, 3 SBC, 4 Portefeuille, 5 Équipe, 6 Réglages, 7 Plus, 8 Aide, 9 Comparer
-const RENDER = [renderMarket, renderInvest, renderTips, renderSbc, renderPortfolio, renderSquad, renderSettings, renderMore, renderHelp, renderCompare, renderDisc, renderProfile];
-const NAVSLOT = { 0: 0, 1: 1, 10: 2, 5: 3, 4: 4 };   // place de l'onglet dans la barre du bas ; les autres pages allument « Plus »
-const TABNAME = ['Marché', 'Investir', 'Conseils', 'SBC', 'Portefeuille', 'Équipe', 'Réglages', 'Plus', 'Aide', 'Comparer', 'Découvrir', 'Mon profil'];
+const RENDER = [renderMarket, renderInvest, renderTips, renderSbc, renderPortfolio, renderSquad, renderSettings, renderMore, renderHelp, renderCompare, renderDisc, renderProfile, renderChal];
+const NAVSLOT = { 0: 0, 1: 1, 10: 2, 12: 2, 5: 3, 4: 4 };   // place de l'onglet dans la barre du bas ; les autres pages allument « Plus »
+const TABNAME = ['Marché', 'Investir', 'Conseils', 'SBC', 'Portefeuille', 'Équipe', 'Réglages', 'Plus', 'Aide', 'Comparer', 'Découvrir', 'Mon profil', 'Défi du jour'];
 function renderActive() { if (TAB !== 0) RENDER[TAB](); }
 let TABPUSH = false;
 function showTab(i, fromPop) {
@@ -3550,6 +3643,7 @@ function renderHwBanner() {
 }
 let PUMPN = 0, PUMPT = 0;
 function booBurst() {   // 5 touchers sur la citrouille : des fantômes s'envolent
+  if (!hwOn()) { confetti(40); toast('⚽ Allez FC27 !'); return; }
   if (S.anim === 'none') { toast('Bouh ! 👻'); if (!S.ach.boo) { S.ach.boo = Date.now(); save(); } return; }
   const svg = '<svg viewBox="0 0 40 48"><path d="M20 2C10 2 4 10 4 20v26l6-5 5 5 5-5 5 5 5-5 6 5V20C36 10 30 2 20 2z"/><circle cx="14" cy="19" r="3"/><circle cx="26" cy="19" r="3"/><ellipse cx="20" cy="30" rx="3.5" ry="4.5"/></svg>';
   for (let i = 0; i < 9; i++) {
@@ -3646,7 +3740,7 @@ function renderMore() {
     tile(2, '💡', 'Conseils', 'Cartes à acheter avant un SBC') +
     tile(9, '⚖️', 'Comparer', S.cmp.length ? S.cmp.length + ' carte' + (S.cmp.length > 1 ? 's' : '') + ' choisie' + (S.cmp.length > 1 ? 's' : '') : 'Jusqu\'à 3 cartes côte à côte') +
     tile(8, '❓', 'Aide', 'Comment ça marche, mots expliqués', S.news !== NEWS_VER ? 'Nouveautés' : '') +
-    tile(11, '🏆', 'Mon profil', Object.keys(S.ach).length + ' succès sur ' + ACH.length) +
+    tile(11, '🏆', 'Mon profil', ACH.filter((x) => S.ach[x[0]]).length + ' succès sur ' + ACH.length) +
     tile(6, '⚙️', 'Réglages', 'Thème, ambiances, taille du texte, sauvegarde') +
     '<button type="button" class="mtile" data-act="tutorial"><span class="ic" aria-hidden="true">🎓</span><b>Visite guidée</b><span>Revoir la présentation en 5 étapes</span></button>' +
     '</div>';
@@ -3654,8 +3748,10 @@ function renderMore() {
 
 // --- Page « Aide » : comment ça marche, mots expliqués, raccourcis, nouveautés ---
 const NEWS = [
-  'NOUVEAU : catégorie « Découvrir » dans la barre du bas : joueur du jour, quiz, défi, classements, chiffres du marché et 9 mini-jeux.',
-  'NOUVEAU : « Mon profil » avec 19 succès à débloquer (Plus → Mon profil).',
+  'NOUVEAU : un pack de 12 cartes chaque jour pour remplir ton album (Découvrir → Du jour et Album), avec 4 types de packs plus ou moins rares.',
+  'NOUVEAU : le défi du jour a sa propre page et sa propre équipe : ton équipe à toi n\'est plus touchée.',
+  'Catégorie « Découvrir » dans la barre du bas : quiz, défi, classements, chiffres du marché et 8 mini-jeux.',
+  '« Mon profil » avec 26 succès à débloquer (Plus → Mon profil).',
   'NOUVEAU : vue « Tableau » du Marché, recherches enregistrées, recherche vocale, ta note perso sur chaque joueur, radar des stats.',
   'NOUVEAU : capitaine, nom et image de ton équipe ; statistiques de tes ventes ; 3 ambiances de couleurs ; confettis.',
   'Décoration d\'Halloween (automatique jusqu\'au 2 novembre, réglable).',
@@ -3678,7 +3774,8 @@ function renderHelp() {
     ['Mes favoris, mon portefeuille et mon équipe sont-ils sauvegardés ?', 'Oui, sur cet appareil seulement. Pour les garder en changeant de téléphone : Réglages → « Télécharger ma sauvegarde », puis « Restaurer un fichier » sur l\'autre appareil.'],
     ['Comment chercher plus vite ?', 'Tape quelques lettres : des suggestions apparaissent. Sur ordinateur, appuie sur / pour aller directement à la recherche.'],
     ['Comment partager un joueur ou une recherche ?', 'Dans une fiche, appuie sur « Partager ». Dans les filtres du Marché, appuie sur « 🔗 Partager » : le lien ouvre la même recherche.'],
-    ['C\'est quoi « Découvrir » ?', 'Une catégorie pour s\'amuser et apprendre : le joueur du jour, un quiz, un défi, des classements (les plus rapides, les bonnes affaires…), les chiffres du marché et 9 mini-jeux. Tes records sont gardés.'],
+    ['C\'est quoi « Découvrir » ?', 'Une catégorie pour s\'amuser et apprendre : ton pack du jour et ton album, le défi du jour, un quiz, des classements (les plus rapides, les bonnes affaires…), les chiffres du marché et 8 mini-jeux. Tes records sont gardés.'],
+    ['Comment marche l\'album ?', 'Chaque jour à minuit, un pack de 12 cartes t\'attend (Découvrir → Du jour). Il peut être Or (70 %), Rare (20 %), Premium (8 %) ou Légende (2 %). Les cartes vont dans ton album de 96 cartes. Les doublons s\'échangent contre les cartes qui te manquent, et chaque page complète donne un pack bonus. Le but : tout remplir !'],
     ['Comment débloquer des succès ?', 'En utilisant l\'appli : ajouter un favori, ouvrir des fiches, vendre une carte, battre un record… La liste complète est dans Plus → Mon profil.'],
     ['À quoi sert l\'onglet Équipe ?', 'À composer ton équipe de rêve : note, prix total et chimie (estimation). Tu peux en garder 3 et en créer une automatiquement selon un budget.']
   ];
@@ -3721,7 +3818,7 @@ const TUT = [
   ['Bienvenue 👋', 'FC27 Companion te montre le prix des cartes EA FC 27 et t\'aide à acheter malin. Voici l\'essentiel en 5 étapes.'],
   ['1. Le Marché', 'Touche une carte pour ouvrir sa fiche : prix, courbe, statistiques. « Filtres et tri » permet de chercher par poste, prix, club…'],
   ['2. Investir', 'Réponds à 3 questions (budget, nombre de cartes, risque) : l\'appli propose quoi acheter et à quel prix revendre, taxe de 5 % déjà retirée.'],
-  ['3. Découvrir', 'Le joueur du jour, un quiz, des classements (les plus rapides, les bonnes affaires…) et 9 mini-jeux pour t\'amuser.'],
+  ['3. Découvrir', 'Un pack de 12 cartes par jour pour remplir ton album, le défi du jour, des classements et 8 mini-jeux pour t\'amuser.'],
   ['4. Portefeuille et Plus', 'Note tes achats dans le Portefeuille pour suivre tes gains. Le bouton « Plus » contient les SBC, ton profil, l\'aide et les réglages. Bonne chasse ! 🎃']
 ];
 let TUTI = 0;
@@ -3966,12 +4063,12 @@ const RANKS = [
 ];
 const DISC = { rank: 'exp', pos: '', league: '', nation: '', club: '' };
 function discSubtabs() {
-  return '<div class="tabs2 invmode dsub" role="tablist">' + [['day', '☀️ Du jour'], ['rank', '🏆 Classements'], ['stats', '📈 Stats'], ['games', '🎮 Jeux']].map(([k, l]) => '<button role="tab" aria-selected="' + (S.disc === k) + '" data-act="dsub" data-k="' + k + '">' + l + '</button>').join('') + '</div>';
+  return '<div class="tabs2 invmode dsub" role="tablist">' + [['day', '☀️ Du jour'], ['album', '📒 Album'], ['rank', '🏆 Classements'], ['stats', '📈 Stats'], ['games', '🎮 Jeux']].map(([k, l]) => '<button role="tab" aria-selected="' + (S.disc === k) + '" data-act="dsub" data-k="' + k + '">' + l + '</button>').join('') + '</div>';
 }
 function renderDisc() {
-  let h = '<h1 class="mk-title" style="font-size:30px">Découvrir</h1><p class="mk-sub">Classements, chiffres du marché, la carte du jour et des mini-jeux pour tester tes connaissances.</p>' + discSubtabs();
+  let h = '<h1 class="mk-title" style="font-size:30px">Découvrir</h1><p class="mk-sub">Ton pack du jour et ton album à remplir, le défi du jour, des classements, les chiffres du marché et des mini-jeux.</p>' + discSubtabs();
   if (!CARDS.length) { $('#pDisc').innerHTML = h + '<div class="empty box"><div class="big">En attente des premiers prix</div></div>'; return; }
-  if (S.disc === 'rank') h += discRanks(); else if (S.disc === 'stats') h += discStats(); else if (S.disc === 'games') h += discGames(); else h += discDay();
+  if (S.disc === 'album') h += discAlbum(); else if (S.disc === 'rank') h += discRanks(); else if (S.disc === 'stats') h += discStats(); else if (S.disc === 'games') h += discGames(); else h += discDay();
   $('#pDisc').innerHTML = h; countUp($('#pDisc')); if (S.disc === 'games') gameAfterRender();
 }
 // ---------- Classements ----------
@@ -4058,18 +4155,12 @@ function bigCard(c, title, why, cls) {
 }
 function discDay() {
   const pc = priced();
-  const star = dayPick(pc.filter((c) => c.rating >= 85), 'star') || dayPick(pc, 'star');
-  const deals = pc.filter((c) => c.rating >= 82 && med7(c) && c.price < med7(c) * 0.95);
-  const gem = dayPick(deals.length ? deals : pc.filter((c) => c.rating >= 82), 'gem');
   const fire = pc.filter((c) => c._d1 != null).sort((a, b) => b._d1 - a._d1)[0], cold = pc.filter((c) => c._d1 != null).sort((a, b) => a._d1 - b._d1)[0];
-  let h = '<div class="dgrid">';
-  if (star) h += bigCard(star, '🌟 Le joueur du jour', 'Choisi au hasard parmi les meilleures cartes. Il change chaque jour.', 'gold');
-  if (gem) h += bigCard(gem, '💎 La pépite du jour', deals.includes(gem) ? 'Moins chère que son prix habituel (' + pct(gem.price / med7(gem) - 1) + ' sur 7 jours).' : 'Une bonne carte à découvrir.', 'gem');
-  h += '</div><div class="two2">';
+  let h = packBox('day') + '<div class="two2">';
   if (fire && fire._d1 > 0) h += '<div class="box"><div class="dct">🔥 En feu aujourd\'hui</div><div class="line"><button type="button" class="linkb" data-act="open" data-id="' + esc(fire.id) + '">' + esc(fire.name) + ' ' + esc(fire.rating) + '</button><b class="up">' + pct(fire._d1) + '</b></div><div class="small muted">La plus forte hausse sur 24 h (' + short(fire.price) + ').</div></div>';
   if (cold && cold._d1 < 0) h += '<div class="box"><div class="dct">🧊 La chute du jour</div><div class="line"><button type="button" class="linkb" data-act="open" data-id="' + esc(cold.id) + '">' + esc(cold.name) + ' ' + esc(cold.rating) + '</button><b class="dn">' + pct(cold._d1) + '</b></div><div class="small muted">La plus forte baisse sur 24 h (' + short(cold.price) + ').</div></div>';
   h += '</div>';
-  h += quizOfDay() + challengeOfDay() + factsHtml();
+  h += challengeOfDay() + quizOfDay() + factsHtml();
   return h;
 }
 function factsHtml() {
@@ -4093,14 +4184,6 @@ function quizOfDay() {
   const btn = (c) => '<button type="button" class="qopt' + (done ? (c.id === right ? ' ok' : done.a === c.id ? ' ko' : '') : '') + '" data-act="qd" data-id="' + esc(c.id) + '" data-r="' + esc(right) + '"' + (done ? ' disabled' : '') + '>' + cardImg(c, 'sm') + '<span><b>' + esc(cardLabel(c)) + '</b><br><span class="small muted">' + esc(c.rating) + ' · ' + esc((c._pos || [])[0] || '') + '</span>' + (done ? '<br><b>' + short(c.price) + '</b>' : '') + '</span></button>';
   return '<h2>❓ Le quiz du jour</h2><div class="box"><b>Laquelle est la plus chère ?</b><div class="qrow">' + btn(a) + btn(b) + '</div>' + (done ? '<div class="small ' + (done.a === right ? 'up' : 'dn') + '" style="margin-top:6px">' + (done.a === right ? '✅ Bravo ! Reviens demain pour une nouvelle question.' : '❌ Raté ! Reviens demain pour une nouvelle question.') + '</div>' : '<div class="small muted" style="margin-top:6px">Une seule réponse par jour.</div>') + '</div>';
 }
-function challengeOfDay() {
-  const r = rng(hashStr(todayKey() + 'chal')), target = 82 + Math.floor(r() * 5), budget = [50000, 100000, 150000, 250000, 400000][Math.floor(r() * 5)];
-  const start = S.sq.s.slice(0, 11).filter((id) => id && MAP.has(id)), rt = sqRating(start), cost = start.reduce((a, id) => a + (MAP.get(id).price || 0), 0);
-  const ok = rt != null && rt >= target && cost <= budget;
-  return '<h2>🏗️ Le défi du jour</h2><div class="box"><b>Construis une équipe notée ' + target + ' ou plus pour moins de ' + short(budget) + ' crédits.</b>' +
-    '<div class="small" style="margin-top:6px">Ton équipe actuelle : note ' + (rt == null ? '— (11 titulaires nécessaires)' : rt) + ' · prix ' + short(cost) + (ok ? ' · <b class="up">✅ Défi réussi !</b>' : '') + '</div>' +
-    '<div class="row2" style="margin-top:8px"><button type="button" class="btn primary" data-act="chal" data-b="' + budget + '">Essayer dans l\'onglet Équipe</button></div></div>';
-}
 
 // ---------- Mini-jeux ----------
 let G = null, GTIMER = 0;
@@ -4112,10 +4195,9 @@ const GAMES = [
   ['duel', '⚔️', 'Duel de stats', 'Qui a la meilleure vitesse, le meilleur tir… ? Fais une série.'],
   ['mem', '🧠', 'Mémoire', 'Retrouve les 6 paires de cartes en un minimum de coups.'],
   ['jp', '💯', 'Le juste prix', '5 cartes : donne leur prix. Plus tu es proche, plus tu marques (20 points max par carte).'],
-  ['low', '🔍', 'Trouve la moins chère', '4 cartes de même note : laquelle coûte le moins ? Fais une série.'],
-  ['pack', '🎁', 'Ouverture de pack (simulation)', 'Ouvre des packs imaginaires et regarde ce qu\'ils vaudraient au prix du marché.']
+  ['low', '🔍', 'Trouve la moins chère', '4 cartes de même note : laquelle coûte le moins ? Fais une série.']
 ];
-const REC = { jp: ['Meilleur score', (v) => v + ' / 100'], low: ['Meilleure série', (v) => v], hl: ['Meilleure série', (v) => v], hlc: ['Record en 60 s', (v) => v], gn: ['Meilleur score', (v) => v + ' / 50'], gp: ['Meilleure série', (v) => v], duel: ['Meilleure série', (v) => v], mem: ['Moins de coups', (v) => (v ? v + ' coups' : '—')], pack: ['Meilleur pack', (v) => (v ? short(v) : '—')] };
+const REC = { jp: ['Meilleur score', (v) => v + ' / 100'], low: ['Meilleure série', (v) => v], hl: ['Meilleure série', (v) => v], hlc: ['Record en 60 s', (v) => v], gn: ['Meilleur score', (v) => v + ' / 50'], gp: ['Meilleure série', (v) => v], duel: ['Meilleure série', (v) => v], mem: ['Moins de coups', (v) => (v ? v + ' coups' : '—')] };
 const rndOf = (l) => l[Math.floor(Math.random() * l.length)];
 const gpool = () => priced().filter((c) => c.rating >= 75);
 function discGames() {
@@ -4138,7 +4220,6 @@ function gameStart(k) {
   else if (k === 'gp') { G = { k, streak: 0 }; gpNew(); }
   else if (k === 'duel') { G = { k, streak: 0 }; duelNew(); }
   else if (k === 'mem') { const six = []; while (six.length < 6) { const c = rndOf(pool); if (!six.includes(c)) six.push(c); } const tiles = six.concat(six).map((c) => ({ id: c.id, open: false, done: false })).sort(() => Math.random() - 0.5); G = { k, tiles, first: -1, moves: 0, lock: false }; }
-  else if (k === 'pack') { G = { k, cards: [], shown: 0, type: '' }; }
   else if (k === 'jp') { G = { k, round: 1, score: 0, card: rndOf(pool), rev: false, last: 0 }; }
   else if (k === 'low') { G = { k, streak: 0 }; lowNew(); }
   renderDisc();
@@ -4184,16 +4265,7 @@ function drawGame() {
     h += '<div class="gtop"><span>Série : <b>' + G.streak + '</b></span><span class="muted">Record : ' + (S.games.low || 0) + '</span></div><p class="gq">Laquelle de ces cartes <b>' + G.cards[0].rating + '</b> est la moins chère ?</p><div class="lowg">' +
       G.cards.map((c) => '<button type="button" class="gc gpickc' + (G.ans ? (c.price === lo ? ' okc' : c.id === G.ans ? ' koc' : '') : '') + '" data-act="glow" data-id="' + esc(c.id) + '"' + (G.ans ? ' disabled' : '') + '>' + cardImg(c, 'sm') + '<b>' + esc(cardLabel(c)) + '</b><span class="small muted">' + esc((c._pos || [])[0] || '') + ' · ' + esc(c.club) + '</span>' + (G.ans ? '<span class="gprice">' + short(c.price) + '</span>' : '') + '</button>').join('') + '</div>';
     if (G.over) h += '<div class="gend">❌ Perdu ! Ta série : <b>' + G.streak + '</b>.<div class="row2" style="justify-content:center;margin-top:8px"><button type="button" class="btn primary" data-act="gstart" data-g="low">Rejouer</button></div></div>';
-  } else if (G.k === 'pack') {
-    h += '<p class="small muted" style="margin-top:0">⚠️ Simulation pour s\'amuser : ce ne sont <b>pas</b> les vraies chances des packs d\'EA, et rien n\'est acheté.</p><div class="gbtns">' +
-      [['or', '🟡 Pack Or (12 cartes)'], ['rare', '🔷 Pack Rare 84+ (3 cartes)'], ['leg', '🔥 Pack Légende 88+ (1 carte)']].map(([k, l]) => '<button type="button" class="btn primary" data-act="gpack" data-t="' + k + '">' + l + '</button>').join('') + '</div>';
-    if (G.cards.length) {
-      const all = G.shown >= G.cards.length, val = G.cards.reduce((a, c) => a + (c.price || 0), 0);
-      h += '<div class="pgrid">' + G.cards.map((c, i) => '<div class="pk' + (i < G.shown ? ' on' : '') + (c.rating >= 88 ? ' wow' : '') + '"><div class="pkb">🎁</div><div class="pkf"><button class="open" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') + '</button><b>' + esc(cardLabel(c)) + '</b><span>' + short(c.price) + '</span></div></div>').join('') + '</div>' +
-        (all ? '<div class="gend">Valeur du pack : <b>' + fmt(val) + '</b> crédits' + (val >= (S.games.pack || 0) ? ' <b class="up">Record !</b>' : '') + '</div>' : '<div class="gbtns"><button type="button" class="btn" data-act="greveal">Révéler la suivante</button><button type="button" class="btn" data-act="grevall">Tout révéler</button></div>');
-    }
-    const pulls = S.pulls.map((id) => MAP.get(id)).filter(Boolean);
-    if (pulls.length) h += '<h3 style="margin-top:14px">Ma collection simulée (' + pulls.length + ' cartes · ' + short(pulls.reduce((a, c) => a + (c.price || 0), 0)) + ')</h3><div class="vlist">' + pulls.slice().reverse().slice(0, 30).map((c) => '<button type="button" data-act="open" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') + '<span>' + esc(cardLabel(c)) + ' ' + esc(c.rating) + '<br><b>' + short(c.price) + '</b></span></button>').join('') + '</div><button type="button" class="btn" style="margin-top:8px" data-act="gpclear">Vider la collection</button>';
+
   }
   box.innerHTML = h;
 }
@@ -4204,14 +4276,6 @@ function lowNew() {   // 4 cartes de la même note avec des prix assez différen
 function gpNew() { const pool = gpool().filter((c) => totalStats(c)); const c = rndOf(pool); const grp = Object.keys(GROUPS).find((g) => c._pos.some((q) => GROUPS[g].includes(q))); const same = pool.filter((x) => x.id !== c.id && x._nn !== c._nn && (!grp || x._pos.some((q) => GROUPS[grp].includes(q)))); const opts = [c]; while (opts.length < 4 && same.length) { const o = rndOf(same); if (!opts.some((x) => x._nn === o._nn)) opts.push(o); else same.splice(same.indexOf(o), 1); } G.card = c; G.opts = opts.sort(() => Math.random() - 0.5); G.ans = ''; G.over = false; }
 const DSTATS = [['PAC', 'vitesse'], ['SHO', 'tir'], ['PAS', 'passes'], ['DRI', 'dribbles'], ['DEF', 'défense'], ['PHY', 'physique']];
 function duelNew() { const pool = gpool().filter((c) => totalStats(c)); const st = rndOf(DSTATS); let a = rndOf(pool), b = rndOf(pool), n = 0; while ((b.id === a.id || statv(st[0])(a) === statv(st[0])(b)) && n++ < 60) b = rndOf(pool); Object.assign(G, { a, b, stat: st[0], statN: st[1] + ' (' + st[0] + ')', ans: '', over: false }); }
-function packDraw(type) {
-  const pool = gpool(); const rule = { or: [12, 75, 3.2], rare: [3, 84, 2], leg: [1, 88, 1.8] }[type];
-  const cand = pool.filter((c) => c.rating >= rule[1]); if (!cand.length) return [];
-  const w = cand.map((c) => Math.exp(-(c.rating - rule[1]) / rule[2])), tot = w.reduce((a, b) => a + b, 0), out = [];
-  while (out.length < Math.min(rule[0], cand.length)) { let x = Math.random() * tot, i = 0; while (x > w[i]) { x -= w[i]; i++; } const c = cand[Math.min(i, cand.length - 1)]; if (!out.includes(c)) out.push(c); }
-  return out.sort((a, b) => a.rating - b.rating);
-}
-function packDone() { const val = G.cards.reduce((a, c) => a + (c.price || 0), 0); S.pulls = S.pulls.concat(G.cards.map((c) => c.id)).slice(-60); if (val > (S.games.pack || 0)) S.games.pack = val; save(); if (G.cards.some((c) => c.rating >= 90) || val === S.games.pack) confetti(); checkAch(); }
 document.addEventListener('input', (e) => { if (e.target.id === 'gnR' && G && G.k === 'gn') { G.guess = Number(e.target.value); const v = document.getElementById('gnV'); if (v) v.textContent = G.guess; } });
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-act]'); if (!el) return; const a = el.dataset.act;
@@ -4219,7 +4283,6 @@ document.addEventListener('click', (e) => {
   else if (a === 'drk') { DISC.rank = el.dataset.k; renderDisc(); }
   else if (a === 'dgo') { const [k, ...v] = (el.dataset.v || '').split(':'); const val = v.join(':'); Object.assign(M, M0); if (k === 'minR' || k === 'maxR') { M[k] = Number(val) || 0; if (k === 'minR') M.maxR = Number(val) || 0; } else if (k === 'sm' || k === 'wf') M[k] = Number(val) || 0; else M[k] = val; saveMF(); buildPosFilter(); showTab(0); renderMarket(); toast('Marché filtré'); }
   else if (a === 'qd') { if (qdGet()) return; try { localStorage.setItem('fc27.qd', JSON.stringify({ d: todayKey(), a: el.dataset.id })); } catch (err) { /* ignoré */ } if (el.dataset.id === el.dataset.r) confetti(30); renderDisc(); }
-  else if (a === 'chal') { showTab(5); setTimeout(() => { const b = $('#sqBud'); if (b) { b.value = String(el.dataset.b); b.scrollIntoView({ behavior: 'smooth', block: 'center' }); b.focus(); } }, 200); }
   else if (a === 'gstart') gameStart(el.dataset.g);
   else if (a === 'gquit') { clearInterval(GTIMER); G = null; renderDisc(); }
   else if (a === 'gshare') copyText('Mes records FC27 Companion :\n' + GAMES.map(([k, ic, t]) => ic + ' ' + t + ' : ' + REC[k][1](S.games[k] || 0)).join('\n'), 'Records copiés');
@@ -4245,10 +4308,6 @@ document.addEventListener('click', (e) => {
   else if (a === 'jpok' && G && G.k === 'jp' && !G.rev) { const v = num(($('#jpIn') || {}).value); if (!(v > 0)) { toast('Entre un prix (ex : 15k)'); return; } const err = Math.abs(v - G.card.price) / G.card.price; G.last = Math.max(0, Math.round(20 * (1 - err / 0.5))); G.score += G.last; G.rev = true; if (G.round >= 5 && G.score > (S.games.jp || 0)) { S.games.jp = G.score; save(); confetti(); } drawGame(); }
   else if (a === 'jpnext' && G && G.k === 'jp') { G.round++; G.rev = false; G.card = rndOf(gpool()); drawGame(); const i = $('#jpIn'); if (i) i.focus(); }
   else if (a === 'glow' && G && G.k === 'low' && !G.ans) { const c = MAP.get(el.dataset.id), lo = Math.min(...G.cards.map((x) => x.price)); G.ans = el.dataset.id; if (c.price === lo) { G.streak++; if (G.streak > (S.games.low || 0)) { S.games.low = G.streak; save(); } drawGame(); setTimeout(() => { if (G && G.k === 'low') { lowNew(); drawGame(); } }, 1100); } else { G.over = true; drawGame(); } }
-  else if (a === 'gpack' && G && G.k === 'pack') { G.cards = packDraw(el.dataset.t); G.shown = 0; G.type = el.dataset.t; S.games.played++; save(); drawGame(); }
-  else if (a === 'greveal' && G && G.k === 'pack') { G.shown++; if (G.shown >= G.cards.length) packDone(); drawGame(); }
-  else if (a === 'grevall' && G && G.k === 'pack') { G.shown = G.cards.length; packDone(); drawGame(); }
-  else if (a === 'gpclear') { const old = S.pulls.slice(); S.pulls = []; save(); drawGame(); toast('Collection vidée', () => { S.pulls = old; save(); drawGame(); }); }
 });
 
 /* =====================================================================
@@ -4272,7 +4331,14 @@ const ACH = [
   ['gn40', '🔢', 'Œil de lynx', 'Marque 40 points à « Devine la note »', () => S.games.gn >= 40],
   ['gp5', '🕵️', 'Détective', 'Série de 5 à « Qui est-ce ? »', () => S.games.gp >= 5],
   ['mem', '🧠', 'Mémoire d\'éléphant', 'Finis « Mémoire » en 10 coups ou moins', () => S.games.mem > 0 && S.games.mem <= 10],
-  ['pack90', '🎁', 'Chanceux', 'Tire une carte 90+ dans un pack simulé', () => S.pulls.some((id) => (MAP.get(id) || {}).rating >= 90)],
+  ['pack1', '🎁', 'Premier pack', 'Ouvre ton premier pack du jour', () => S.album.packs >= 1],
+  ['page1', '📄', 'Page complète', 'Complète une page de l\'album', () => S.album.done.length >= 1],
+  ['alb25', '📒', 'Bon début', 'Remplis 25 % de l\'album', () => albumStats().pct >= 0.25],
+  ['alb50', '📗', 'À mi-chemin', 'Remplis la moitié de l\'album', () => albumStats().pct >= 0.5],
+  ['alb100', '🏆', 'Album complet', 'Remplis tout l\'album', () => S.album.pages.length > 0 && albumStats().pct >= 1],
+  ['packL', '🔥', 'Chanceux', 'Tombe sur un Pack Légende (2 % de chance)', () => S.album.best >= 3],
+  ['chal1', '🏗️', 'Défi relevé', 'Réussis un défi du jour', () => S.chal.won.length >= 1],
+  ['chal5', '🏅', 'Bâtisseur fou', 'Réussis 5 défis du jour', () => S.chal.won.length >= 5],
   ['sbc1', '🧩', 'Bâtisseur', 'Marque un SBC comme fait', () => S.done.length >= 1],
   ['boo', '🎃', 'Bouh !', 'Trouve la surprise cachée dans la citrouille', () => false]
 ];
@@ -4284,10 +4350,10 @@ function checkAch() {
 }
 setInterval(() => { try { checkAch(); } catch (e) { /* ignoré */ } }, 5000);
 function renderProfile() {
-  const n = Object.keys(S.ach).length, lvl = 1 + Math.floor(n / 3), next = 3 - (n % 3);
+  const n = ACH.filter((x) => S.ach[x[0]]).length, lvl = 1 + Math.floor(n / 3), next = 3 - (n % 3);
   const kp = (v, l, raw) => '<div><b' + (raw ? '' : ' data-cu="' + v + '"') + '>' + (raw || fmt(v)) + '</b><i>' + l + '</i></div>';
   let h = '<div class="prof"><div class="pav" aria-hidden="true">' + esc(S.av || '⚽') + '</div><div><h1 class="mk-title" style="font-size:28px;margin:0">' + (S.nick ? esc(S.nick) : 'Mon profil') + '</h1><div class="small muted">Niveau <b>' + lvl + '</b> · ' + n + ' succès sur ' + ACH.length + ' · encore ' + next + ' pour le niveau ' + (lvl + 1) + '</div><div class="goal" style="margin-top:6px"><i style="width:' + ((n % 3) / 3 * 100) + '%"></i></div></div></div>';
-  h += '<div class="kpis">' + kp(S.viewed, 'fiches ouvertes') + kp(FAV.size, 'favoris') + kp(S.alerts.length, 'alertes') + kp(S.pf.length, 'cartes en portefeuille') + kp(S.sales.length, 'ventes') + kp(0, 'gagné en ventes', (realized() >= 0 ? '+' : '') + short(realized())) + kp(S.games.played || 0, 'parties jouées') + kp(Object.keys(S.notes).length, 'notes perso') + '</div>';
+  h += '<div class="kpis">' + kp(S.viewed, 'fiches ouvertes') + kp(FAV.size, 'favoris') + kp(S.alerts.length, 'alertes') + kp(S.pf.length, 'cartes en portefeuille') + kp(S.sales.length, 'ventes') + kp(0, 'gagné en ventes', (realized() >= 0 ? '+' : '') + short(realized())) + kp(S.games.played || 0, 'parties jouées') + kp(albumStats().own, 'cartes dans l\'album') + kp(S.chal.won.length, 'défis réussis') + kp(Object.keys(S.notes).length, 'notes perso') + '</div>';
   h += '<div class="box"><div class="two"><label class="lab">Mon pseudo<input class="field" id="nickIn" maxlength="24" value="' + esc(S.nick) + '" placeholder="ex : Kylian"></label><div class="lab">Mon avatar<div class="avs">' + ['⚽', '🏆', '🔥', '⚡', '🦁', '🐐', '👑', '🎃', '🧤', '🚀'].map((a) => '<button type="button" data-act="avset" data-a="' + a + '" aria-pressed="' + (S.av === a) + '">' + a + '</button>').join('') + '</div></div></div></div>';
   h += '<h2>🏆 Succès</h2><div class="achg">' + ACH.map(([k, ic, t, d]) => '<div class="ach' + (S.ach[k] ? ' on' : '') + '"><span class="ic" aria-hidden="true">' + ic + '</span><b>' + esc(t) + '</b><span>' + esc(d) + '</span>' + (S.ach[k] ? '<em>✓ ' + fmtDate(new Date(S.ach[k])) + '</em>' : '<em>🔒 à débloquer</em>') + '</div>').join('') + '</div>';
   const notes = Object.entries(S.notes).map(([id, t]) => [MAP.get(id), t, id]).filter((x) => x[0]);
@@ -4466,6 +4532,271 @@ document.addEventListener('pointerdown', (e) => {
   sp.className = 'rp'; sp.style.width = sp.style.height = d + 'px'; sp.style.left = (e.clientX - r.left - d / 2) + 'px'; sp.style.top = (e.clientY - r.top - d / 2) + 'px';
   b.appendChild(sp); setTimeout(() => sp.remove(), 520);
 });
+/* =====================================================================
+   VERSION 5 — Album à compléter (un pack de 12 cartes par jour) et page du défi du jour
+   ===================================================================== */
+// Types de packs : chance de tomber dessus (p, en %), poids de chaque rareté [commune, rare, épique, légende]
+// et cartes garanties ([rareté, nombre]). Plus le pack est rare, plus il contient de bonnes cartes.
+const PACKS = {
+  or: { n: 'Pack Or', ic: '🟡', p: 70, w: [70, 22, 7, 1], min: [], col: '#f0b429', col2: '#a86b00' },
+  rare: { n: 'Pack Rare', ic: '🔷', p: 20, w: [45, 35, 16, 4], min: [[2, 1]], col: '#4cc9f0', col2: '#1f6fa8' },
+  prem: { n: 'Pack Premium', ic: '💜', p: 8, w: [25, 35, 30, 10], min: [[2, 2], [3, 1]], col: '#b46bff', col2: '#5b2a99' },
+  leg: { n: 'Pack Légende', ic: '🔥', p: 2, w: [10, 30, 35, 25], min: [[3, 2], [2, 2]], col: '#ff5d3d', col2: '#8a1a00' }
+};
+const PACK_ORDER = ['or', 'rare', 'prem', 'leg'];
+const BONUS_P = { or: 0, rare: 70, prem: 25, leg: 5 };   // pack bonus (gagné en complétant une page) : toujours au moins Rare
+const TIERS = [['Commune', '#9aa3ad'], ['Rare', '#4cc9f0'], ['Épique', '#b46bff'], ['Légende', '#f0b429']];
+const tierOfSlot = (k) => (k === 0 ? 3 : k <= 2 ? 2 : k <= 5 ? 1 : 0);   // place dans la page (0 = la meilleure carte) → rareté
+const TRADE = [3, 5, 8, 12];   // doublons demandés pour obtenir une carte manquante, selon sa rareté
+const ALB = { p: 0, sel: '' };
+// L'album est créé une seule fois : 8 pages (les 8 plus grandes ligues), 12 joueurs par page (les mieux notés, un seul exemplaire par joueur).
+function albumBuild() {
+  const pick = (key, used) => {
+    const by = new Map();
+    for (const c of CARDS) { const g = c[key]; if (!g || used.has(c.id)) continue; let m = by.get(g); if (!m) by.set(g, (m = new Map())); const o = m.get(c._nn); if (!o || c.rating > o.rating || (c.rating === o.rating && (c.price || 0) > (o.price || 0))) m.set(c._nn, c); }
+    return [...by].filter(([, m]) => m.size >= 12).sort((a, b) => b[1].size - a[1].size);
+  };
+  const used = new Set(), names = new Set(), pages = [];
+  const take = (list, label) => { for (const [n, m] of list) { if (pages.length >= 8) return; const ids = [...m.values()].filter((c) => !names.has(c._nn)).sort((a, b) => b.rating - a.rating || (b.price || 0) - (a.price || 0)).slice(0, 12); if (ids.length < 12) continue; ids.forEach((c) => { used.add(c.id); names.add(c._nn); }); pages.push({ n: label + n, ids: ids.map((c) => c.id) }); } };
+  take(pick('league', used), '');
+  if (pages.length < 8) take(pick('nation', used), 'Nation : ');
+  return pages;
+}
+function albumEnsure() {
+  if (!CARDS.length) return false;
+  if (!S.album.pages.length) { S.album.pages = albumBuild(); save(); }
+  return S.album.pages.length > 0;
+}
+function albumSlots() { const out = []; S.album.pages.forEach((p, pi) => p.ids.forEach((id, k) => out.push({ id, pi, k, t: tierOfSlot(k) }))); return out; }
+function albumStats() {
+  const sl = albumSlots(); let own = 0, dups = 0;
+  sl.forEach((s) => { const n = S.album.own[s.id] || 0; if (n) own++; dups += Math.max(0, n - 1); });
+  return { own, tot: sl.length, dups, pct: sl.length ? own / sl.length : 0 };
+}
+function packRoll(bonus) {
+  const tab = bonus ? BONUS_P : Object.fromEntries(PACK_ORDER.map((k) => [k, PACKS[k].p]));
+  let x = Math.random() * 100; for (const k of PACK_ORDER) { x -= tab[k]; if (x < 0) return k; } return bonus ? 'rare' : 'or';
+}
+function packFill(type) {
+  const P = PACKS[type], by = [[], [], [], []]; albumSlots().forEach((s) => by[s.t].push(s.id));
+  const from = (t) => { for (let d = 0; d < 4; d++) { const l = by[Math.max(0, t - d)]; if (l.length) return rndOf(l); } return null; };
+  const out = [];
+  P.min.forEach(([t, n]) => { for (let i = 0; i < n; i++) { const id = from(t); if (id) out.push(id); } });
+  const tw = P.w.reduce((a, b) => a + b, 0);
+  while (out.length < 12) { let x = Math.random() * tw, t = 0; while (x >= P.w[t]) { x -= P.w[t]; t++; } const id = from(t); if (!id) break; out.push(id); }
+  const tierOf = new Map(albumSlots().map((s) => [s.id, s.t]));
+  return out.sort(() => Math.random() - 0.5).sort((a, b) => tierOf.get(a) - tierOf.get(b));   // les meilleures à la fin, pour le suspense
+}
+function packAvail() { return S.album.last !== todayKey(); }
+function packOpen(bonus) {
+  if (!albumEnsure()) return;
+  const cur = S.album.cur; if (cur && cur.shown < cur.ids.length) return;   // finis d'abord de révéler le pack en cours
+  if (bonus ? !(S.album.bonus > 0) : !packAvail()) return;
+  const type = packRoll(bonus), ids = packFill(type), isNew = [];
+  ids.forEach((id) => { isNew.push(!S.album.own[id]); S.album.own[id] = (S.album.own[id] || 0) + 1; });
+  if (bonus) S.album.bonus--; else S.album.last = todayKey();
+  S.album.packs++; S.album.best = Math.max(S.album.best, PACK_ORDER.indexOf(type));
+  S.album.cur = { type, ids, isNew, shown: 0, bonus: !!bonus, phase: 'type', t: Date.now() };
+  save(); renderDisc();
+  if (type === 'prem' || type === 'leg') confetti(type === 'leg' ? 120 : 60);
+}
+function packFinish() { const c = S.album.cur; if (!c) return; c.shown = c.ids.length; c.phase = 'done'; save(); albumPagesCheck(); checkAch(); }
+function albumPagesCheck() {
+  const got = [];
+  S.album.pages.forEach((p, i) => { if (S.album.done.includes(i)) return; if (p.ids.every((id) => S.album.own[id] > 0)) { S.album.done.push(i); S.album.bonus++; got.push(p.n); } });
+  if (got.length) { save(); confetti(100); toast('📒 Page complète : ' + got.join(', ') + ' ! Tu gagnes ' + got.length + ' pack bonus 🎁'); }
+  if (got.length && S.album.done.length === S.album.pages.length) setTimeout(() => { confetti(160); toast('🏆 ALBUM COMPLET ! Bravo, tu as toutes les cartes !'); }, 1800);
+}
+function spendDups(n) {   // on rend les doublons, en commençant par ceux qu'on a le plus en double
+  for (let i = 0; i < n; i++) { let best = null, bc = 1; for (const [id, c] of Object.entries(S.album.own)) if (c > bc) { best = id; bc = c; } if (!best) return false; S.album.own[best]--; }
+  return true;
+}
+function untilMidnight() { const d = new Date(), m = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1); const s = Math.max(0, Math.round((m - d) / 60000)); return Math.floor(s / 60) + ' h ' + String(s % 60).padStart(2, '0'); }
+function packArt(type, mystery) {
+  const P = PACKS[type] || PACKS.or;
+  return '<div class="pkbig' + (mystery ? ' mys' : '') + '" style="--c1:' + (mystery ? '#3a2a55' : P.col) + ';--c2:' + (mystery ? '#140d22' : P.col2) + '"><span class="pkic">' + (mystery ? '🎁' : P.ic) + '</span><span class="pkn">' + (mystery ? 'Pack du jour' : esc(P.n)) + '</span><span class="pk12">12 cartes</span></div>';
+}
+function packOdds(bonus) { return '<div class="pkodds">' + PACK_ORDER.filter((k) => !bonus || BONUS_P[k]).map((k) => '<span style="--c:' + PACKS[k].col + '">' + PACKS[k].ic + ' ' + PACKS[k].n + ' <b>' + (bonus ? BONUS_P[k] : PACKS[k].p) + ' %</b></span>').join('') + '</div>'; }
+function packCardHtml(id, i, cur) {
+  const c = MAP.get(id), sl = albumSlots().find((s) => s.id === id), t = sl ? sl.t : 0, on = i < cur.shown;
+  return '<button type="button" class="pk t' + t + (on ? ' on' : '') + '" data-act="pkrev" data-i="' + i + '" aria-label="' + (on ? esc(c ? c.name : 'Carte') : 'Carte cachée : touche pour la retourner') + '"' + (on ? ' tabindex="-1"' : '') + '><div class="pkb">🎴</div><div class="pkf">' + (c ? '<span class="open" style="pointer-events:none">' + cardImg(c, 'sm') + '</span><b>' + esc(cardLabel(c)) + '</b>' : '<b>Carte retirée</b>') +
+    '<span class="pkt" style="color:' + TIERS[t][1] + '">' + TIERS[t][0] + '</span>' + (cur.isNew[i] ? '<em class="pnew">NOUVELLE</em>' : '<em class="pdup">doublon</em>') + '</div></button>';
+}
+function packBox(where) {
+  if (!albumEnsure()) return '<div class="box"><b>🎁 Pack du jour</b><p class="muted small">L\'album sera prêt quand les cartes seront chargées.</p></div>';
+  const st = albumStats(), cur = S.album.cur, avail = packAvail();
+  const head = '<div class="pkhead"><div class="dct" style="margin:0">🎁 Ton pack du jour</div><button type="button" class="linkb" data-act="dsub" data-k="album">📒 Album ' + st.own + '/' + st.tot + '</button></div>' +
+    '<div class="goal" style="margin:6px 0 10px"><i style="width:' + (st.pct * 100).toFixed(1) + '%"></i></div>';
+  let h = '<div class="box packbox">' + head;
+  if (cur && cur.shown < cur.ids.length) {
+    if (cur.phase === 'type') h += '<div class="pktype">' + packArt(cur.type) + '<div class="pkgot">' + (cur.bonus ? 'Pack bonus : ' : 'C\'est un ') + '<b style="color:' + PACKS[cur.type].col + '">' + PACKS[cur.type].n + '</b> ' + PACKS[cur.type].ic + (cur.type === 'leg' ? ' — incroyable, 2 % de chance !' : cur.type === 'prem' ? ' — super, 8 % de chance !' : cur.type === 'rare' ? ' — pas mal !' : '') + '</div><button type="button" class="btn primary" data-act="pkcards">Voir mes 12 cartes →</button></div>';
+    else h += '<p class="small muted" style="margin:0 0 8px">Touche une carte pour la retourner.</p><div class="pgrid pkg">' + cur.ids.map((id, i) => packCardHtml(id, i, cur)).join('') + '</div><div class="gbtns"><button type="button" class="btn" data-act="pknext">Retourner la suivante</button><button type="button" class="btn primary" data-act="pkall">Tout retourner</button></div>';
+  } else if (avail) {
+    h += '<div class="pkwrap"><button type="button" class="pkopen" data-act="pkopen" aria-label="Ouvrir mon pack du jour">' + packArt('or', true) + '</button><div><b>Un nouveau pack t\'attend !</b><p class="small muted" style="margin:4px 0 8px">12 cartes à coller dans ton album. Le type du pack est tiré au sort : plus il est rare, meilleures sont les cartes.</p>' + packOdds() + '<button type="button" class="btn primary" style="margin-top:10px" data-act="pkopen">Ouvrir mon pack</button></div></div>';
+  } else {
+    const done = cur && cur.ids.length ? cur : null, nNew = done ? done.isNew.filter(Boolean).length : 0;
+    h += (done ? '<div class="small">Dernier pack : <b style="color:' + PACKS[done.type].col + '">' + PACKS[done.type].ic + ' ' + PACKS[done.type].n + '</b> · <b class="up">' + nNew + ' nouvelle' + (nNew > 1 ? 's' : '') + '</b> carte' + (nNew > 1 ? 's' : '') + ' · ' + (12 - nNew) + ' doublon' + (12 - nNew > 1 ? 's' : '') + '</div><div class="pgrid pkg mini">' + done.ids.map((id, i) => packCardHtml(id, i, done)).join('') + '</div>' : '') +
+      '<div class="pknext"><span>⏳ Prochain pack dans <b>' + untilMidnight() + '</b></span><button type="button" class="btn" data-act="dsub" data-k="album">Voir mon album</button></div>';
+  }
+  if (S.album.bonus > 0 && !(cur && cur.shown < cur.ids.length)) h += '<div class="pkbonus"><span>🎁 Tu as <b>' + S.album.bonus + '</b> pack' + (S.album.bonus > 1 ? 's' : '') + ' bonus (gagné' + (S.album.bonus > 1 ? 's' : '') + ' en complétant une page).</span><button type="button" class="btn primary" data-act="pkbonus">Ouvrir un pack bonus</button></div>';
+  return h + '</div>';
+}
+function discAlbum() {
+  if (!albumEnsure()) return '<div class="note">L\'album sera prêt quand les cartes seront chargées.</div>';
+  const st = albumStats(), pages = S.album.pages; if (ALB.p >= pages.length) ALB.p = 0;
+  const pg = pages[ALB.p], best = S.album.best;
+  let h = (S.album.cur && S.album.cur.shown < S.album.cur.ids.length) || packAvail() || S.album.bonus > 0 ? packBox('album') : '';
+  h += '<div class="box albhead"><div class="albt"><b class="hwt" style="font-size:22px">📒 Mon album</b><span class="small muted">' + st.own + ' / ' + st.tot + ' cartes · ' + Math.round(st.pct * 100) + ' %</span></div><div class="goal"><i style="width:' + (st.pct * 100).toFixed(1) + '%"></i></div>' +
+    '<div class="kpis" style="margin-bottom:0"><div><b>' + st.dups + '</b><i>doublons</i></div><div><b>' + S.album.packs + '</b><i>packs ouverts</i></div><div><b>' + S.album.done.length + '/' + pages.length + '</b><i>pages complètes</i></div><div><b>' + (S.album.packs ? PACKS[PACK_ORDER[best]].ic : '—') + '</b><i>meilleur pack</i></div></div></div>';
+  h += '<div class="rkchips alpages">' + pages.map((p, i) => { const n = p.ids.filter((id) => S.album.own[id] > 0).length; return '<button type="button" data-act="alpage" data-i="' + i + '" aria-pressed="' + (i === ALB.p) + '">' + (S.album.done.includes(i) ? '✅ ' : '') + esc(p.n) + ' <span class="muted">' + n + '/12</span></button>'; }).join('') + '</div>';
+  h += '<div class="box albpage"><div class="albpt"><b>' + esc(pg.n) + '</b><span class="small muted">' + pg.ids.filter((id) => S.album.own[id] > 0).length + ' / 12</span></div><div class="albg">' +
+    pg.ids.map((id, k) => { const c = MAP.get(id), t = tierOfSlot(k), n = S.album.own[id] || 0, sel = ALB.sel === id ? ' sel' : '';
+      if (n) return '<button type="button" class="als t' + t + sel + '" style="--tc:' + TIERS[t][1] + '" data-act="' + (c ? 'open' : 'none') + '" data-id="' + esc(id) + '">' + (n > 1 ? '<span class="dup">×' + n + '</span>' : '') + (c ? cardImg(c, 'sm') + '<b>' + esc(cardLabel(c)) + '</b>' : '<b>Carte retirée</b>') + '<i>' + TIERS[t][0] + '</i></button>';
+      return '<button type="button" class="als miss t' + t + sel + '" style="--tc:' + TIERS[t][1] + '" data-act="alsel" data-id="' + esc(id) + '" aria-label="Carte manquante n°' + (ALB.p * 12 + k + 1) + ' (' + TIERS[t][0] + ')"><span class="sil"><svg viewBox="0 0 40 48" aria-hidden="true"><circle cx="20" cy="14" r="9"/><path d="M3 48c0-12 7-20 17-20s17 8 17 20z"/></svg><span>' + (ALB.p * 12 + k + 1) + '</span></span><b>' + (c ? esc(c.rating) + ' · ' + esc((c._pos || [])[0] || '') : '?') + '</b><i>' + TIERS[t][0] + '</i></button>'; }).join('') + '</div>';
+  if (ALB.sel && pg.ids.includes(ALB.sel) && !(S.album.own[ALB.sel] > 0)) {
+    const k = pg.ids.indexOf(ALB.sel), t = tierOfSlot(k), cost = TRADE[t], ok = st.dups >= cost;
+    h += '<div class="altrade"><span>Carte n°' + (ALB.p * 12 + k + 1) + ' (<b style="color:' + TIERS[t][1] + '">' + TIERS[t][0] + '</b>) : échange <b>' + cost + ' doublons</b> pour l\'obtenir tout de suite. Tu en as ' + st.dups + '.</span><button type="button" class="btn primary" data-act="altrade" data-id="' + esc(ALB.sel) + '"' + (ok ? '' : ' disabled') + '>Échanger</button></div>';
+  }
+  h += '</div>';
+  h += '<details class="box invdet"><summary>Comment ça marche ?</summary><ul class="invw" style="margin-top:8px"><li>Chaque jour, un <b>pack de 12 cartes</b> t\'attend dans « Du jour ». Il change à minuit.</li><li>Le type du pack est tiré au sort : 🟡 Or 70 %, 🔷 Rare 20 %, 💜 Premium 8 %, 🔥 Légende 2 %. Plus il est rare, plus il contient de cartes Épiques et Légendes.</li><li>L\'album a ' + st.tot + ' cartes, ' + pages.length + ' pages de 12 (les meilleurs joueurs des plus grandes ligues). Le but : <b>tout remplir</b>.</li><li>Dans chaque page : 1 Légende, 2 Épiques, 3 Rares, 6 Communes.</li><li>Les doublons servent à <b>échanger</b> : 3 pour une Commune, 5 pour une Rare, 8 pour une Épique, 12 pour une Légende. Touche une case vide pour échanger.</li><li>Chaque <b>page complète</b> te donne un <b>pack bonus</b> (au moins Rare).</li><li>C\'est un jeu : rien n\'est acheté, ce ne sont pas les vrais packs d\'EA. L\'album est gardé sur cet appareil (pense à la sauvegarde dans Réglages).</li></ul></details>';
+  return h;
+}
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]'); if (!el) return; const a = el.dataset.act, cur = S.album.cur;
+  if (a === 'pkopen') packOpen(false);
+  else if (a === 'pkbonus') { if (S.disc !== 'day' && S.disc !== 'album') S.disc = 'day'; packOpen(true); }
+  else if (a === 'pkcards' && cur) { cur.phase = 'cards'; save(); renderDisc(); }
+  else if (a === 'pkrev' && cur && cur.shown < cur.ids.length) { const i = Number(el.dataset.i); if (i < cur.shown) return; cur.shown++; if (cur.shown >= cur.ids.length) packFinish(); else save(); renderDisc(); if (cur.shown && albumSlots().find((s) => s.id === cur.ids[cur.shown - 1] && s.t === 3)) confetti(40); }
+  else if (a === 'pknext' && cur) { cur.shown = Math.min(cur.ids.length, cur.shown + 1); if (cur.shown >= cur.ids.length) packFinish(); else save(); renderDisc(); }
+  else if (a === 'pkall' && cur) { packFinish(); renderDisc(); }
+  else if (a === 'alpage') { ALB.p = Number(el.dataset.i) || 0; ALB.sel = ''; renderDisc(); }
+  else if (a === 'alsel') { ALB.sel = ALB.sel === el.dataset.id ? '' : el.dataset.id; renderDisc(); }
+  else if (a === 'altrade') {
+    const id = el.dataset.id, pi = S.album.pages.findIndex((p) => p.ids.includes(id)); if (pi < 0 || S.album.own[id] > 0) return;
+    const cost = TRADE[tierOfSlot(S.album.pages[pi].ids.indexOf(id))]; if (albumStats().dups < cost) { toast('Pas assez de doublons'); return; }
+    spendDups(cost); S.album.own[id] = 1; ALB.sel = ''; save(); const c = MAP.get(id); toast('Carte obtenue : ' + (c ? cardLabel(c) : 'nouvelle carte') + ' (−' + cost + ' doublons)'); confetti(30); albumPagesCheck(); checkAch(); renderDisc();
+  }
+});
+
+// ---------- Défi du jour : une page à part, avec sa propre équipe (ton équipe à toi n'est jamais touchée) ----------
+const CHL = { sel: -1, q: '', max: 0, sort: 'price' };
+function sqFronts(pos, league, nation) {   // pour chaque poste : les cartes « intéressantes » (aucune carte moins chère n'a une note aussi haute)
+  return pos.map((p) => { const l = CARDS.filter((c) => c.price != null && c._pos.includes(p) && (!league || c.league === league) && (!nation || c.nation === nation)).sort((a, b) => a.price - b.price || b.rating - a.rating); const out = []; let best = -1; for (const c of l) if (c.rating > best) { out.push(c); best = c.rating; } return out; });
+}
+function chalDef() {
+  const d = todayKey(); if (S.chal.def && S.chal.def.d === d && FORMS[S.chal.def.f]) return S.chal.def;
+  if (!CARDS.length) return null;
+  const r = rng(hashStr(d + 'defi')), fks = ['433', '442', '4231', '352', '41212', '343', '4141', '4312'].filter((k) => FORMS[k]);
+  const f = fks[Math.floor(r() * fks.length)], pos = FORMS[f].rows.reduce((a, x) => a.concat(x), []);
+  const BUD = [25e3, 40e3, 60e3, 80e3, 100e3, 150e3, 200e3, 300e3, 400e3, 600e3, 800e3, 1e6, 1.5e6, 2e6, 3e6, 5e6];
+  let kind = ['none', 'league', 'nation', 'chem'][Math.floor(r() * 4)], league = '';
+  if (kind === 'league') { const cnt = new Map(); CARDS.forEach((c) => { if (c.league && c.price != null) cnt.set(c.league, (cnt.get(c.league) || 0) + 1); }); const tl = [...cnt].sort((a, b) => b[1] - a[1]).slice(0, 6); league = tl.length ? tl[Math.floor(r() * tl.length)][0] : ''; if (!league) kind = 'none'; }
+  const want = 82 + Math.floor(r() * 5);
+  // Le défi est toujours FAISABLE : l'appli construit elle-même une équipe qui le réussit, et prend le budget de cette équipe.
+  const solve = (fr) => { if (fr.some((l) => !l.length)) return null;
+    for (let T = want; T >= 70; T--) for (let bi = 0; bi < BUD.length; bi++) { const res = sqGreedy(pos, fr, BUD[bi]); if (!res.err && sqRating(res.ids) >= T) return { T, bi }; } return null; };
+  const base = sqFronts(pos, ''), top = (key) => { const cnt = new Map(); CARDS.forEach((c) => { if (c[key] && c.price != null) cnt.set(c[key], (cnt.get(c[key]) || 0) + 1); }); return [...cnt].sort((a, b) => b[1] - a[1]).slice(0, 6).map((x) => x[0]); };
+  let sol = null, rule = null;
+  if (kind === 'league' || kind === 'chem') {   // toute l'équipe dans la même ligue : 5 joueurs de cette ligue, et une chimie de 33
+    const L = kind === 'league' ? league : (top('league')[Math.floor(r() * Math.min(3, top('league').length))] || '');
+    if (L) { sol = solve(sqFronts(pos, L)); if (sol) rule = kind === 'league' ? { k: 'league', v: L, n: 5 } : { k: 'chem', n: 15 }; }
+  } else if (kind === 'nation') {   // 3 places réservées à une même nation (les 3 où elle a les cartes les moins chères)
+    const N = top('nation')[Math.floor(r() * Math.min(4, top('nation').length))];
+    if (N) { const nf = sqFronts(pos, '', N), cheap = nf.map((l, i) => [l.length ? l[0].price : Infinity, i]).sort((a, b) => a[0] - b[0]).slice(0, 3);
+      if (cheap.every((x) => isFinite(x[0]))) { const mix = base.map((l, i) => (cheap.some((x) => x[1] === i) ? nf[i] : l)); sol = solve(mix); if (sol) rule = { k: 'nation', n: 3 }; } }
+  }
+  if (!sol) { sol = solve(base); rule = null; } if (!sol) return null;
+  const B = BUD[sol.bi];
+  S.chal.def = { d, f, T: sol.T, B, rule }; S.chal.s = Array(11).fill(null); save();
+  return S.chal.def;
+}
+function ruleText(r) { return !r ? '' : r.k === 'league' ? 'Au moins ' + r.n + ' joueurs de ' + r.v : r.k === 'nation' ? 'Au moins ' + r.n + ' joueurs de la même nation' : 'Chimie d\'au moins ' + r.n + ' (sur 33)'; }
+function chalState() {
+  const def = chalDef(); if (!def) return null;
+  const pos = FORMS[def.f].rows.reduce((a, x) => a.concat(x), []), ids = S.chal.s, cards = ids.map((id) => (id ? MAP.get(id) : null));
+  const n = cards.filter(Boolean).length, rt = n === 11 ? sqRating(ids) : null, cost = cards.reduce((a, c) => a + (c && c.price ? c.price : 0), 0);
+  let rv = null, rok = true;
+  if (def.rule) {
+    const cs = cards.filter(Boolean);
+    if (def.rule.k === 'league') { rv = cs.filter((c) => c.league === def.rule.v).length; rok = rv >= def.rule.n; }
+    else if (def.rule.k === 'nation') { const m = new Map(); cs.forEach((c) => m.set(c.nation, (m.get(c.nation) || 0) + 1)); rv = Math.max(0, ...m.values()); rok = rv >= def.rule.n; }
+    else { rv = sqChem(ids, pos).total; rok = rv >= def.rule.n; }
+  }
+  const ok = n === 11 && rt >= def.T && cost <= def.B && rok;
+  return { def, pos, n, rt, cost, rv, rok, ok, won: S.chal.won.includes(def.d) };
+}
+function chalStreak() { let k = 0; const d = new Date(); if (!S.chal.won.includes(todayKey())) d.setDate(d.getDate() - 1); for (;;) { if (S.chal.won.includes(d.toLocaleDateString('sv-SE'))) { k++; d.setDate(d.getDate() - 1); } else return k; } }
+function chalCheckWin() {
+  const s = chalState(); if (!s || !s.ok || s.won) return;
+  S.chal.won = S.chal.won.concat(s.def.d).slice(-400); save(); confetti(120); toast('🏆 Défi du jour réussi ! Série : ' + chalStreak() + ' jour' + (chalStreak() > 1 ? 's' : '')); checkAch();
+}
+function challengeOfDay() {
+  const s = chalState(); if (!s) return '';
+  const d = s.def;
+  return '<h2>🏗️ Le défi du jour</h2><div class="box chcard' + (s.won ? ' won' : '') + '"><b>Construis une équipe notée ' + d.T + ' ou plus pour ' + short(d.B) + ' crédits maximum.</b>' +
+    '<div class="small muted" style="margin-top:4px">Formation imposée : ' + esc(FORMS[d.f].n) + (d.rule ? ' · Règle en plus : ' + esc(ruleText(d.rule)) : '') + '</div>' +
+    '<div class="small" style="margin-top:6px">' + (s.won ? '<b class="up">✅ Défi réussi aujourd\'hui !</b>' : s.n ? 'Ton équipe du défi : ' + s.n + '/11 joueurs' + (s.rt != null ? ' · note ' + s.rt : '') + ' · ' + short(s.cost) : 'Pas encore commencé.') + ' · Série : <b>' + chalStreak() + '</b> jour(s)</div>' +
+    '<div class="row2" style="margin-top:8px"><button type="button" class="btn primary" data-act="chgo">' + (s.won ? 'Voir mon équipe du défi' : 'Relever le défi →') + '</button></div></div>';
+}
+function chSlotHtml(i, s) {
+  const id = S.chal.s[i], c = id ? MAP.get(id) : null, p = s.pos[i];
+  if (!c) return '<button type="button" class="sqs empty" data-act="chslot" data-i="' + i + '" aria-label="Choisir un joueur (' + esc(p) + ')"><span class="sqp">+</span><span class="sqpos">' + esc(p) + '</span></button>';
+  return '<button type="button" class="sqs" data-act="chslot" data-i="' + i + '" aria-label="' + esc(c.name) + '">' + cardImg(c, 'sm') + '<span class="sqn">' + esc(cardLabel(c)) + '</span><span class="sqr">' + esc(c.rating) + ' ' + esc(p) + '</span><span class="sqpr">' + short(c.price) + '</span></button>';
+}
+function renderChal() {
+  const s = chalState(); const box = $('#pChal');
+  if (!s) { box.innerHTML = '<div class="row2" style="margin:6px 0"><button type="button" class="btn" data-act="tab" data-t="10">← Découvrir</button></div><div class="empty box"><div class="big">Défi indisponible</div><div class="muted">Il faut des cartes avec un prix pour créer le défi du jour.</div></div>'; return; }
+  const d = s.def, line = (ok, txt) => '<div class="chl ' + (ok ? 'ok' : 'ko') + '"><span>' + (ok ? '✅' : '⬜') + '</span>' + txt + '</div>';
+  let h = '<div class="row2" style="margin:6px 0"><button type="button" class="btn" data-act="tab" data-t="10">← Découvrir</button></div>' +
+    '<h1 class="mk-title" style="font-size:30px">Défi du jour</h1><p class="mk-sub">Une équipe rien que pour le défi : <b>ton équipe à toi n\'est pas touchée</b>. Nouveau défi chaque jour à minuit.</p>';
+  h += '<div class="box chgoal' + (s.won ? ' won' : '') + '"><div class="chobj">' +
+    line(s.n === 11, '11 joueurs placés <b>(' + s.n + '/11)</b>') +
+    line(s.rt != null && s.rt >= d.T, 'Note d\'équipe ' + d.T + ' ou plus <b>(' + (s.rt == null ? '—' : s.rt) + ')</b>') +
+    line(s.cost <= d.B && s.n > 0, 'Prix total ' + short(d.B) + ' maximum <b class="' + (s.cost > d.B ? 'dn' : '') + '">(' + short(s.cost) + ')</b>') +
+    (d.rule ? line(s.rok && s.n > 0, esc(ruleText(d.rule)) + ' <b>(' + (s.rv == null ? 0 : s.rv) + ')</b>') : '') + '</div>' +
+    (s.won ? '<div class="chwin">🏆 Défi réussi ! Reviens demain pour un nouveau défi.</div>' : s.ok ? '' : '<div class="small muted">Formation imposée : <b>' + esc(FORMS[d.f].n) + '</b>. Touche une place pour choisir un joueur (seulement des joueurs à ce poste).</div>') + '</div>';
+  let idx = 0; h += '<div class="pitch">' + FORMS[d.f].rows.map((row) => '<div class="prow">' + row.map(() => chSlotHtml(idx++, s)).join('') + '</div>').join('') + '</div>';
+  h += '<div class="row2" style="margin:10px 0"><button type="button" class="btn" data-act="chcopy">📋 Copier mon équipe du défi</button><button type="button" class="btn danger" data-act="chreset">Vider</button></div>';
+  h += '<div class="kpis"><div><b>' + S.chal.won.length + '</b><i>défis réussis</i></div><div><b>' + chalStreak() + '</b><i>jours de suite</i></div></div>';
+  box.innerHTML = h;
+}
+function chResults() {
+  const s = chalState(), p = s.pos[CHL.sel], q = norm(CHL.q).trim(), taken = new Set(S.chal.s.filter((id, i) => id && i !== CHL.sel).map((id) => (MAP.get(id) || {})._nn));
+  let a = CARDS.filter((c) => c.price != null && c._pos.includes(p) && !taken.has(c._nn) && (!q || c._n.includes(q)) && (!CHL.max || c.price <= CHL.max));
+  if (CHL.sort === 'price') a.sort((x, y) => x.price - y.price || y.rating - x.rating); else a.sort((x, y) => y.rating - x.rating || x.price - y.price);
+  const left = s.def.B - (s.cost - (S.chal.s[CHL.sel] ? (MAP.get(S.chal.s[CHL.sel]) || {}).price || 0 : 0));
+  const n = a.length; a = a.slice(0, 40);
+  if (!n) return '<div class="muted small" style="padding:10px 2px">Aucune carte trouvée pour ce poste.</div>';
+  return '<div class="small muted" style="padding:2px 2px 6px">Il te reste <b>' + short(Math.max(0, left)) + '</b> de budget pour cette place.</div>' + a.map((c) => '<button type="button" class="sqrow' + (c.price > left ? ' over' : '') + '" data-act="chpick" data-id="' + esc(c.id) + '">' + cardImg(c, 'sm') +
+    '<span class="t"><b>' + esc(cardLabel(c)) + '</b><span>' + esc(c.rating) + ' · ' + esc(c.pos) + ' · ' + esc(c.club) + '</span></span><span class="pr">' + short(c.price) + '</span></button>').join('') + (n > 40 ? '<div class="muted small" style="padding:6px 2px">' + fmt(n) + ' cartes : précise ta recherche.</div>' : '');
+}
+function chOpen(i) {
+  const s = chalState(); if (!s) return; CHL.sel = i; CHL.q = ''; CHL.max = 0;
+  const id = S.chal.s[i], c = id ? MAP.get(id) : null;
+  $('#sqBox').innerHTML = '<div class="bh"><b>Défi · choisir un ' + esc(s.pos[i]) + '</b><button type="button" class="btn" data-act="sqclose">Fermer</button></div>' +
+    '<input class="field" id="chQ" type="search" autocomplete="off" placeholder="Nom, club, pays…">' +
+    '<div class="row2" style="margin-top:6px"><input class="field" id="chMax" type="text" inputmode="decimal" placeholder="Prix max (ex : 20k)" style="flex:1;min-width:120px"><button type="button" class="btn" data-act="chsort">' + (CHL.sort === 'price' ? 'Tri : prix ↑' : 'Tri : note ↓') + '</button></div>' +
+    (c ? '<div class="row2" style="margin-top:8px"><button type="button" class="btn danger" data-act="chclr">Retirer ' + esc(cardLabel(c)) + '</button></div>' : '') +
+    '<div class="sqres" id="chRes">' + chResults() + '</div>';
+  if ($('#sqModal').hidden) pushOv();
+  $('#sqModal').hidden = false;
+}
+let CHT = 0;
+document.addEventListener('input', (e) => {
+  const t = e.target; if (t.id !== 'chQ' && t.id !== 'chMax') return;
+  clearTimeout(CHT); CHT = setTimeout(() => { if (t.id === 'chQ') CHL.q = t.value; else { const v = num(t.value); CHL.max = v > 0 ? v : 0; } const r = $('#chRes'); if (r) r.innerHTML = chResults(); }, 180);
+});
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]'); if (!el) return; const a = el.dataset.act;
+  if (a === 'chgo') showTab(12);
+  else if (a === 'chslot') chOpen(Number(el.dataset.i));
+  else if (a === 'chpick' && CHL.sel >= 0) { S.chal.s[CHL.sel] = el.dataset.id; save(); chalCheckWin(); closeSq(); }
+  else if (a === 'chclr' && CHL.sel >= 0) { S.chal.s[CHL.sel] = null; save(); closeSq(); }
+  else if (a === 'chsort') { CHL.sort = CHL.sort === 'price' ? 'rating' : 'price'; el.textContent = CHL.sort === 'price' ? 'Tri : prix ↑' : 'Tri : note ↓'; const r = $('#chRes'); if (r) r.innerHTML = chResults(); }
+  else if (a === 'chreset') { const old = S.chal.s.slice(); S.chal.s = Array(11).fill(null); save(); renderChal(); toast('Équipe du défi vidée', () => { S.chal.s = old; save(); renderChal(); }); }
+  else if (a === 'chcopy') { const s = chalState(); if (!s) return; copyText('Défi du jour FC27 (' + FORMS[s.def.f].n + ', note ' + s.def.T + '+, ' + short(s.def.B) + ' max)\n' + S.chal.s.map((id, i) => { const c = MAP.get(id); return s.pos[i] + ' : ' + (c ? c.name + ' ' + c.rating + ' (' + fmt(c.price) + ')' : '—'); }).join('\n') + '\nNote ' + (s.rt == null ? '—' : s.rt) + ' · prix ' + fmt(s.cost) + (s.won ? ' · ✅ réussi' : ''), 'Équipe du défi copiée'); }
+});
+
 /* =====================================================================
    Démarrage
    ===================================================================== */
