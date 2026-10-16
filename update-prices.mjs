@@ -46,9 +46,9 @@ const KEY_CREDITS = Number(process.env.KEY_CREDITS) || 0; // crédits de départ
 const HISTORY_MAX = Number(process.env.HISTORY_MAX) || 60; // points d'historique gardés par carte (l'historique complet « daily » en apporte jusqu'à ce nombre)
 const TIMEOUT_MS = Number(process.env.TIMEOUT_MS ?? 150000); // parse.bot peut être lent (1 minute par page)
 const RETRY_MS = Number(process.env.RETRY_MS ?? 30000);      // pause avant un nouvel essai
-const STRIKE_MIN_MS = Number(process.env.STRIKE_MIN_MS ?? 100);   // pause entre deux refus d'une même clé : au hasard entre ces deux valeurs
-const STRIKE_MAX_MS = Number(process.env.STRIKE_MAX_MS ?? 3000);
-const STRIKES = Number(process.env.STRIKES ?? 10);           // une clé n'est mise de côté qu'après ce nombre de refus de suite (un seul refus peut être passager)
+const STRIKE_MIN_MS = Number(process.env.STRIKE_MIN_MS ?? 0);     // pause entre deux refus d'une même clé : 0 = on relance tout de suite
+const STRIKE_MAX_MS = Number(process.env.STRIKE_MAX_MS ?? 0);
+const STRIKES = Number(process.env.STRIKES ?? 25);           // une clé n'est mise de côté qu'après 25 refus de suite (un refus peut être passager)
 const MAX_TRIES = Number(process.env.MAX_TRIES ?? 4);        // essais par requête
 // ---------- clés ----------
 // Une seule clé (secret PARSE_API_KEY) OU plusieurs (secret PARSE_API_KEYS : une clé par ligne, ou séparées par des virgules).
@@ -84,7 +84,7 @@ const STATE_FILE = path.join(DIR, 'keys-state.json');
 const FP = createHash('sha256').update(ENTRIES.map((e) => e.k + '|' + e.b).join('\n')).digest('hex').slice(0, 12);
 // Mots qui disent clairement « plus de crédits ». « limit reached » peut n'être qu'un trop-plein de requêtes : on ne le prend pas pour une clé vide si le code est 429.
 const CREDIT_STRICT = /credit|quota|insufficient|exhaust|balance|payment/i;
-const DEFINITIVE_STRIKES = Number(process.env.DEFINITIVE_STRIKES ?? 10); // même nombre de chances pour tous les refus (10)
+const DEFINITIVE_STRIKES = Number(process.env.DEFINITIVE_STRIKES ?? 25); // même nombre de chances pour tous les refus (25)
 const CREDIT_LOOSE = /limit reached|plan limit/i;
 const redact = (t) => KEYS.concat(ENTRIES.map((e) => e.b).filter(Boolean)).reduce((a, k) => a.split(k).join('***'), String(t));
 const shortUrl = (u) => String(u).replace(/^https?:\/\//, '').replace(/([0-9a-f]{8})[0-9a-f-]{28}/gi, '$1…');
@@ -355,8 +355,8 @@ async function callOn(w, endpoint, params, label) {
     const maxS = definitive ? Math.min(STRIKES, DEFINITIVE_STRIKES) : STRIKES;
     if (w.strikes >= maxS) { w.strikes = 0; markDead(w, why, credit, detail); throw new KeyDead(); }
     const pause = STRIKE_MIN_MS + Math.random() * Math.max(0, STRIKE_MAX_MS - STRIKE_MIN_MS);
-    console.log(`${label} (clé n°${w.i + 1}) : refus ${w.strikes}/${maxS} (${why}) — ${detail}. On attend ${(pause / 1000).toFixed(1)} s et on réessaie avant de la mettre de côté.`);
-    await sleep(pause);
+    console.log(`${label} (clé n°${w.i + 1}) : refus ${w.strikes}/${maxS} (${why}) — ${detail}. ` + (pause > 0 ? `On attend ${(pause / 1000).toFixed(1)} s et on réessaie.` : 'On réessaie tout de suite.'));
+    if (pause > 0) await sleep(pause);
     w.last = Date.now();
   };
   for (let attempt = 1; attempt <= MAX_TRIES; attempt++) {
